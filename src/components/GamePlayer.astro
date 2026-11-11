@@ -1,0 +1,25 @@
+---
+import { url } from '../config';
+interface Props { game: { id: string; title: string; skill: string; poster: string }; topDifficulty: number }
+const { game, topDifficulty } = Astro.props;
+---
+<div data-game-player data-game={game.id} data-title={game.title}
+     data-src={url(`play/${game.id}/index.html`)} data-manifest={url(`play/${game.id}/asset-manifest.json`)}>
+  <div class="player">
+    <img src={url(game.poster)} alt={`${game.title} game screen: a sum, three answer buttons and Hazel the owl`} width="1200" height="900" fetchpriority="high">
+    <button class="btn btn--primary play" data-play type="button">▶ Play</button>
+  </div>
+  <div class="progress-row" data-progress data-game={game.id} data-skill={game.skill} data-top={topDifficulty} hidden></div>
+  <p class="player-error note" data-error hidden>Oops, the game needs a moment. Please try Play again.</p>
+  <div class="overlay" data-overlay hidden>
+    <div data-frame></div>
+    <button class="iconbtn sound" data-sound-toggle type="button" aria-label="Sound" aria-pressed="true">
+      <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>
+      <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M17 9l5 6M22 9l-5 6"/></svg>
+    </button>
+  </div>
+</div>
+<script>
+  import { initPlayer } from '../scripts/player';
+  document.querySelectorAll<HTMLElement>('[data-game-player]').forEach(initPlayer);
+</script>

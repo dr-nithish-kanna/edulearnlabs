@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 262" role="img" aria-label="Hazel the owl">
+  <title>Hazel the owl</title>
+  <!--
+    Animation parts. Every group with class "part" has its pivot set with transform-origin (viewBox units),
+    so ell-kit can rotate or scale it in place. Map:
+      #hazel          whole owl (hop, squash and stretch)     pivot: feet
+      #body-group     body, belly, wings, feet (breathe, bob) pivot: feet
+      #wing-left/right   wave, flap                          pivot: shoulder
+      #foot-left/right   tap, hop                             pivot: heel
+      #head           tilt, nod                               pivot: neck
+      #tuft-left/right   wiggle                               pivot: base
+      #cowlick        bounce                                  pivot: base
+      #brow-left/right   raise, frown-free "thinking"         pivot: center
+      #eye-left/right    blink (scaleY), .look = gaze (translate)
+      #eyes-happy     closed happy eyes (show with opacity 1, hide eyes)
+      #beak-lower     open for talking (rotate)               pivot: hinge
+      #glasses        push up (translateY)
+      #charm          sway (rotate)                            pivot: hinge on glasses
+  -->
+  <defs>
+    <radialGradient id="g-head" cx="40%" cy="28%" r="80%">
+      <stop offset="0" stop-color="#A8734D"/><stop offset=".6" stop-color="#8B5A3C"/><stop offset="1" stop-color="#72452C"/>
+    </radialGradient>
+    <radialGradient id="g-body" cx="40%" cy="20%" r="85%">
+      <stop offset="0" stop-color="#9A6644"/><stop offset="1" stop-color="#6E432A"/>
+    </radialGradient>
+    <radialGradient id="g-belly" cx="50%" cy="25%" r="75%">
+      <stop offset="0" stop-color="#F5E2C2"/><stop offset="1" stop-color="#E2BF92"/>
+    </radialGradient>
+    <radialGradient id="g-iris" cx="50%" cy="38%" r="62%">
+      <stop offset="0" stop-color="#FFD766"/><stop offset="1" stop-color="#E8902A"/>
+    </radialGradient>
+    <linearGradient id="g-gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4D677"/><stop offset="1" stop-color="#B8862A"/>
+    </linearGradient>
+  </defs>
+
+  <ellipse id="shadow" cx="120" cy="254" rx="62" ry="7" fill="#3B2A20" opacity=".12"/>
+
+  <g id="hazel" class="part" style="transform-origin:120px 252px">
+    <g id="body-group" class="part" style="transform-origin:120px 252px">
+      <g id="wing-left" class="part" style="transform-origin:68px 178px">
+        <path d="M70 172 C46 176 34 204 42 230 C47 225 50 230 54 224 C58 228 62 222 64 216 C70 204 74 190 74 178 Z" fill="#6B4129"/>
+        <path d="M50 206 q8 3 15 0 M48 218 q7 3 13 0" fill="none" stroke="#5A3520" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <g id="wing-right" class="part" style="transform-origin:172px 178px">
+        <path d="M170 172 C194 176 206 204 198 230 C193 225 190 230 186 224 C182 228 178 222 176 216 C170 204 166 190 166 178 Z" fill="#6B4129"/>
+        <path d="M190 206 q-8 3 -15 0 M192 218 q-7 3 -13 0" fill="none" stroke="#5A3520" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <ellipse id="body" cx="120" cy="204" rx="60" ry="48" fill="url(#g-body)"/>
+      <ellipse id="belly" cx="120" cy="212" rx="40" ry="34" fill="url(#g-belly)"/>
+      <g id="belly-feathers" fill="none" stroke="#C99C68" stroke-width="2.6" stroke-linecap="round">
+        <path d="M95 210 q5 6 10 0 M110 210 q5 6 10 0 M125 210 q5 6 10 0"/>
+        <path d="M102 224 q5 6 10 0 M117 224 q5 6 10 0 M132 224 q5 6 10 0" opacity=".85"/>
+      </g>
+      <g id="foot-left" class="part" style="transform-origin:100px 248px" fill="#E8973A">
+        <ellipse cx="91" cy="249" rx="6" ry="7"/><ellipse cx="100" cy="252" rx="6" ry="7"/><ellipse cx="109" cy="249" rx="6" ry="7"/>
+      </g>
+      <g id="foot-right" class="part" style="transform-origin:140px 248px" fill="#E8973A">
+        <ellipse cx="131" cy="249" rx="6" ry="7"/><ellipse cx="140" cy="252" rx="6" ry="7"/><ellipse cx="149" cy="249" rx="6" ry="7"/>
+      </g>
+    </g>
+
+    <g id="head" class="part" style="transform-origin:120px 168px">
+      <g id="tuft-left" class="part" style="transform-origin:58px 54px">
+        <path d="M34 78 C24 52 26 26 40 16 C52 26 66 38 80 50 Z" fill="#6E432A"/>
+        <path d="M40 22 C44 36 50 46 60 54" fill="none" stroke="#8B5A3C" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <g id="tuft-right" class="part" style="transform-origin:182px 54px">
+        <path d="M206 78 C216 52 214 26 200 16 C188 26 174 38 160 50 Z" fill="#6E432A"/>
+        <path d="M200 22 C196 36 190 46 180 54" fill="none" stroke="#8B5A3C" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <path id="head-shape" d="M120 36 C152 28 198 34 212 80 C224 120 210 164 168 174 C144 180 96 180 72 174 C30 164 16 120 28 80 C42 34 88 28 120 36 Z" fill="url(#g-head)"/>
+      <g id="cowlick" class="part" style="transform-origin:122px 38px" fill="#6E432A">
+        <path d="M116 40 C108 28 110 16 120 12 C118 22 122 30 126 38 Z"/>
+        <path d="M124 38 C128 26 138 20 146 22 C138 26 134 32 132 42 Z"/>
+      </g>
+      <g id="head-feathers" fill="none" stroke="#6E432A" stroke-width="2.6" stroke-linecap="round" opacity=".6">
+        <path d="M106 50 l4 4 l4 -4"/><path d="M126 50 l4 4 l4 -4"/>
+      </g>
+      <g id="face">
+        <g fill="#C8996A"><circle cx="88" cy="104" r="44"/><circle cx="152" cy="104" r="44"/><path d="M96 136 L144 136 L120 160 Z"/></g>
+        <g fill="#F2DFC2"><circle cx="88" cy="104" r="40"/><circle cx="152" cy="104" r="40"/><path d="M100 134 L140 134 L120 154 Z"/></g>
+      </g>
+      <g id="cheeks" fill="#F29C8C" opacity=".5">
+        <ellipse cx="60" cy="136" rx="12" ry="7.5"/><ellipse cx="180" cy="136" rx="12" ry="7.5"/>
+      </g>
+      <g id="eye-left" class="part" style="transform-origin:88px 104px">
+        <circle cx="88" cy="104" r="28" fill="#FFFFFF"/>
+        <g class="look">
+          <circle cx="88" cy="106" r="19" fill="url(#g-iris)" stroke="#C97A1E" stroke-width="1.5"/>
+          <circle class="pupil" cx="88" cy="107" r="11" fill="#2B1D14"/>
+          <circle cx="94" cy="99" r="5.5" fill="#FFFFFF"/><circle cx="82" cy="114" r="2.6" fill="#FFFFFF"/>
+        </g>
+      </g>
+      <g id="eye-right" class="part" style="transform-origin:152px 104px">
+        <circle cx="152" cy="104" r="28" fill="#FFFFFF"/>
+        <g class="look">
+          <circle cx="152" cy="106" r="19" fill="url(#g-iris)" stroke="#C97A1E" stroke-width="1.5"/>
+          <circle class="pupil" cx="152" cy="107" r="11" fill="#2B1D14"/>
+          <circle cx="158" cy="99" r="5.5" fill="#FFFFFF"/><circle cx="146" cy="114" r="2.6" fill="#FFFFFF"/>
+        </g>
+      </g>
+      <g id="eyes-happy" opacity="0" fill="none" stroke="#2B1D14" stroke-width="5" stroke-linecap="round">
+        <path d="M72 108 Q88 92 104 108"/><path d="M136 108 Q152 92 168 108"/>
+      </g>
+      <path id="brow-left" class="part" style="transform-origin:86px 60px" d="M66 64 Q84 52 106 60" fill="none" stroke="#5A3520" stroke-width="6" stroke-linecap="round"/>
+      <path id="brow-right" class="part" style="transform-origin:154px 60px" d="M134 60 Q156 52 174 64" fill="none" stroke="#5A3520" stroke-width="6" stroke-linecap="round"/>
+      <g id="beak">
+        <path id="beak-lower" class="part" style="transform-origin:120px 138px" d="M113 138 Q120 152 127 138 Q120 143 113 138 Z" fill="#C9742A"/>
+        <path id="beak-upper" d="M109 130 Q120 122 131 130 Q127 146 120 151 Q113 146 109 130 Z" fill="#E8973A"/>
+        <path d="M113 131 Q120 127 126 131" fill="none" stroke="#F7C077" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <g id="glasses" class="part" style="transform-origin:120px 104px">
+        <g fill="#FFFFFF" fill-opacity=".16" stroke="url(#g-gold)" stroke-width="4.5">
+          <circle cx="88" cy="104" r="33"/><circle cx="152" cy="104" r="33"/>
+        </g>
+        <path d="M114 94 Q120 86 126 94" fill="none" stroke="url(#g-gold)" stroke-width="4.5" stroke-linecap="round"/>
+        <g fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity=".75">
+          <path d="M66 94 A24 24 0 0 1 79 81"/><path d="M130 94 A24 24 0 0 1 143 81"/>
+        </g>
+        <g fill="#D9A93F"><circle cx="55" cy="106" r="3.8"/><circle cx="185" cy="106" r="3.8"/></g>
+        <g id="charm" class="part" style="transform-origin:185px 108px">
+          <path d="M185 110 L185 156" fill="none" stroke="#D4A43C" stroke-width="4" stroke-linecap="round" stroke-dasharray="0.1 6.2"/>
+          <circle cx="185" cy="160" r="3" fill="none" stroke="#C99A35" stroke-width="2"/>
+          <path d="M185.0,163.0 L187.7,169.3 L194.5,169.9 L189.4,174.4 L190.9,181.1 L185.0,177.6 L179.1,181.1 L180.6,174.4 L175.5,169.9 L182.3,169.3 Z" fill="url(#g-gold)" stroke="#B8862A" stroke-width="1.6" stroke-linejoin="round"/>
+          <circle cx="182.5" cy="170" r="1.6" fill="#FFF3C4"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
