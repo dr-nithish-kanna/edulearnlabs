@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EduLearnLabs style preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Brand */
+  --teal: #0F857D; --teal-dark: #0A625C; --teal-bright: #14A39A; --teal-soft: #E3F6F3;
+  --cocoa: #8B5A3C; --caramel: #C8996A;
+  --sun: #FFC83D; --sun-dark: #E5A800;
+  --coral: #FF7A59; --sky: #2FB5EC; --leaf: #2FCB86; --leaf-dark: #1FA56A;
+  --pink: #FF6FB5; --orange: #FF9F43;
+  /* Neutrals */
+  --ink: #3B2A20; --ink-soft: #7A6252; --cream: #FFF7E8; --card: #FFFFFF; --line: #F0E6D2;
+  /* Shape */
+  --r-sm: 16px; --r-md: 24px; --r-lg: 32px; --r-pill: 999px;
+  --press: 0 6px 0; --shadow: 0 10px 30px rgba(59, 42, 32, .10);
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+  --font-display: "Fredoka", ui-rounded, system-ui, sans-serif;
+  --font-read: "Andika", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--cream); color: var(--ink); font-family: var(--font-read); padding: 32px; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0 0 12px; }
+h1 { font-size: 40px; color: var(--teal); }
+h2 { font-size: 24px; color: var(--ink-soft); font-weight: 600; margin-top: 8px; }
+.row { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 32px; }
+.panel { background: var(--card); border-radius: var(--r-lg); box-shadow: var(--shadow); padding: 24px; }
+.swatches { display: grid; grid-template-columns: repeat(5, 92px); gap: 12px; }
+.sw { height: 72px; border-radius: var(--r-sm); display: flex; align-items: flex-end; padding: 8px;
+      font: 600 13px var(--font-display); }
+.type .big { font: 700 72px/1 var(--font-display); color: var(--ink); }
+.type .read { font-size: 26px; }
+
+/* Game screen mock (tablet 4:3) */
+.screen { width: 560px; height: 420px; border-radius: var(--r-lg); position: relative; overflow: hidden;
+  background: radial-gradient(circle at 15% 10%, #FFFDF6 0, #FFF3DA 60%, #FFE9C2 100%); box-shadow: var(--shadow); }
+.screen .hill { position: absolute; bottom: -60px; left: -40px; right: -40px; height: 140px; background: #BFEFD5; border-radius: 50%; }
+.topbar { position: absolute; top: 16px; left: 16px; right: 16px; display: flex; align-items: center; gap: 12px; }
+.iconbtn { width: 52px; height: 52px; border-radius: var(--r-pill); border: 0; background: var(--card);
+  box-shadow: var(--press) var(--line); font: 700 22px var(--font-display); color: var(--ink); }
+.progress { flex: 1; height: 22px; background: var(--card); border-radius: var(--r-pill); padding: 4px; box-shadow: inset 0 2px 0 var(--line); }
+.progress span { display: block; height: 100%; width: 40%; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--leaf), #6BE3A9); }
+.question { position: absolute; top: 88px; left: 50%; transform: translateX(-50%); width: 300px;
+  background: var(--card); border-radius: var(--r-lg); padding: 18px 20px 14px; text-align: center; box-shadow: var(--shadow); }
+.question .sum { font: 700 64px/1 var(--font-display); }
+.dots { display: flex; justify-content: center; gap: 18px; margin-top: 10px; }
+.dots div { display: flex; gap: 5px; }
+.dots i { width: 16px; height: 16px; border-radius: 50%; background: var(--sky); display: block; }
+.dots div + div i { background: var(--pink); }
+.choices { position: absolute; bottom: 30px; left: 57%; transform: translateX(-50%); display: flex; gap: 18px; }
+.choice { width: 104px; height: 96px; border: 0; border-radius: var(--r-md); background: var(--card); color: var(--ink);
+  font: 700 48px var(--font-display); box-shadow: var(--press) var(--line), 0 12px 20px rgba(59,42,32,.08); }
+.choice.correct { background: var(--leaf); color: var(--card); box-shadow: var(--press) var(--leaf-dark); transform: scale(1.08) rotate(-3deg); }
+.owl { position: absolute; left: 14px; bottom: 18px; width: 120px; animation: bob 2.4s ease-in-out infinite; }
+.bubble { position: absolute; left: 118px; bottom: 156px; background: var(--card); border-radius: var(--r-md); padding: 8px 14px;
+  font: 600 18px var(--font-display); color: var(--teal); box-shadow: var(--shadow); }
+.spark { position: absolute; width: 14px; height: 14px; border-radius: 4px; }
+@keyframes bob { 50% { transform: translateY(-6px) rotate(-2deg); } }
+
+/* Buttons */
+.btn { border: 0; border-radius: var(--r-pill); padding: 18px 34px; font: 700 26px var(--font-display); cursor: pointer;
+  transition: transform .25s var(--spring); }
+.btn:active { transform: translateY(4px) scale(.97); }
+.btn-primary { background: var(--teal); color: #fff; box-shadow: var(--press) var(--teal-dark); }
+.btn-sun { background: var(--sun); color: var(--ink); box-shadow: var(--press) var(--sun-dark); }
+
+/* End screen */
+.end { width: 360px; height: 440px; text-align: center; background: linear-gradient(180deg, var(--teal-soft), #FFFFFF); }
+.stars { display: flex; justify-content: center; gap: 8px; margin: 8px 0 12px; }
+.stars svg { width: 76px; filter: drop-shadow(0 4px 0 var(--sun-dark)); }
+.stars svg:nth-child(2) { transform: translateY(-14px) scale(1.15); }
+.plant { font: 600 18px var(--font-display); color: var(--leaf-dark); margin-bottom: 18px; }
+</style>
+</head>
+<body>
+<h1>EduLearnLabs look and feel</h1>
+<h2>Draft v3: bright, rounded UI, warm brown palette, Hazel the owl. Calm where the thinking happens</h2>
+
+<div class="row">
+  <div class="panel">
+    <h3>Palette</h3>
+    <div class="swatches">
+      <div class="sw" style="background:#0F857D;color:#fff">Teal</div>
+      <div class="sw" style="background:#FFC83D">Sun</div>
+      <div class="sw" style="background:#2FCB86">Leaf</div>
+      <div class="sw" style="background:#2FB5EC">Sky</div>
+      <div class="sw" style="background:#FF6FB5">Pink</div>
+      <div class="sw" style="background:#8B5A3C;color:#fff">Cocoa</div>
+      <div class="sw" style="background:#C8996A">Caramel</div>
+      <div class="sw" style="background:#3B2A20;color:#fff">Ink</div>
+      <div class="sw" style="background:#FFF7E8;border:2px solid #F0E6D2">Cream</div>
+      <div class="sw" style="background:#fff;border:2px solid #F0E6D2">Card</div>
+    </div>
+  </div>
+  <div class="panel type">
+    <h3>Type</h3>
+    <div class="big">3 + 4 = 7</div>
+    <div class="read">Andika for reading: a g y, made for early readers.</div>
+    <div style="margin-top:18px;display:flex;gap:16px">
+      <button class="btn btn-primary">Play</button>
+      <button class="btn btn-sun">Play again</button>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="screen">
+    <div class="hill"></div>
+    <div class="topbar"><button class="iconbtn" aria-label="Back">&#8592;</button><div class="progress"><span></span></div><button class="iconbtn" aria-label="Sound">&#9834;</button></div>
+    <div class="question">
+      <div class="sum">3 + 4</div>
+      <div class="dots"><div><i></i><i></i><i></i></div><div><i></i><i></i><i></i><i></i></div></div>
+    </div>
+    <img class="owl" src="mascot/owl.svg" alt="">
+    <div class="bubble">Yes! 7!</div>
+    <div class="choices"><button class="choice">6</button><button class="choice correct">7</button><button class="choice">8</button></div>
+    <span class="spark" style="background:var(--sun);right:150px;bottom:150px;transform:rotate(20deg)"></span>
+    <span class="spark" style="background:var(--pink);right:118px;bottom:140px;border-radius:50%"></span>
+    <span class="spark" style="background:var(--sky);right:200px;bottom:146px;transform:rotate(45deg)"></span>
+  </div>
+
+  <div class="screen end panel">
+    <h3 style="font-size:30px;color:var(--teal);margin-top:6px">Great job!</h3>
+    <div class="stars">
+      <svg viewBox="0 0 24 24"><path fill="#FFC83D" stroke="#FFC83D" stroke-width="2" stroke-linejoin="round" d="M12 2.8l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.6l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg>
+      <svg viewBox="0 0 24 24"><path fill="#FFC83D" stroke="#FFC83D" stroke-width="2" stroke-linejoin="round" d="M12 2.8l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.6l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg>
+      <svg viewBox="0 0 24 24"><path fill="#FFE7A3" stroke="#FFE7A3" stroke-width="2" stroke-linejoin="round" d="M12 2.8l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.6l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg>
+    </div>
+    <img src="mascot/owl.svg" alt="" style="width:130px">
+    <div class="plant">Your addition plant grew a bud!</div>
+    <button class="btn btn-sun">Play again</button>
+  </div>
+</div>
+</body>
+</html>

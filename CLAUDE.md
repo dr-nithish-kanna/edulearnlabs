@@ -35,16 +35,19 @@ Not to be confused with the Nifty Games Studios site (the owner's indie studio, 
 - Progress, stars and mastery badges are stored locally (no login). Use a schema that can sync to a backend later.
 - Rewards are light: stars, badges, progress bars. No streaks, leaderboards, loot boxes or failure screens.
 - Safety: no chat, no external links in games, no data collected from children, COPPA and GDPR-K friendly.
-  Settings and pricing sit behind a simple parent gate.
+  No parent gate at MVP (no pricing or external links yet). Add a simple parent gate before pricing, subscription
+  or any external link ships. Deleting profiles or data uses hold-to-confirm.
 - MVP: 20 games for Pre-K to Grade 2 (8 math, 8 language, 4 logic and memory). See `planning/mvp-games.md`.
   Taxonomy supports all grades from day one. Science comes right after MVP. Grades 3 to 12 stay on the roadmap.
 
-## Engine decision (in progress)
+## Engine decision (final, 2026-11-11)
 
-Unity WebGL builds are heavy and hard for Claude Code to edit as text. Default plan: TypeScript with Phaser for
-animated games and plain HTML, CSS and TypeScript for simple quiz-style games. Unity only if a game truly needs it.
-Decide after the size and speed test in `planning/decisions.md`. Rule: use the lightest stack that works.
-Targets: first load under 5 seconds on an old Chromebook, small build size.
+Plain TypeScript with DOM, CSS and SVG for all MVP games, built with Vite, plus one small shared runtime library.
+No game engine, no Unity. A canvas library only for games with a real game loop or many moving objects, loaded
+after Play. Budgets: before Play 100 KB or less (firm), after Play about 1.5 MB preloaded in the background (can
+grow when a game needs it, justified in its README). First load under 5 seconds on an old Chromebook.
+Visual direction is "juicy but fair": rich color, motion and audio, no manipulative retention tricks.
+Full reasoning, per-mechanic stacks and the yes/no engagement lists are in `planning/decisions.md`.
 
 ## Website rules (SEO)
 
