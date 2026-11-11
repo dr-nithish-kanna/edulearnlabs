@@ -1,0 +1,83 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import GamePlayer from '../../components/GamePlayer.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import games from '../../data/games.json';
+import skills from '../../data/skills.json';
+import { url } from '../../config';
+
+const game = games.find(g => g.id === 'addition-grade-1')!;
+const skill = skills[game.skill as keyof typeof skills];
+const page = new URL(url('math-games/addition-for-grade-1/'), Astro.site).href;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org', '@type': 'LearningResource', name: `${game.keywordTitle}: ${game.title}`,
+    url: page, description: game.summary, isAccessibleForFree: true, inLanguage: 'en',
+    learningResourceType: 'Educational game', educationalLevel: 'Grade 1', typicalAgeRange: '6-7',
+    teaches: 'Addition within 20', timeRequired: 'PT3M', image: new URL(url(game.poster), Astro.site).href,
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: new URL(url(), Astro.site).href },
+      { '@type': 'ListItem', position: 2, name: 'Math games', item: new URL(url('math-games/'), Astro.site).href },
+      { '@type': 'ListItem', position: 3, name: game.keywordTitle, item: page },
+    ],
+  },
+];
+---
+<Base
+  title="Addition for Grade 1: Free Math Game for Ages 6 to 7 | EduLearnLabs"
+  description="A free addition game for Grade 1. Kids add within 20 with dots to count, a hint and a second try on every sum. No ads, no login, 3 minutes a game."
+  path="math-games/addition-for-grade-1/" nav="math" image={game.poster} jsonLd={jsonLd}>
+
+  <Breadcrumbs back={{ name: 'Math games', path: 'math-games/' }}
+    items={[{ name: 'Home', path: '' }, { name: 'Math games', path: 'math-games/' }, { name: game.keywordTitle, path: 'math-games/addition-for-grade-1/' }]} />
+
+  <h1>Addition for Grade 1</h1>
+  <p class="lead" style="font-size:20px;max-width:44em">Play <strong>{game.title}</strong>: add numbers up to 20 with
+    Hazel the owl. Ten sums, about 3 minutes, free.</p>
+
+  <GamePlayer game={game} topDifficulty={skill.topDifficulty} />
+
+  <section class="prose">
+    <h2>What is Addition Garden?</h2>
+    <p>Addition Garden is a short math game for first graders. A sum appears, like 4 + 3, with dots underneath to
+      count. Your child taps one of three answers. Hazel the owl reads each sum out loud, celebrates right answers
+      with a little confetti and gives a hint when a sum is tricky. After ten sums the game ends with one to three
+      stars and a happy "You did it!".</p>
+
+    <h2>What kids learn</h2>
+    <p>The game practices adding within 20, a core Grade 1 skill, and builds speed and confidence with sums within 10.
+      It moves through five small steps:</p>
+    <ul>
+      <li>Sums up to 5, like 2 + 3</li>
+      <li>Sums up to 10, like 6 + 4</li>
+      <li>Bigger sums up to 10, like 8 + 2</li>
+      <li>Teen numbers plus a small number, like 12 + 5</li>
+      <li>Sums that cross ten, like 8 + 7</li>
+    </ul>
+
+    <h2>Who it is for</h2>
+    <p>Children in Grade 1, usually ages 6 and 7. It also suits Kindergarten children who already count well and
+      Grade 2 children who want quick, confident practice. Numbers are spoken aloud, so early readers can play alone.</p>
+
+    <h2>How to play</h2>
+    <ol>
+      <li>Press Play, then tap the big button to start.</li>
+      <li>Look at the sum and count the dots if you need to.</li>
+      <li>Tap the right answer, or press 1, 2 or 3 on a keyboard.</li>
+      <li>Not quite? Hazel gives a hint and you try again.</li>
+    </ol>
+
+    <h2>Why it helps</h2>
+    <p>The game starts easy and steps up after three right answers in a row, then steps back after two misses, so
+      your child practices at the right level. Wrong answers are never a dead end: after two tries the answer is shown
+      kindly and the game moves on. Sums your child missed come back in the next game for another go. And because the
+      wrong choices are real mistakes, like being one away or subtracting instead of adding, the
+      <a href={url('grown-ups/')}>Grown-ups page</a> can tell you what to practice together.</p>
+    <p class="note">More to play: see all <a href={url('math-games/')}>free math games</a>.</p>
+  </section>
+
+  <AdSlot id="game-bottom" />
+</Base>

@@ -1,0 +1,8 @@
+---
+// Reserved ad space. Renders nothing while ads are off. Turning ads on later needs no game changes and,
+// because this is decided at build time, causes no layout shift.
+import { SITE } from '../config';
+interface Props { id: string }
+const { id } = Astro.props;
+---
+{SITE.ads.enabled && <aside class="ad-slot" data-ad-slot={id} aria-label="Advertisement"></aside>}
