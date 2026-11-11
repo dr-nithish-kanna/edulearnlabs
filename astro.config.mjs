@@ -8,7 +8,8 @@ import sitemap from '@astrojs/sitemap';
 const base = process.env.BASE_PATH || '/edulearnlabs';
 
 export default defineConfig({
-  site: process.env.SITE_URL || 'https://niftygamesstudios.in',
+  // Always https: canonical links, the sitemap and sharing images must never point at http://.
+  site: 'https://niftygamesstudios.in',
   base,
   trailingSlash: 'always',
   build: { format: 'directory' },
