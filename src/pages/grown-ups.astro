@@ -1,0 +1,98 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import games from '../data/games.json';
+import skills from '../data/skills.json';
+import { url } from '../config';
+---
+<Base title="Grown-ups: Progress and Settings | EduLearnLabs"
+  description="See each child's progress, manage players and settings. Everything stays on this device."
+  path="grown-ups/" nav="grown-ups">
+  <Breadcrumbs back={{ name: 'Home', path: '' }} items={[{ name: 'Home', path: '' }, { name: 'Grown-ups', path: 'grown-ups/' }]} />
+  <h1>For grown-ups</h1>
+  <p class="prose">See how each child is doing, add or remove players and change settings. All of this is stored only
+    in this browser on this device. Nothing is sent to us. <a href={url('privacy/')}>How we handle privacy</a>.</p>
+
+  <h2>Players</h2>
+  <div class="profiles" data-profiles><p class="muted">Loading...</p></div>
+  <p><button class="btn btn--plain" type="button" data-add-player>+ Add a player</button></p>
+
+  <h2>Settings</h2>
+  <div class="card settings" data-settings>
+    <label><input type="checkbox" name="audio"> Sound effects and voice</label>
+    <label><input type="checkbox" name="music"> Music</label>
+    <label><input type="checkbox" name="reducedMotion"> Calmer motion (less bouncing and confetti)</label>
+  </div>
+
+  <h2>Clear everything</h2>
+  <p class="prose">This removes all players, stars and progress from this device. Press and hold for 3 seconds.</p>
+  <button class="btn btn--plain hold" type="button" data-clear-all><span class="fill"></span><span style="position:relative">Hold to clear all data</span></button>
+
+  <script id="catalog" type="application/json" set:html={JSON.stringify({ games, skills })}></script>
+  <script>
+    import {
+      avatarOf, bestStars, clearAll, createProfile, deleteProfile, load, mastery, MAX_PROFILES, mistakeTip,
+      STAGES, update,
+    } from '../scripts/progress';
+    import { chip, renderProgress } from '../scripts/site';
+
+    const { games, skills } = JSON.parse(document.getElementById('catalog')!.textContent!);
+    const list = document.querySelector<HTMLElement>('[data-profiles]')!;
+    const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+
+    function draw() {
+      const s = load();
+      const profiles = Object.values(s.profiles);
+      if (!profiles.length) {
+        list.innerHTML = '<p class="muted">No players yet. A player is created the first time a game is played.</p>';
+      } else {
+        list.innerHTML = profiles.map(p => {
+          const a = avatarOf(p);
+          const rows = Object.entries(skills as Record<string, { name: string; topDifficulty: number }>).map(([id, sk]) => {
+            const st = STAGES[mastery(s, p.id, id, sk.topDifficulty)];
+            const tip = mistakeTip(s, p.id, id);
+            const played = s.sessions.filter(x => x.profile === p.id && x.skill === id).length;
+            return `<p style="margin:4px 0">${st.plant} <strong>${esc(sk.name)}</strong>: ${st.label}` +
+              ` <span class="muted">(${played} game${played === 1 ? '' : 's'})</span></p>` +
+              (tip ? `<p class="note" style="margin:6px 0">${esc(tip)}</p>` : '');
+          }).join('');
+          const stars = (games as { id: string; title: string }[]).map(g => {
+            const n = bestStars(s, p.id, g.id);
+            return `<span class="tag">${esc(g.title)}: ${n ? '★'.repeat(n) : 'not played'}</span>`;
+          }).join(' ');
+          return `<div class="card profile-row">${chip(p)}<div class="info"><h3 style="margin:0">${a.name}` +
+            `${s.activeProfile === p.id ? ' <span class="tag">playing now</span>' : ''}</h3>${rows}<p style="margin:8px 0 0">${stars}</p></div>` +
+            `<button class="btn btn--plain hold" type="button" data-delete="${p.id}"><span class="fill"></span><span style="position:relative">Hold to remove</span></button></div>`;
+        }).join('');
+      }
+      for (const b of list.querySelectorAll<HTMLElement>('[data-delete]'))
+        hold(b, 'Remove this player and all their progress?', () => update(st => deleteProfile(st, b.dataset.delete!)));
+      document.querySelector<HTMLButtonElement>('[data-add-player]')!.disabled = profiles.length >= MAX_PROFILES;
+      for (const box of document.querySelectorAll<HTMLInputElement>('[data-settings] input'))
+        box.checked = Boolean(s.settings[box.name as keyof typeof s.settings]);
+      renderProgress();
+    }
+
+    /** Press and hold for 3 seconds, then confirm. Stops a child from wiping a sibling's garden by accident. */
+    function hold(btn: HTMLElement, question: string, action: () => void) {
+      let t = 0;
+      const start = (e: Event) => { e.preventDefault(); btn.classList.add('is-holding'); t = window.setTimeout(() => {
+        btn.classList.remove('is-holding'); if (confirm(question)) { action(); draw(); } }, 3000); };
+      const stop = () => { clearTimeout(t); btn.classList.remove('is-holding'); };
+      btn.addEventListener('pointerdown', start);
+      for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) btn.addEventListener(ev, stop);
+      btn.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) start(e); });
+      btn.addEventListener('keyup', stop);
+    }
+
+    hold(document.querySelector('[data-clear-all]')!, 'Remove all players and progress from this device?', clearAll);
+    document.querySelector('[data-add-player]')!.addEventListener('click', () => { update(s => createProfile(s)); draw(); });
+    document.querySelector('[data-settings]')!.addEventListener('change', e => {
+      const box = e.target as HTMLInputElement;
+      update(s => { (s.settings as unknown as Record<string, boolean>)[box.name] = box.checked; });
+      renderProgress();
+    });
+    addEventListener('storage', draw);
+    draw();
+  </script>
+</Base>

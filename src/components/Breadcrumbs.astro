@@ -1,0 +1,14 @@
+---
+import { url } from '../config';
+interface Props { items: { name: string; path: string }[]; back: { name: string; path: string } }
+const { items, back } = Astro.props;
+---
+<nav class="crumbs" aria-label="Breadcrumb">
+  <a class="back" href={url(back.path)}>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    {back.name}
+  </a>
+  <ol>
+    {items.map((it, i) => <li>{i < items.length - 1 ? <a href={url(it.path)}>{it.name}</a> : <span aria-current="page">{it.name}</span>}</li>)}
+  </ol>
+</nav>

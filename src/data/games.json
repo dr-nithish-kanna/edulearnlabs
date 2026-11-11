@@ -1,0 +1,22 @@
+[
+  {
+    "id": "addition-grade-1",
+    "title": "Addition Garden",
+    "keywordTitle": "Addition for Grade 1",
+    "category": "math-games",
+    "slug": "addition-for-grade-1",
+    "grade": [
+      "1"
+    ],
+    "ages": "6 to 7",
+    "skill": "math.addition.within-20",
+    "mechanic": "quiz",
+    "summary": "Add numbers up to 20 with dots to count, a friendly hint and a second try on every question.",
+    "minutes": "2 to 3",
+    "poster": "play/addition-grade-1/poster.webp",
+    "source": {
+      "repo": "dr-nithish-kanna/addition-grade-1",
+      "commit": "4281ebc"
+    }
+  }
+]

@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+import Hazel from '../components/Hazel.astro';
+import { url } from '../config';
+---
+<Base title="Page not found | EduLearnLabs" description="This page flew away." path="404/">
+  <section class="hero">
+    <div>
+      <h1>Hoot! This page flew away.</h1>
+      <p class="lead">Let's find something fun to play instead.</p>
+      <a class="btn btn--primary" href={url()}>Go to the home page</a>
+    </div>
+    <Hazel class="hero-hazel" />
+  </section>
+</Base>
