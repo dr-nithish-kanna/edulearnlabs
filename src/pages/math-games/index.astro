@@ -1,0 +1,92 @@
+---
+import Base from '../../layouts/Base.astro';
+import GameCard from '../../components/GameCard.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import games from '../../data/games.json';
+import soon from '../../data/coming-soon.json';
+import { url } from '../../config';
+
+const math = games.filter(g => g.category === 'math-games');
+const jsonLd = [{
+  '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: new URL(url(), Astro.site).href },
+    { '@type': 'ListItem', position: 2, name: 'Math games', item: new URL(url('math-games/'), Astro.site).href },
+  ],
+}];
+---
+<Base
+  title="Free Math Games for Kids, Pre-K to Grade 2 | EduLearnLabs"
+  description="Free math games for kids ages 4 to 8: counting, adding within 20, shapes and more. Short, kind, ad-free practice that adapts to your child."
+  path="math-games/" nav="math" jsonLd={jsonLd}>
+
+  <Breadcrumbs back={{ name: 'Home', path: '' }} items={[{ name: 'Home', path: '' }, { name: 'Math games', path: 'math-games/' }]} />
+
+  <h1>Free math games for kids</h1>
+  <p class="lead prose" style="font-size:20px">Short math games for Pre-K to Grade 2. Each one practices a single skill,
+    takes about 2 to 5 minutes and ends with a happy win. Pick a game and press Play.</p>
+
+  <div class="grid">
+    {math.map(g => <GameCard game={g} />)}
+  </div>
+
+  <h2>Coming soon</h2>
+  <ul class="soon-list">
+    {soon['math-games'].map(g => <li>{g.title} <span class="muted">({g.grade})</span></li>)}
+  </ul>
+
+  <AdSlot id="math-mid" />
+
+  <section class="prose">
+    <h2>What kids learn, grade by grade</h2>
+    <h3>Pre-K (ages 4 to 5)</h3>
+    <p>Counting objects up to 10, matching each object to one number word, and naming simple shapes like circles,
+      squares and triangles. At this age, math is about noticing how many and what shape. Counting things your child
+      can see and touch builds the base for everything after.</p>
+    <h3>Kindergarten (ages 5 to 6)</h3>
+    <p>Counting to 20, comparing which group has more, and first addition with objects: three apples and two apples
+      make five apples. Kids learn that adding means putting groups together.</p>
+    <h3>Grade 1 (ages 6 to 7)</h3>
+    <p>Adding and subtracting within 20, and being quick and sure within 10. This is where
+      <a href={url('math-games/addition-for-grade-1/')}>Addition for Grade 1</a> fits: children add with dots to count,
+      move from small sums to sums that cross ten, like 8 + 7, and practice the facts they found tricky last time.</p>
+    <h3>Grade 2 (ages 7 to 8)</h3>
+    <p>Adding and subtracting within 100, skip counting by 2s, 5s and 10s, and understanding tens and ones.
+      Skip counting is the first step toward times tables.</p>
+
+    <h2>How our math games work</h2>
+    <p><strong>One skill, one game.</strong> A game about adding only asks about adding. Clear practice helps a child
+      feel progress, and it helps you see what they can do.</p>
+    <p><strong>Pictures before numbers.</strong> Dots and objects sit under each sum, grouped in fives like a
+      teacher's five-frame, so a child who is not sure can count instead of guess.</p>
+    <p><strong>Two tries, then the answer.</strong> A first miss brings a hint. A second miss shows the answer kindly
+      and moves on. Nobody gets stuck, and nobody sees a failure screen.</p>
+    <p><strong>Just right difficulty.</strong> Three right answers in a row and the game steps up a little. Two misses
+      in a row and it steps back. Children spend their time where they learn most.</p>
+    <p><strong>Wrong answers that teach us something.</strong> The wrong choices are real mistakes children make,
+      such as being one away or subtracting instead of adding. The <a href={url('grown-ups/')}>Grown-ups page</a>
+      turns that into a simple tip for you.</p>
+
+    <h2>Tips for parents</h2>
+    <ul>
+      <li>Play one game together first. Say the sums out loud and count the dots with your finger.</li>
+      <li>Short and often beats long and rare. One game a day is plenty.</li>
+      <li>Praise effort: "You counted carefully" helps more than "You are so smart".</li>
+      <li>Come back on another day. Skills that stick across days are the ones that last, and that is what
+        fills Hazel's garden to a full flower.</li>
+    </ul>
+
+    <h2>Questions parents ask</h2>
+    <h3>Are the math games really free?</h3>
+    <p>Yes. Every game is free to play, with no ads inside games, no in-game purchases and nothing to unlock with money.</p>
+    <h3>Does my child need an account?</h3>
+    <p>No. There is no login and no sign up. Progress is saved only in this browser on this device, and you can
+      clear it any time on the Grown-ups page.</p>
+    <h3>Which devices work?</h3>
+    <p>Any modern browser: tablets, phones, laptops and Chromebooks. The games are small and load in a few seconds,
+      even on older school computers and slow connections.</p>
+    <h3>Can brothers and sisters share one device?</h3>
+    <p>Yes. Each child picks an animal, like a fox or a panda, and their stars and progress stay separate.
+      No names are needed.</p>
+  </section>
+</Base>

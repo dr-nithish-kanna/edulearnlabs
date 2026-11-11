@@ -1,0 +1,81 @@
+---
+import Base from '../layouts/Base.astro';
+import Hazel from '../components/Hazel.astro';
+import GameCard from '../components/GameCard.astro';
+import AdSlot from '../components/AdSlot.astro';
+import games from '../data/games.json';
+import { SITE, url } from '../config';
+
+const featured = games[0];
+const jsonLd = [{
+  '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name,
+  url: new URL(url(), Astro.site).href, description: 'Free educational games for kids from Pre-K to Grade 2.',
+  publisher: { '@type': 'Organization', name: SITE.maker, url: SITE.makerUrl },
+}];
+---
+<Base
+  title="EduLearnLabs: Free Learning Games for Kids, Pre-K to Grade 2"
+  description="Free, short learning games for kids ages 4 to 8. Math, reading and logic in 2 to 5 minutes. No ads, no login, no data collected."
+  path="" nav="home" jsonLd={jsonLd}>
+
+  <section class="hero">
+    <div>
+      <h1>Free learning games for curious kids</h1>
+      <p class="lead">Short, cheerful games that build one skill at a time, for kids from Pre-K to Grade 2.
+        Each game takes 2 to 5 minutes, and Hazel the owl cheers on every try.</p>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href={url(`${featured.category}/${featured.slug}/`)}>▶ Play {featured.title}</a>
+        <a class="btn btn--plain" href={url('math-games/')}>See math games</a>
+      </div>
+      <ul class="trust">
+        <li>Free</li><li>No ads</li><li>No login</li><li>No data collected</li>
+      </ul>
+    </div>
+    <Hazel class="hero-hazel" />
+  </section>
+
+  <h2>Start playing</h2>
+  <div class="grid">
+    <GameCard game={featured} />
+  </div>
+
+  <h2>Pick a subject</h2>
+  <div class="grid">
+    <a class="card subject-card" href={url('math-games/')}>
+      <span class="icon" style="background:#D3F5E4">➕</span>
+      <span><strong style="font: 600 22px/1.25 var(--font-display)">Math games</strong><br>
+        <span class="muted">Counting, adding and shapes. 1 game ready, 7 on the way.</span></span>
+    </a>
+    <div class="card subject-card soon">
+      <span class="icon" style="background:#FFD8EA">🔤</span>
+      <span><strong style="font: 600 22px/1.25 var(--font-display)">Reading games</strong><br>
+        <span class="muted">Letters, sounds and first words. Coming soon.</span></span>
+    </div>
+    <div class="card subject-card soon">
+      <span class="icon" style="background:#D2EFFC">🧩</span>
+      <span><strong style="font: 600 22px/1.25 var(--font-display)">Logic and memory</strong><br>
+        <span class="muted">Patterns, odd one out, memory cards. Coming soon.</span></span>
+    </div>
+  </div>
+
+  <AdSlot id="home-mid" />
+
+  <section class="prose">
+    <h2>Why parents like EduLearnLabs</h2>
+    <p><strong>One skill per game.</strong> Each game practices one small thing, like adding numbers up to 20,
+      so your child gets real practice instead of a mix of everything.</p>
+    <p><strong>Short on purpose.</strong> Games end after about 10 questions. Your child finishes with a win and
+      a clear stopping point, not an endless loop.</p>
+    <p><strong>Kind feedback.</strong> A wrong answer gets a hint and a second try. There is no "Game Over",
+      no red crosses and no buzzers. Hazel the owl celebrates effort and learning.</p>
+    <p><strong>Grows with your child.</strong> Games get a little harder after a few right answers and a little
+      easier after a miss, so practice stays in the "just right" zone.</p>
+    <p><strong>Safe by design.</strong> No ads in games, no chat, no links out of the game and no accounts.
+      Progress is saved only on this device. Read our <a href={url('privacy/')}>privacy page</a>.</p>
+
+    <h2>Meet Hazel</h2>
+    <p>Hazel is a curious owl with brass reading glasses and a little gold star on a chain. She reads every
+      question out loud, gives hints when a sum is tricky and cheers when your child gets it. Each child on the
+      device picks an animal, and Hazel keeps their progress apart.</p>
+  </section>
+</Base>

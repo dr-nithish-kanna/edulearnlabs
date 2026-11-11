@@ -1,0 +1,14 @@
+---
+import { url } from '../config';
+interface Props { game: { title: string; keywordTitle: string; category: string; slug: string; summary: string; grade: string[]; minutes: string; poster: string } }
+const { game } = Astro.props;
+const grade = game.grade.map(g => (g === 'k' ? 'Kindergarten' : g === 'prek' ? 'Pre-K' : `Grade ${g}`)).join(', ');
+---
+<a class="card game-card" href={url(`${game.category}/${game.slug}/`)}>
+  <img src={url(game.poster)} alt={`${game.title}: a screenshot of the game`} width="1200" height="900" loading="lazy" decoding="async">
+  <div class="body">
+    <h3>{game.keywordTitle}</h3>
+    <p style="margin:0 0 8px"><strong>{game.title}.</strong> {game.summary}</p>
+    <span class="tag">{grade}</span><span class="tag">{game.minutes} min</span><span class="tag">Free</span>
+  </div>
+</a>

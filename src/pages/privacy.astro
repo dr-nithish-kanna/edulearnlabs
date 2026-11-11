@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { SITE, url } from '../config';
+---
+<Base title="Privacy | EduLearnLabs" description="EduLearnLabs collects no data from children. Progress is saved only on your device."
+  path="privacy/" nav="privacy">
+  <Breadcrumbs back={{ name: 'Home', path: '' }} items={[{ name: 'Home', path: '' }, { name: 'Privacy', path: 'privacy/' }]} />
+  <section class="prose">
+    <h1>Privacy, in plain words</h1>
+    <p><strong>We do not collect any information about children.</strong> There are no accounts, no names, no email
+      addresses, no photos and no chat.</p>
+    <h2>What is saved, and where</h2>
+    <p>To remember stars and progress, the games save a small note in your browser's local storage on this device.
+      It contains each player's animal and color, and which games were played with how many right answers.
+      It never leaves your device and we cannot see it. You can remove it any time on the
+      <a href={url('grown-ups/')}>Grown-ups page</a>, or by clearing your browser's site data.</p>
+    <h2>What we do not do</h2>
+    <ul>
+      <li>No cookies for tracking, and no advertising inside games.</li>
+      <li>No analytics on children and no profiles of children.</li>
+      <li>No links inside games that leave the game.</li>
+      <li>No in-game purchases.</li>
+    </ul>
+    <h2>Hosting</h2>
+    <p>The site is served by GitHub Pages. Like any web host, GitHub may keep standard technical logs, such as IP
+      addresses, to run and protect the service. We do not receive or use these to identify anyone.</p>
+    <h2>Changes</h2>
+    <p>If we ever add ads to the website (never inside games), they will be non-personalized and child-safe, and we will
+      update this page first. Questions? Contact {SITE.maker} through <a href={SITE.makerUrl}>{SITE.makerUrl.replace('https://', '')}</a>.</p>
+    <p class="muted">Last updated: 11 November 2026.</p>
+  </section>
+</Base>

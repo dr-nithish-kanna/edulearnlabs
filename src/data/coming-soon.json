@@ -1,0 +1,84 @@
+{
+  "math-games": [
+    {
+      "title": "Count objects 1 to 10",
+      "grade": "Pre-K"
+    },
+    {
+      "title": "Shape matching",
+      "grade": "Pre-K"
+    },
+    {
+      "title": "Count to 20",
+      "grade": "Kindergarten"
+    },
+    {
+      "title": "Add with objects",
+      "grade": "Kindergarten"
+    },
+    {
+      "title": "Subtraction basics",
+      "grade": "Grade 1"
+    },
+    {
+      "title": "Add and subtract to 100",
+      "grade": "Grade 2"
+    },
+    {
+      "title": "Skip counting",
+      "grade": "Grade 2"
+    }
+  ],
+  "language-games": [
+    {
+      "title": "Letter tap",
+      "grade": "Pre-K"
+    },
+    {
+      "title": "Drag letter to object",
+      "grade": "Pre-K"
+    },
+    {
+      "title": "Phonics: sound to letter",
+      "grade": "Kindergarten"
+    },
+    {
+      "title": "Sight word balloons",
+      "grade": "Kindergarten"
+    },
+    {
+      "title": "Word building",
+      "grade": "Grade 1"
+    },
+    {
+      "title": "Sentence completion",
+      "grade": "Grade 1"
+    },
+    {
+      "title": "Spelling",
+      "grade": "Grade 2"
+    },
+    {
+      "title": "Noun and verb sort",
+      "grade": "Grade 2"
+    }
+  ],
+  "logic-games": [
+    {
+      "title": "Memory flip cards",
+      "grade": "Pre-K to K"
+    },
+    {
+      "title": "Color pattern repeat",
+      "grade": "Kindergarten"
+    },
+    {
+      "title": "Odd one out",
+      "grade": "Grade 1"
+    },
+    {
+      "title": "Pattern completion",
+      "grade": "Grade 2"
+    }
+  ]
+}

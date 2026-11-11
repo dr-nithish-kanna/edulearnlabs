@@ -68,9 +68,21 @@ Universal game rules are in `templates/game-repo/GAME_RULES.md`.
 ## Repo layout
 
 - `CLAUDE.md` this file
-- `planning/` decisions, MVP list, roadmap
+- `planning/` decisions, framework spec, style guide, MVP list
+- `brand/` Hazel the owl (`brand/mascot/owl.svg` is the source of truth) and style previews
 - `templates/game-repo/` CLAUDE.md and rules to copy into every new game repo
-- Website source (Astro) goes in the repo root when we start it
+- Website (Astro 7, static): `src/pages/` pages, `src/layouts/`, `src/components/`, `src/scripts/progress.ts`
+  (local progress store), `src/scripts/player.ts` (website side of the game contract), `src/data/` catalog
+- `public/play/<game-id>/` built games, copied in with `npm run sync-game -- ../<game-repo>` (pinned by commit)
+- `tests/` progress store unit tests (`node --test tests/progress.test.ts`) and the site smoke test
+  (`npm run build && npm run test:e2e`)
+
+## Hosting
+
+- Live at `niftygamesstudios.in/edulearnlabs/` as a GitHub Pages project site under the Nifty Games Studios user site.
+  `.github/workflows/pages.yml` deploys on every push to `main`. The base path comes from GitHub, so a repo rename
+  or a move to our own domain needs no code change.
+- Games are served from the same domain at `/play/<game-id>/` (required by the postMessage contract).
 
 ## Daily log in Notion (applies to all my repos)
 

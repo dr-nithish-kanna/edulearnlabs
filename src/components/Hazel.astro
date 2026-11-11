@@ -1,0 +1,7 @@
+---
+// Hazel inline, so the page can animate her. Source of truth: brand/mascot/owl.svg.
+import owl from '../../brand/mascot/owl.svg?raw';
+interface Props { class?: string }
+const { class: cls = '' } = Astro.props;
+---
+<div class={cls} aria-hidden="true" set:html={owl} />

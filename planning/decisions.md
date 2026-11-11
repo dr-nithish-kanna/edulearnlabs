@@ -144,3 +144,16 @@ and one "this app is manipulative" review costs more than any retention trick ea
 
 **Tech impact:** still DOM, SVG and CSS with small spring, particle and drag helpers in the shared library. A canvas
 effects layer, and character animation tools such as Lottie or Rive, are allowed after Play once their size is measured.
+
+## Website and hosting (2026-11-11)
+- Website: Astro 7, static, in this repo. Astro 5 was rejected because of a critical security advisory.
+- Hosting: GitHub Pages project site at `niftygamesstudios.in/edulearnlabs/` (owner decision). Free, HTTPS, same
+  domain for site and games.
+- Trade-offs to know: (1) the EduLearnLabs brand sits under the Nifty Games Studios domain; (2) GitHub Pages cannot
+  send real 301 redirects, so moving to our own domain later (for example edulearnlabs.com) will lose some search
+  ranking. Moving early, before much traffic, costs least. A project site can also take its own custom domain.
+  (3) GitHub Pages is not meant for commercial hosting; revisit (Cloudflare Pages or Netlify) before ads or subscriptions.
+- Pages for a private repo needs a paid GitHub plan. Either make this repo public or use GitHub Pro.
+- Games are copied into `public/play/` by `npm run sync-game` and pinned by commit, because the game and kit repos
+  are private and the deploy cannot fetch them without a token. Automate later with release artifacts.
+- Fonts use `font-display: optional` plus preload: zero layout shift (measured CLS 0 on all pages).
