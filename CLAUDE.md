@@ -41,7 +41,7 @@ Not to be confused with the Nifty Games Studios site (the owner's indie studio, 
 
 ## Engine decision (in progress)
 
-Unity WebGL builds are heavy and hard for Claude Code to edit as text. Default plan: TypeScript with Phaser 3 for
+Unity WebGL builds are heavy and hard for Claude Code to edit as text. Default plan: TypeScript with Phaser for
 animated games and plain HTML, CSS and TypeScript for simple quiz-style games. Unity only if a game truly needs it.
 Decide after the size and speed test in `planning/decisions.md`. Rule: use the lightest stack that works.
 Targets: first load under 5 seconds on an old Chromebook, small build size.
