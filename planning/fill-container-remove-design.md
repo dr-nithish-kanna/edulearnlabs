@@ -976,3 +976,56 @@ README note draft:
    must become topic-aware (risk 5), or the grown-ups page gives an addition tip for a subtraction game.
 8. Game design H2 "badges on the frogs that should leave" applies to hop-away levels; on keep, H2 counts the frogs
    still on the pad instead (the frogs to leave are not given in a keep order).
+
+## 14. Implementation notes (kit v0.3.0, 2026-11-12)
+
+Built on the kit working branch `ccr-d39a02df-81y4w7`, steps 0 to 10 of section 11, one commit per step. Steps 11
+(garden re-pin) and 12 (tag) are left for the owner. Nothing from the cut line (section 10.2) was cut: the end-screen
+drift, the animated fold, the lantern art hooks and keep all shipped.
+
+**Golden files.** Written first on untouched v0.2.0 code (commit `6e79d3b`) and never changed after: 12 add reducer
+scripts (`tests/golden/fill-add.json`) and a seeded Addition Garden session that starts at level 3 and climbs to the
+ten-frame levels (`tests/golden/garden-session.json`), so both variants are photographed.
+
+**Where the build differs from this doc, and why**
+1. **Overtake cannot happen through the screen.** With one destination bin, the goal fires on the exact move that
+   reaches `b` (parts) or `N` (keep), so the build is over before a child can send one too many (D6 always wins over
+   D2 and D3). The hop-back exists and is unit tested (tests 4, 5, 12, 15), but in the browser the extra send is simply
+   ignored. Browser check 2 therefore became "an extra send after the goal is ignored, nothing fails, idle gives H1"
+   (`pond-extra`). Teaching effect: a child can keep sending until the pad goes calm without counting `b`. The
+   How many? step still tests the skill. If this matters, a later release can let the child overtake (goal on a
+   "Done" tap, or allow one extra move before the goal), which is a reducer decision for Opus.
+2. **runFill sets `data-direction` per order** (`if (ext) ui.view.dataset.direction = fq.fill.direction`) instead of
+   the take player setting and deleting it. Deleting it at the end of an order made the board jump back to the garden
+   layout during the 900 ms praise pause. Plain `fillContainer` passes no `ext`, so the garden DOM never carries it.
+3. **Container art boxes follow the approved art, not section 4.2.** Lily pad art is drawn on 560 x 200 (the pad in
+   `brand/subtraction-pond`), the lantern art on a 440 x 500 box with the frames at (54, 144) (the jar). Kit default
+   pad is a plain green ellipse instead of the basket art (the basket does not fit a 560 x 200 pad).
+4. **Small additive skin and string fields not in section 5.1:** `customers[].happy` (the friend's happy pose on a
+   solved order, the art has one per friend), `lights.at` may be one list or one list per variant (the pad sky and the
+   lantern sky have different free space: the jar fills the lantern sky), and `strings.slotsOutFrame` (the lantern H3
+   line; "Look at the ripples!" was wrong for dashed cells). Item poses are looked up by suffix: `<kind>-lift` (being
+   dragged), `<kind>-air` (in flight), `<kind>-out` (in the destination), `<kind>-gone` (ghost in an emptied
+   lantern cell). All optional.
+5. **Lantern lights live over the water at the left**, not along the top edge. The top edge sits under the shell's top
+   bar on phones and wide screens, and the right side is the night-sky drop zone, where the child's own fireflies go
+   (risk 1). Pad lights form an arc in the open sky between the order bubble and Hazel.
+6. **The How many? card** moves to the top middle on the pad (narrower than drafted, so Hazel's bubble never covers
+   it) and stays in the left bubble on the lantern (a centered card covered the jar).
+7. **Fill page cost of the shared loop.** Step 6 alone grew the Addition Garden page JS by 0.17 KB brotli, not the
+   0.05 KB the checkpoint asked for: the direction dispatch, the GameError for a remove order on plain
+   `fillContainer`, and the lights hook live in the shared loop. The garden screen code itself is unchanged and the
+   garden browser suite printed exactly the same 137 checks as v0.2.0. Whole release on the garden page: +0.53 KB
+   (section 9 estimated +0.4 KB). Pond page: 27.6 KB JS with 5.4 KB of art, so about 22 KB of kit (estimated 21).
+8. **Pond dev skin is the real approved art**, not placeholder shapes (owner request), so it is about 6 KB brotli
+   instead of under 2 KB. It only ships in the playground and in Pond Hop.
+
+**Pre-existing flake.** The v0.2.0 baseline browser run (before any change) failed once on "H2: exactly one count
+badge is showing" (a timing check); later runs passed it.
+
+**Results.** 138 unit tests (94 before, plus the 2 golden tests and tests 1 to 42 of section 8.2), typecheck clean.
+Browser: garden 137 checks ok, pond 190 checks ok (`tests/fill-e2e.cjs`; `ELL_E2E=pond` reruns only the pond part).
+Sizes per page are in the kit README, section v0.3.0.
+
+**Still open for the owner:** step 11 (re-pin addition-grade-1 and run its smoke test), step 12 (tag v0.3.0), the
+website parent tip for `wrong-operation` (risk 5), and real touch devices (risk 8).
