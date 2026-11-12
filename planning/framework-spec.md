@@ -109,8 +109,9 @@ the browser. **Why:** it would cost bytes on every play to catch mistakes we can
 - **Start level:** the website passes a suggested start level based on past sessions (section 4). New children start at level 1.
 - **Adapt:** 3 first-try correct in a row moves up one level. 2 wrong in a row moves down one level. Never spike
   more than one level.
-- **Attempts:** wrong first try: gentle hint ("Let's count the dots"), then a second try. Wrong again: the answer is
-  shown with an animation, the character says "Now you know it!", and we move on. No red X, no buzzer.
+- **Attempts:** wrong first try: gentle hint ("Let's count the dots"), then a second try. Wrong again: a stronger hint
+  (never the answer itself; for example dim a wrong choice), so the child always makes the final tap. The character
+  says "Now you know it!". No red X, no buzzer. Decided 2026-11-12: hints only.
 - **First-try correct** is what counts for stars and mastery. Second tries still feel like wins to the child.
 - **End screen:** always at least 1 star for finishing. Big Play Again button, and Back to Games. No autoplay.
 
