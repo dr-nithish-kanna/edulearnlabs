@@ -10,13 +10,14 @@
     ],
     "ages": "6 to 7",
     "skill": "math.addition.within-20",
-    "mechanic": "quiz",
-    "summary": "Add numbers up to 20 with dots to count, a friendly hint and a second try on every question.",
+    "mechanic": "fill-container",
+    "reward": "garden",
+    "summary": "Fill the basket for a hungry garden customer, then tell how many in all. Add numbers up to 20, grow your own garden, with friendly hints on every order.",
     "minutes": "2 to 3",
     "poster": "play/addition-grade-1/poster.webp",
     "source": {
       "repo": "dr-nithish-kanna/addition-grade-1",
-      "commit": "4281ebc"
+      "commit": "1aee55c"
     }
   }
 ]
