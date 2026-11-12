@@ -32,7 +32,7 @@ Every ID is lowercase, stable, and never reused. Changing an ID breaks saved pro
 | `subject` | `math`, `language`, `science`, `logic-memory` | `math` |
 | `topic` | free slug inside a subject | `addition` |
 | `skill` | global micro-skill ID, `subject.topic.detail` | `math.addition.within-20` |
-| `mechanic` | `quiz`, `match`, `sort`, `order`, `memory`, `drag-drop`, `number-line` | `quiz` |
+| `mechanic` | `quiz`, `match`, `sort`, `order`, `memory`, `drag-drop`, `number-line`, `fill-container` (`drag-drop` stays reserved, unused) | `quiz` |
 | `difficulty` | integer 1 to 5, per level | `2` |
 
 The list of valid skills lives in one file in the website repo: `content/skills.json`. A game may only use a skill
@@ -96,6 +96,10 @@ Each mechanic adds its own small fields on top of the shared item shape. Example
 - `sort`: `"bins": ["noun", "verb"]`, each item has `"bin": "noun"`.
 - `order`: `"sequence": ["2", "4", "6", "8"]`.
 - `match` and `memory`: `"pairs": [["cat", "img:cat"], ["dog", "img:dog"]]`.
+- `fill-container` (kit v0.2.0, first game: Addition Garden): a level-wide `"fill"` block (`variant` basket or
+  ten-frame, `goal` parts or total, `spare`, `prefill`, `binKind`, `ask`). Hand-written items carry an item-form
+  `fill` (`target`, `bins`). Full shape: `planning/fill-container-design.md` section 2 and the kit's
+  `build/schemas/fill-container.schema.json`.
 We define each one when its first game is built, not now. **Why:** designing 7 mechanics up front means guessing.
 Designing each one against a real game means getting it right.
 
@@ -109,8 +113,9 @@ the browser. **Why:** it would cost bytes on every play to catch mistakes we can
 - **Start level:** the website passes a suggested start level based on past sessions (section 4). New children start at level 1.
 - **Adapt:** 3 first-try correct in a row moves up one level. 2 wrong in a row moves down one level. Never spike
   more than one level.
-- **Attempts:** wrong first try: gentle hint ("Let's count the dots"), then a second try. Wrong again: the answer is
-  shown with an animation, the character says "Now you know it!", and we move on. No red X, no buzzer.
+- **Attempts:** wrong first try: gentle hint ("Let's count the dots"), then a second try. Wrong again: a stronger hint
+  (never the answer itself; for example dim a wrong choice), so the child always makes the final tap. The character
+  says "Now you know it!". No red X, no buzzer. Decided 2026-11-12: hints only.
 - **First-try correct** is what counts for stars and mastery. Second tries still feel like wins to the child.
 - **End screen:** always at least 1 star for finishing. Big Play Again button, and Back to Games. No autoplay.
 
@@ -223,12 +228,14 @@ feeling of ownership without the slot-machine pull of a mystery reward.
 
 ### Messages (postMessage, JSON, `protocol: 1`)
 Both sides check that `event.origin` equals their own origin and ignore anything else.
+Unknown fields are ignored on both sides. `protocol` only goes up when a field changes meaning or a new field becomes
+required, so website and games can upgrade in any order.
 
 **Website to game**
 
 | Type | Data | When |
 |---|---|---|
-| `HostInit` | `protocol`, `avatar`, `color`, `startLevel`, `practiceItems` (recently missed item IDs), `settings` | right after `GameReady` |
+| `HostInit` | `protocol`, `avatar`, `color`, `startLevel`, `practiceItems` (recently missed item IDs), `settings`, optional `garden` (garden view, garden games only) | right after `GameReady` |
 | `HostSettings` | `settings` | audio, music or motion toggled on the site |
 | `HostPause` / `HostResume` | none | tab hidden or shown |
 
@@ -238,7 +245,7 @@ Both sides check that `event.origin` equals their own origin and ignore anything
 |---|---|---|
 | `GameReady` | `protocol`, `gameId`, `version` | game code loaded |
 | `GameStarted` | `sessionId`, `startedAt` | child taps start |
-| `GameCompleted` | the session record from section 4, without `profile` | end screen shown |
+| `GameCompleted` | the session record from section 4, without `profile`; fill-container games add optional `hints` and `rewards` | end screen shown |
 | `GameExit` | `reason`: `"home"` | child taps the in-game back button |
 | `GameError` | `code` | something broke; site shows a friendly "Let's try again" |
 

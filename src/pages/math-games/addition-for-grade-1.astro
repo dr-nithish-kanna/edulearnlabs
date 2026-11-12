@@ -28,54 +28,64 @@ const jsonLd = [
 ---
 <Base
   title="Addition for Grade 1: Free Math Game for Ages 6 to 7 | EduLearnLabs"
-  description="A free addition game for Grade 1. Kids add within 20 with dots to count, a hint and a second try on every sum. No ads, no login, 3 minutes a game."
+  description="A free addition game for Grade 1. Kids fill a basket for a garden customer, add within 20 and grow their own garden. Friendly hints, no ads, no login, 3 minutes a game."
   path="math-games/addition-for-grade-1/" nav="math" image={game.poster} jsonLd={jsonLd}>
 
   <Breadcrumbs back={{ name: 'Math games', path: 'math-games/' }}
     items={[{ name: 'Home', path: '' }, { name: 'Math games', path: 'math-games/' }, { name: game.keywordTitle, path: 'math-games/addition-for-grade-1/' }]} />
 
   <h1>Addition for Grade 1</h1>
-  <p class="lead" style="font-size:20px;max-width:44em">Play <strong>{game.title}</strong>: add numbers up to 20 with
-    Hazel the owl. Ten sums, about 3 minutes, free.</p>
+  <p class="lead" style="font-size:20px;max-width:44em">Play <strong>{game.title}</strong>: help garden friends fill
+    their baskets, add numbers up to 20 and grow your own garden. Ten orders, about 3 minutes, free.</p>
 
   <GamePlayer game={game} topDifficulty={skill.topDifficulty} />
 
   <section class="prose">
     <h2>What is Addition Garden?</h2>
-    <p>Addition Garden is a short math game for first graders. A sum appears, like 4 + 3, with dots underneath to
-      count. Your child taps one of three answers. Hazel the owl reads each sum out loud, celebrates right answers
-      with a little confetti and gives a hint when a sum is tricky. After ten sums the game ends with one to three
-      stars and a happy "You did it!".</p>
+    <p>Addition Garden is a short math game for first graders, played at a little flower stall run by Hazel the owl.
+      A ladybug, snail, bee or rabbit comes by and asks for flowers, like "3 sunflowers and 4 daisies, please".
+      Your child drags the flowers from two bins into a basket, and the bunch comes together. Then comes the real
+      question: how many in all? Your child taps one of three answers. After ten orders the game ends with stars,
+      and every order your child solved plants a seed in their own garden.</p>
 
     <h2>What kids learn</h2>
-    <p>The game practices adding within 20, a core Grade 1 skill, and builds speed and confidence with sums within 10.
-      It moves through five small steps:</p>
+    <p>The game practices adding within 20, a core Grade 1 skill. Children do not just pick an answer. They put two
+      groups together with their hands and see the total appear, which is exactly what addition means. It moves
+      through five small steps:</p>
     <ul>
       <li>Sums up to 5, like 2 + 3</li>
       <li>Sums up to 10, like 6 + 4</li>
       <li>Bigger sums up to 10, like 8 + 2</li>
-      <li>Teen numbers plus a small number, like 12 + 5</li>
-      <li>Sums that cross ten, like 8 + 7</li>
+      <li>Teen numbers plus a small number, like 12 + 5, on two ten-frames of stepping stones in a pond</li>
+      <li>Sums that cross ten, like 8 + 7, by filling up the first ten-frame and then adding the rest</li>
     </ul>
 
     <h2>Who it is for</h2>
     <p>Children in Grade 1, usually ages 6 and 7. It also suits Kindergarten children who already count well and
-      Grade 2 children who want quick, confident practice. Numbers are spoken aloud, so early readers can play alone.</p>
+      Grade 2 children who want quick, confident practice. Every order is spoken aloud, so early readers can play
+      alone. It works best on a tablet, a computer or a phone held sideways.</p>
 
     <h2>How to play</h2>
     <ol>
       <li>Press Play, then tap the big button to start.</li>
-      <li>Look at the sum and count the dots if you need to.</li>
-      <li>Tap the right answer, or press 1, 2 or 3 on a keyboard.</li>
-      <li>Not quite? Hazel gives a hint and you try again.</li>
+      <li>Listen to the order, then drag flowers from the bins into the basket. You can also tap a bin and then tap
+        the basket.</li>
+      <li>When the basket is full, tap how many flowers there are in all.</li>
+      <li>Not sure? Hazel helps. She points at the order, counts along with you, and never gives the answer away.</li>
     </ol>
+
+    <h2>Your own garden</h2>
+    <p>Each solved order plants a seed. As your child plays more games, the seeds sprout and bloom into sunflowers,
+      tulips, daisies, lavender, strawberry plants and little trees. Plants only grow when your child plays, so
+      there is no pressure and nothing ever wilts. The garden is saved on your own device, and the game never asks
+      for a name, an email or a login.</p>
 
     <h2>Why it helps</h2>
     <p>The game starts easy and steps up after three right answers in a row, then steps back after two misses, so
-      your child practices at the right level. Wrong answers are never a dead end: after two tries the answer is shown
-      kindly and the game moves on. Sums your child missed come back in the next game for another go. And because the
-      wrong choices are real mistakes, like being one away or subtracting instead of adding, the
-      <a href={url('grown-ups/')}>Grown-ups page</a> can tell you what to practice together.</p>
+      your child practices at the right level. Mistakes are never a dead end: the flower simply hops back, a wrong
+      choice fades, and your child makes the last tap. Orders your child missed come back in the next game for
+      another go. And because the wrong choices are real mistakes, like being one away or subtracting instead of
+      adding, the <a href={url('grown-ups/')}>Grown-ups page</a> can tell you what to practice together.</p>
     <p class="note">More to play: see all <a href={url('math-games/')}>free math games</a>.</p>
   </section>
 

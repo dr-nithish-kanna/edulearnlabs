@@ -1,13 +1,14 @@
 // Website side of the game contract (planning/framework-spec.md, section 6).
 // The website owns all child data. The game gets an avatar, a color, a start level and practice items,
 // never a profile id. Only messages from our own iframe on our own origin are trusted.
-import { addSession, avatarOf, load, practiceItems, startLevel, update } from './progress';
+// Protocol rule: unknown fields are ignored on both sides, so website and games can upgrade in any order.
+import { addSession, avatarOf, gardenView, load, practiceItems, startLevel, update } from './progress';
 import { pickPlayer, renderProgress } from './site';
 
 const PROTOCOL = 1;
 
 export function initPlayer(root: HTMLElement) {
-  const { game = '', src = '', manifest = '' } = root.dataset;
+  const { game = '', src = '', manifest = '', reward = '' } = root.dataset;
   const playBtn = root.querySelector<HTMLButtonElement>('[data-play]')!;
   const overlay = root.querySelector<HTMLElement>('[data-overlay]')!;
   const frameBox = root.querySelector<HTMLElement>('[data-frame]')!;
@@ -66,13 +67,18 @@ export function initPlayer(root: HTMLElement) {
         const s = load();
         const p = profileId ? s.profiles[profileId] : null;
         if (!p) return close();
+        // Garden games only (catalog `reward: "garden"`). The view has ids, species and stages, never the profile id.
+        const garden = reward === 'garden' ? gardenView(s, p.id, game) : undefined;
         send({
           type: 'HostInit', protocol: PROTOCOL, avatar: avatarOf(p).id, color: p.color,
           startLevel: startLevel(s, p.id, game), practiceItems: practiceItems(s, p.id, game), settings: s.settings,
+          ...(garden ? { garden } : {}),
         });
         break;
       }
       case 'GameCompleted':
+        // addSession keeps known fields only, stores `hints`, and plants one seed per solved order from `rewards`
+        // under the profile WE chose. The game never says whose seeds they are.
         if (profileId) update(s => addSession(s, profileId!, m.session));
         renderProgress();
         break;

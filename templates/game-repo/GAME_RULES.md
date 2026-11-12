@@ -11,8 +11,9 @@ Source of truth: `planning/framework-spec.md` and `planning/decisions.md` in the
    No precision timing, no fast reflexes.
 4. **Drag and drop:** smooth and forgiving. Item lifts with a shadow, magnetic snap to targets, generous drop zones.
    Tap item then tap target must always work too. Use Pointer Events, never the HTML5 drag and drop API.
-5. **Attempts:** wrong first try gives a gentle hint and a second try. Wrong again: show the answer with an animation,
-   the mascot says something kind ("Now you know it!"), move on. No red X, no buzzer, no "Game Over".
+5. **Attempts:** wrong first try gives a gentle hint and a second try. Wrong again: a stronger hint (never the
+   answer itself; for example dim a wrong choice or light up counting aids) until the child makes the final tap.
+   The mascot says something kind ("Now you know it!"). No red X, no buzzer, no "Game Over". Decided 2026-11-12.
 6. **Difficulty ramp:** start at the level the website suggests (level 1 for new players). 3 first-try correct in a
    row moves up one level, 2 wrong in a row moves down one level. Never jump more than one level.
 7. **Golden rule:** if a 6 year old cannot understand the goal in 5 seconds, redesign it.

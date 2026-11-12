@@ -23,18 +23,32 @@ let failures = 0;
 const shot = (page, name, fullPage = false) => process.env.SHOTS ? page.screenshot({ path: `${process.env.SHOTS}/${name}.png`, fullPage }) : null;
 const check = (ok, msg) => { console.log(`${ok ? 'ok  ' : 'FAIL'} ${msg}`); if (!ok) failures++; };
 
+/** Plays a whole Addition Garden session by tapping (tap a bin, then the basket), the way a child without drag would. */
 async function playFullGame(page) {
   const game = page.frameLocator('.overlay iframe');
   await game.locator('.ell-start .ell-btn').click({ force: true, timeout: 15000 });
+  const center = async loc => { const b = await loc.boundingBox(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; };
   for (let n = 0; n < 20; n++) {
-    if (await game.locator('.ell-end').isVisible()) break;
-    await game.locator('.ell-choice:not([disabled])').first().waitFor({ timeout: 15000 });
-    const [a, , b] = (await game.locator('.ell-prompt').textContent()).split(' ');
-    await game.locator(`.ell-choice:text-is("${+a + +b}")`).click();
-    await page.waitForFunction(() => {
-      const d = document.querySelector('.overlay iframe')?.contentDocument;
-      return d && (d.querySelector('.ell-end:not([hidden])') || [...d.querySelectorAll('.ell-choice')].every(x => !x.disabled));
-    }, null, { timeout: 15000 });
+    if (await game.locator('.ell-end:not([hidden])').count()) break;
+    await game.locator('.ell-fill-view[data-phase="build"]').waitFor({ timeout: 15000 });
+    const bins = await game.locator('.ell-fill-bin').evaluateAll(els => els.map(e => ({ id: e.dataset.bin, want: Number(e.dataset.want) })));
+    const prefill = await game.locator('.ell-cell.is-pre').count();
+    const answer = prefill + bins.reduce((t, b) => t + b.want, 0);
+    for (const b of bins) for (let i = 0; i < b.want; i++) {
+      const from = await center(game.locator(`.ell-fill-bin[data-bin="${b.id}"]`));
+      const to = await center(game.locator('.ell-fill-target'));
+      await page.mouse.click(from.x, from.y);
+      await page.mouse.click(to.x, to.y);
+      await page.waitForTimeout(80);
+    }
+    await game.locator('.ell-fill-choices:not([hidden])').waitFor({ timeout: 15000 });
+    await game.locator(`.ell-choice[data-choice="${answer}"]`).click();
+    for (let i = 0; i < 100; i++) {
+      if (await game.locator('.ell-end:not([hidden])').count()) break;
+      if ((await game.locator('.ell-fill-view').getAttribute('data-phase').catch(() => null)) === 'build') break;
+      await page.waitForTimeout(100);
+    }
+    await page.waitForTimeout(1300);
   }
   await game.locator('.ell-end').waitFor({ state: 'visible' });
   return game;
@@ -54,7 +68,15 @@ async function playFullGame(page) {
     new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; })
       .observe({ type: 'layout-shift', buffered: true });
     new PerformanceObserver(l => { const e = l.getEntries().at(-1); window.__lcp = e.startTime; }).observe({ type: 'largest-contentful-paint', buffered: true });
+    // Runs in the game frame too: remember what the website told the game, to check the contract.
+    addEventListener('message', e => { if (e.data && e.data.type === 'HostInit') window.__hostInit = e.data; });
   });
+  // The newest game frame, and the HostInit it received.
+  const gameFrame = () => page.frames().filter(f => f.url().includes('/play/')).at(-1);
+  const hostInit = async () => {
+    await page.waitForFunction(() => !!document.querySelector('.overlay iframe')?.contentWindow?.__hostInit, null, { timeout: 15000 });
+    return gameFrame().evaluate(() => window.__hostInit);
+  };
 
   const cdp = await ctx.newCDPSession(page);
   await cdp.send('Network.enable');
@@ -93,6 +115,10 @@ async function playFullGame(page) {
   await shot(page, 'site-game-page');
   await page.locator('[data-play]').click({ force: true });
   check(await page.locator('.overlay iframe').isVisible(), 'Play opens the game full screen (2 clicks from home)');
+  const init1 = await hostInit();
+  const firstProfile = Object.keys(await page.evaluate(() => JSON.parse(localStorage.getItem('ell:v1') || '{"profiles":{}}').profiles))[0];
+  check(JSON.stringify(init1.garden) === '{"total":0,"items":[]}', `HostInit carries an empty garden for a garden game: ${JSON.stringify(init1.garden)}`);
+  check(!JSON.stringify(init1).includes('p_'), 'HostInit carries no profile id');
   const game = await playFullGame(page);
   await shot(page, 'site-playing-end');
   await game.locator('.ell-end .ell-btn--plain').click(); // Back
@@ -104,6 +130,8 @@ async function playFullGame(page) {
   check(profiles.length === 1, 'first play created exactly one profile');
   check(store.sessions.length === 1 && store.sessions[0].profile === profiles[0].id && store.sessions[0].completed, 'session saved under that profile');
   check(store.sessions[0].firstTry === 10, 'all 10 answered right first try');
+  const garden = Object.values(store.gardens || {})[0]?.['addition-grade-1'];
+  check(!('rewards' in store.sessions[0]) && garden && garden.items.length + Object.values(garden.meadow || {}).reduce((t, n) => t + n, 0) === 10, `ten solved orders planted ten seeds (${garden && garden.items.length})`);
   const row = await page.locator('[data-progress]').textContent();
   check(/Sprout|Bud/.test(row) && row.includes('★★★'), `progress shows on the page: "${row.replace(/\s+/g, ' ').trim()}"`);
   await shot(page, 'site-after-play');
@@ -127,6 +155,35 @@ async function playFullGame(page) {
   await shot(page, 'site-picker');
   await page.locator('#player-picker .pick').nth(1).click();
   check(await page.locator('.overlay iframe').isVisible(), 'picking a player starts the game');
+
+  // Garden, website side. The fill-container build is not synced yet, so the game frame posts what that build will
+  // send: a GameCompleted with `hints`, `rewards` and an extra unknown field. Same origin and same source window as
+  // the real game, so it goes through player.ts's real origin check.
+  await hostInit();
+  await gameFrame().evaluate(() => {
+    const session = { id: 's_e2egarden', game: 'addition-grade-1', gameVersion: '2.0.0', skill: 'math.addition.within-20',
+      startedAt: new Date().toISOString(), durationSec: 40, questions: 2, firstTry: 1, levelStart: 1, levelEnd: 1,
+      maxDifficulty: 1, completed: false, missed: ['q-3-4'], mistakes: { 'off-by-one': 1 }, hints: 1, dragPath: [1, 2],
+      rewards: [0, 1].map(i => ({ id: 's_e2egarden-' + i, kind: 'garden', species: ['sunflower', 'tulip'][i], at: new Date().toISOString() })) };
+    parent.postMessage({ type: 'GameCompleted', session }, location.origin);
+    parent.postMessage({ type: 'GameCompleted', session }, location.origin); // a repeat must not plant twice
+    parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin);
+  });
+  await page.locator('.overlay').waitFor({ state: 'hidden' });
+  const g = await page.evaluate(() => JSON.parse(localStorage.getItem('ell:v1')));
+  const sib = g.sessions.find(x => x.id === 's_e2egarden');
+  check(sib && sib.profile !== firstProfile && sib.seeds === 2 && sib.hints === 1 && !('rewards' in sib) && !('dragPath' in sib),
+    'fill-container session saved for the chosen player: seeds and hints kept, rewards moved out, unknown field dropped');
+  const items = g.gardens?.[sib?.profile]?.['addition-grade-1']?.items ?? [];
+  check(items.length === 2 && items.map(i => i.species).join() === 'sunflower,tulip', `two seeds planted once (${items.length})`);
+  const firstGarden = g.gardens?.[firstProfile]?.['addition-grade-1'];
+  const firstCount = (firstGarden?.items.length ?? 0) + Object.values(firstGarden?.meadow ?? {}).reduce((t, n) => t + n, 0);
+  check(firstCount === 20 && !firstGarden.items.some(i => i.id.includes('e2egarden')), `the other child's garden is untouched (still ${firstCount} seeds from their two real games)`);
+  await page.locator('[data-play]').click({ force: true });
+  await page.locator('#player-picker .pick').nth(1).click();
+  const init2 = await hostInit();
+  check(init2.garden?.total === 2 && init2.garden.items.every(i => i.stage === 0 && i.nextStage === 1) && init2.garden.items[0].species === 'tulip',
+    `next HostInit shows the garden, newest first, seeds about to sprout: ${JSON.stringify(init2.garden)}`);
 
   check(errors.length === 0, `no console errors${errors.length ? ': ' + errors.join(' | ') : ''}`);
   console.log(failures ? `\n${failures} check(s) failed` : '\nPASS');
