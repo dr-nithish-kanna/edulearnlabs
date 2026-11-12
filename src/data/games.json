@@ -11,6 +11,7 @@
     "ages": "6 to 7",
     "skill": "math.addition.within-20",
     "mechanic": "quiz",
+    "reward": "garden",
     "summary": "Add numbers up to 20 with dots to count, a friendly hint and a second try on every question.",
     "minutes": "2 to 3",
     "poster": "play/addition-grade-1/poster.webp",

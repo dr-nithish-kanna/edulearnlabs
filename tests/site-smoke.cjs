@@ -54,7 +54,15 @@ async function playFullGame(page) {
     new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; })
       .observe({ type: 'layout-shift', buffered: true });
     new PerformanceObserver(l => { const e = l.getEntries().at(-1); window.__lcp = e.startTime; }).observe({ type: 'largest-contentful-paint', buffered: true });
+    // Runs in the game frame too: remember what the website told the game, to check the contract.
+    addEventListener('message', e => { if (e.data && e.data.type === 'HostInit') window.__hostInit = e.data; });
   });
+  // The newest game frame, and the HostInit it received.
+  const gameFrame = () => page.frames().filter(f => f.url().includes('/play/')).at(-1);
+  const hostInit = async () => {
+    await page.waitForFunction(() => !!document.querySelector('.overlay iframe')?.contentWindow?.__hostInit, null, { timeout: 15000 });
+    return gameFrame().evaluate(() => window.__hostInit);
+  };
 
   const cdp = await ctx.newCDPSession(page);
   await cdp.send('Network.enable');
@@ -93,6 +101,10 @@ async function playFullGame(page) {
   await shot(page, 'site-game-page');
   await page.locator('[data-play]').click({ force: true });
   check(await page.locator('.overlay iframe').isVisible(), 'Play opens the game full screen (2 clicks from home)');
+  const init1 = await hostInit();
+  const firstProfile = Object.keys(await page.evaluate(() => JSON.parse(localStorage.getItem('ell:v1') || '{"profiles":{}}').profiles))[0];
+  check(JSON.stringify(init1.garden) === '{"total":0,"items":[]}', `HostInit carries an empty garden for a garden game: ${JSON.stringify(init1.garden)}`);
+  check(!JSON.stringify(init1).includes('p_'), 'HostInit carries no profile id');
   const game = await playFullGame(page);
   await shot(page, 'site-playing-end');
   await game.locator('.ell-end .ell-btn--plain').click(); // Back
@@ -104,6 +116,7 @@ async function playFullGame(page) {
   check(profiles.length === 1, 'first play created exactly one profile');
   check(store.sessions.length === 1 && store.sessions[0].profile === profiles[0].id && store.sessions[0].completed, 'session saved under that profile');
   check(store.sessions[0].firstTry === 10, 'all 10 answered right first try');
+  check(!('rewards' in store.sessions[0]) && Object.keys(store.gardens || {}).length === 0, 'quiz build plants nothing');
   const row = await page.locator('[data-progress]').textContent();
   check(/Sprout|Bud/.test(row) && row.includes('★★★'), `progress shows on the page: "${row.replace(/\s+/g, ' ').trim()}"`);
   await shot(page, 'site-after-play');
@@ -127,6 +140,33 @@ async function playFullGame(page) {
   await shot(page, 'site-picker');
   await page.locator('#player-picker .pick').nth(1).click();
   check(await page.locator('.overlay iframe').isVisible(), 'picking a player starts the game');
+
+  // Garden, website side. The fill-container build is not synced yet, so the game frame posts what that build will
+  // send: a GameCompleted with `hints`, `rewards` and an extra unknown field. Same origin and same source window as
+  // the real game, so it goes through player.ts's real origin check.
+  await hostInit();
+  await gameFrame().evaluate(() => {
+    const session = { id: 's_e2egarden', game: 'addition-grade-1', gameVersion: '2.0.0', skill: 'math.addition.within-20',
+      startedAt: new Date().toISOString(), durationSec: 40, questions: 2, firstTry: 1, levelStart: 1, levelEnd: 1,
+      maxDifficulty: 1, completed: false, missed: ['q-3-4'], mistakes: { 'off-by-one': 1 }, hints: 1, dragPath: [1, 2],
+      rewards: [0, 1].map(i => ({ id: 's_e2egarden-' + i, kind: 'garden', species: ['sunflower', 'tulip'][i], at: new Date().toISOString() })) };
+    parent.postMessage({ type: 'GameCompleted', session }, location.origin);
+    parent.postMessage({ type: 'GameCompleted', session }, location.origin); // a repeat must not plant twice
+    parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin);
+  });
+  await page.locator('.overlay').waitFor({ state: 'hidden' });
+  const g = await page.evaluate(() => JSON.parse(localStorage.getItem('ell:v1')));
+  const sib = g.sessions.find(x => x.id === 's_e2egarden');
+  check(sib && sib.profile !== firstProfile && sib.seeds === 2 && sib.hints === 1 && !('rewards' in sib) && !('dragPath' in sib),
+    'fill-container session saved for the chosen player: seeds and hints kept, rewards moved out, unknown field dropped');
+  const items = g.gardens?.[sib?.profile]?.['addition-grade-1']?.items ?? [];
+  check(items.length === 2 && items.map(i => i.species).join() === 'sunflower,tulip', `two seeds planted once (${items.length})`);
+  check(!g.gardens?.[firstProfile], 'the other child\'s garden is untouched');
+  await page.locator('[data-play]').click({ force: true });
+  await page.locator('#player-picker .pick').nth(1).click();
+  const init2 = await hostInit();
+  check(init2.garden?.total === 2 && init2.garden.items.every(i => i.stage === 0 && i.nextStage === 1) && init2.garden.items[0].species === 'tulip',
+    `next HostInit shows the garden, newest first, seeds about to sprout: ${JSON.stringify(init2.garden)}`);
 
   check(errors.length === 0, `no console errors${errors.length ? ': ' + errors.join(' | ') : ''}`);
   console.log(failures ? `\n${failures} check(s) failed` : '\nPASS');
