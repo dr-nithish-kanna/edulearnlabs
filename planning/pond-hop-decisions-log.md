@@ -33,3 +33,26 @@ you can overturn any of them in the morning. Each entry says how hard it is to c
    - Kit grows to about 21 KB brotli for this page (over the 15 KB target, like the garden).
    - Needs a website fix: the parent tip for "wrong-operation" must not say "subtracts instead of adding" for a
      subtraction game.
+7. **Kit v0.3.0 built by Opus** (kit commit `0e03b6e308d8079ffca6ad82c3efaa34b69be410`, branch `ccr-d39a02df-81y4w7`).
+   138 unit tests, 190 pond browser checks. I re-ran the unit tests and checked screenshots myself. Nothing was cut.
+   Make the `v0.3.0` tag on GitHub at that commit when you like. Until then both Pond Hop and any upgrade pin the SHA.
+8. **Addition Garden stays on kit v0.2.0 in production.** I did not re-pin the live game. I did prove the upgrade is
+   safe: the real garden game rebuilt on the new kit with no code edits passed its full smoke test (71 of 71 checks).
+   The 2 golden tests also guard the garden reducer and session record.
+9. **Overtake never happens on screen (known limitation, your call).** With a single destination the take-away
+   ends on the exact move that reaches the goal, so a child cannot send "one too many". The garden has the same
+   shape (it ends the moment the goal is met), but there a wrong extra drop at least gets a hint. Here the game stops
+   the child for them, so the child does not have to count to know when to stop. "How many?" still tests the skill.
+   Fixing it means a new rule in the shared reducer (for example a "Done" tap), which needs an Opus pass and a kit
+   release. Suggested follow-up, not done.
+10. **Parent tips.** The wrong-operation tip is now topic aware (subtraction says "adds instead of taking away").
+    Website tests cover it. A wrong "How many?" tap counts as a hint (hints 1), because the kit counts along. Fine
+    for the parent page, noted so it is not a surprise.
+11. **Pond Hop uses the kit's default portrait prompt** ("Turn your phone sideways"). Same limitation as Addition
+    Garden. Real portrait layout is still future work. Not tested on real touch devices, only mouse and emulated phones.
+12. **Game version 1.0.0**, 10 orders or 180 seconds like the garden. Size: game JS 27.9 KB brotli, before Play 68.6 KB
+    of the 100 KB firm limit. The 15 KB kit and 15 KB game targets are exceeded, as accepted for the garden.
+13. **Website:** catalog entry, skill `math.subtraction.within-20`, page at `/math-games/subtraction-for-grade-1/`
+    (about 540 words), math category page mentions subtraction, home page counts "2 games ready, 6 on the way",
+    "Subtraction basics" removed from coming soon. Site smoke test has new Pond Hop checks (all pass).
+14. **Zero results, spare items and hand-written items are not in this version.** Easy follow-ups.
