@@ -23,18 +23,32 @@ let failures = 0;
 const shot = (page, name, fullPage = false) => process.env.SHOTS ? page.screenshot({ path: `${process.env.SHOTS}/${name}.png`, fullPage }) : null;
 const check = (ok, msg) => { console.log(`${ok ? 'ok  ' : 'FAIL'} ${msg}`); if (!ok) failures++; };
 
+/** Plays a whole Addition Garden session by tapping (tap a bin, then the basket), the way a child without drag would. */
 async function playFullGame(page) {
   const game = page.frameLocator('.overlay iframe');
   await game.locator('.ell-start .ell-btn').click({ force: true, timeout: 15000 });
+  const center = async loc => { const b = await loc.boundingBox(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; };
   for (let n = 0; n < 20; n++) {
-    if (await game.locator('.ell-end').isVisible()) break;
-    await game.locator('.ell-choice:not([disabled])').first().waitFor({ timeout: 15000 });
-    const [a, , b] = (await game.locator('.ell-prompt').textContent()).split(' ');
-    await game.locator(`.ell-choice:text-is("${+a + +b}")`).click();
-    await page.waitForFunction(() => {
-      const d = document.querySelector('.overlay iframe')?.contentDocument;
-      return d && (d.querySelector('.ell-end:not([hidden])') || [...d.querySelectorAll('.ell-choice')].every(x => !x.disabled));
-    }, null, { timeout: 15000 });
+    if (await game.locator('.ell-end:not([hidden])').count()) break;
+    await game.locator('.ell-fill-view[data-phase="build"]').waitFor({ timeout: 15000 });
+    const bins = await game.locator('.ell-fill-bin').evaluateAll(els => els.map(e => ({ id: e.dataset.bin, want: Number(e.dataset.want) })));
+    const prefill = await game.locator('.ell-cell.is-pre').count();
+    const answer = prefill + bins.reduce((t, b) => t + b.want, 0);
+    for (const b of bins) for (let i = 0; i < b.want; i++) {
+      const from = await center(game.locator(`.ell-fill-bin[data-bin="${b.id}"]`));
+      const to = await center(game.locator('.ell-fill-target'));
+      await page.mouse.click(from.x, from.y);
+      await page.mouse.click(to.x, to.y);
+      await page.waitForTimeout(80);
+    }
+    await game.locator('.ell-fill-choices:not([hidden])').waitFor({ timeout: 15000 });
+    await game.locator(`.ell-choice[data-choice="${answer}"]`).click();
+    for (let i = 0; i < 100; i++) {
+      if (await game.locator('.ell-end:not([hidden])').count()) break;
+      if ((await game.locator('.ell-fill-view').getAttribute('data-phase').catch(() => null)) === 'build') break;
+      await page.waitForTimeout(100);
+    }
+    await page.waitForTimeout(1300);
   }
   await game.locator('.ell-end').waitFor({ state: 'visible' });
   return game;
@@ -116,7 +130,8 @@ async function playFullGame(page) {
   check(profiles.length === 1, 'first play created exactly one profile');
   check(store.sessions.length === 1 && store.sessions[0].profile === profiles[0].id && store.sessions[0].completed, 'session saved under that profile');
   check(store.sessions[0].firstTry === 10, 'all 10 answered right first try');
-  check(!('rewards' in store.sessions[0]) && Object.keys(store.gardens || {}).length === 0, 'quiz build plants nothing');
+  const garden = Object.values(store.gardens || {})[0]?.['addition-grade-1'];
+  check(!('rewards' in store.sessions[0]) && garden && garden.items.length + Object.values(garden.meadow || {}).reduce((t, n) => t + n, 0) === 10, `ten solved orders planted ten seeds (${garden && garden.items.length})`);
   const row = await page.locator('[data-progress]').textContent();
   check(/Sprout|Bud/.test(row) && row.includes('★★★'), `progress shows on the page: "${row.replace(/\s+/g, ' ').trim()}"`);
   await shot(page, 'site-after-play');
@@ -161,7 +176,9 @@ async function playFullGame(page) {
     'fill-container session saved for the chosen player: seeds and hints kept, rewards moved out, unknown field dropped');
   const items = g.gardens?.[sib?.profile]?.['addition-grade-1']?.items ?? [];
   check(items.length === 2 && items.map(i => i.species).join() === 'sunflower,tulip', `two seeds planted once (${items.length})`);
-  check(!g.gardens?.[firstProfile], 'the other child\'s garden is untouched');
+  const firstGarden = g.gardens?.[firstProfile]?.['addition-grade-1'];
+  const firstCount = (firstGarden?.items.length ?? 0) + Object.values(firstGarden?.meadow ?? {}).reduce((t, n) => t + n, 0);
+  check(firstCount === 20 && !firstGarden.items.some(i => i.id.includes('e2egarden')), `the other child's garden is untouched (still ${firstCount} seeds from their two real games)`);
   await page.locator('[data-play]').click({ force: true });
   await page.locator('#player-picker .pick').nth(1).click();
   const init2 = await hostInit();
