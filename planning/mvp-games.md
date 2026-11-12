@@ -5,8 +5,8 @@
 2. Shape matching (Pre-K)
 3. Count to 20 (Kindergarten)
 4. Add with objects (Kindergarten)
-5. Addition within 20 (Grade 1). Built as "Addition Garden", a quiz with dots (2026-11-11). A number line
-   version can come later and grow the same skill (`math.addition.within-20`).
+5. Addition within 20 (Grade 1). Built as "Addition Garden" and redesigned on 2026-11-12 as a hands-on game (Seed Stall,
+   Stepping Stones, garden rewards). Live. A number line version can come later (`math.addition.within-20`).
 6. Subtraction basics (Grade 1)
 7. Add and subtract to 100 (Grade 2)
 8. Skip counting (Grade 2)
