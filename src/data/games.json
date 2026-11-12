@@ -19,5 +19,26 @@
       "repo": "dr-nithish-kanna/addition-grade-1",
       "commit": "c8a9ce7"
     }
+  },
+  {
+    "id": "subtraction-grade-1",
+    "title": "Pond Hop",
+    "keywordTitle": "Subtraction for Grade 1",
+    "category": "math-games",
+    "slug": "subtraction-for-grade-1",
+    "grade": [
+      "1"
+    ],
+    "ages": "6 to 7",
+    "skill": "math.subtraction.within-20",
+    "mechanic": "fill-container",
+    "reward": "lights",
+    "summary": "Send frogs off a lily pad and fireflies out of a lantern, then tell how many are left. Take away within 20 with friendly hints on every order and a sky that fills with light.",
+    "minutes": "2 to 3",
+    "poster": "play/subtraction-grade-1/poster.webp",
+    "source": {
+      "repo": "dr-nithish-kanna/subtraction-grade-1",
+      "commit": "e2ed6e9"
+    }
   }
 ]
