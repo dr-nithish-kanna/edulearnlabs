@@ -153,6 +153,21 @@ test('mistake tip appears only when a mistake repeats', () => {
   assert.match(mistakeTip(s, p.id, sk)!, /subtracts instead of adding/);
 });
 
+test('wrong-operation tip is topic aware: subtraction says adding instead of taking away', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const sub = 'math.subtraction.within-20';
+  addSession(s, p.id, rec({ skill: sub, mistakes: { 'wrong-operation': 3 } }));
+  const tip = mistakeTip(s, p.id, sub)!;
+  assert.match(tip, /adds instead of taking away/);
+  assert.doesNotMatch(tip, /subtracts instead of adding/);
+  // Other kinds keep their shared text for subtraction, and addition keeps its own tip.
+  addSession(s, p.id, rec({ skill: sub, mistakes: { 'off-by-one': 9 } }));
+  assert.match(mistakeTip(s, p.id, sub)!, /one away/);
+  const s2 = emptyStore(); const q = ensureProfile(s2);
+  addSession(s2, q.id, rec({ mistakes: { 'wrong-operation': 3 } }));
+  assert.match(mistakeTip(s2, q.id, 'math.addition.within-20')!, /subtracts instead of adding/);
+});
+
 // ---------- Garden ----------
 
 const G = 'addition-grade-1';
