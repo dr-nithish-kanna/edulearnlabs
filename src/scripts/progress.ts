@@ -365,6 +365,12 @@ export function bestStars(store: Store, profile: string, game: string): number {
   return sessionsOf(store, profile, s => s.game === game && s.completed).reduce((m, s) => Math.max(m, starsFor(s)), 0);
 }
 
+/** The wrong-operation tip depends on the topic: in subtraction the slip is adding instead of taking away. */
+const WRONG_OPERATION_TIPS = {
+  default: 'Sometimes subtracts instead of adding. Point at the + sign and say "plus means put together".',
+  subtraction: 'Sometimes adds instead of taking away. Point at the minus sign and say "minus means take away", then count what is left.',
+};
+
 /** Plain words for parents: which mistake shows up most for this skill, if any shows up often. */
 export function mistakeTip(store: Store, profile: string, skill: string): string | null {
   const counts: Partial<Record<DistractorKind, number>> = {};
@@ -372,10 +378,11 @@ export function mistakeTip(store: Store, profile: string, skill: string): string
     for (const [k, n] of Object.entries(s.mistakes)) counts[k as DistractorKind] = (counts[k as DistractorKind] ?? 0) + (n ?? 0);
   const [kind, n] = (Object.entries(counts) as [DistractorKind, number][]).sort((a, b) => b[1] - a[1])[0] ?? [];
   if (!kind || n < 3) return null;
+  if (kind === 'wrong-operation' && skill.startsWith('math.subtraction.')) return WRONG_OPERATION_TIPS.subtraction;
   return {
     'off-by-one': 'Often lands one away from the answer. Counting on fingers or dots, slowly, helps.',
     'off-by-two': 'Sometimes lands two away from the answer. Practice counting on from the bigger number.',
-    'wrong-operation': 'Sometimes subtracts instead of adding. Point at the + sign and say "plus means put together".',
+    'wrong-operation': WRONG_OPERATION_TIPS.default,
   }[kind];
 }
 
