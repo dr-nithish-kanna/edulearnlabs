@@ -23,11 +23,39 @@ export interface SessionRecord {
   completed: boolean;
   missed: string[];
   mistakes: Partial<Record<DistractorKind, number>>;
+  /** fill-container games: H2 and H3 hints shown this session. Absent in quiz records. */
+  hints?: number;
+  /** fill-container games: garden seeds earned, one per solved order. Moved into `gardens` on save, never stored here. */
+  rewards?: Reward[];
 }
-export interface StoredSession extends SessionRecord { profile: string }
+/**
+ * A stored session never keeps `rewards` (they live in `gardens`). It keeps `seeds`, the count of solved orders,
+ * because growth needs to know which sessions had at least one, even after old garden items are folded away.
+ */
+export interface StoredSession extends Omit<SessionRecord, 'rewards'> { profile: string; seeds?: number }
 export interface Profile { id: string; avatar: string; color: string; createdAt: string }
 export interface Settings { audio: boolean; music: boolean; reducedMotion: boolean }
 export interface Totals { sessions: number; questions: number; firstTry: number }
+
+// ---------- Garden types (planning/fill-container-design.md, section 6) ----------
+
+/** What the game reports per solved order. Id is the session id plus the question index. */
+export interface Reward { id: string; kind: 'garden'; species: string; at: string }
+/** One planted seed. Stage is never stored: it is derived from sessions played (store facts, derive opinions). */
+export interface GardenItem {
+  id: string; species: string; at: string; session: string;
+  /** Sandbox layout, later. 0 to 1, relative to the plot. */
+  x?: number; y?: number; movedAt?: string;
+}
+/** v is the garden's own schema number, so the garden can change shape without touching the top-level schema. */
+export interface Garden { v: 1; items: GardenItem[]; meadow: Record<string, number> }
+export type GardenStage = 0 | 1 | 2; // seed, sprout, bloom
+/** What the game receives in HostInit. Ids, species and stages only: no profile id, no timestamps. */
+export interface GardenView {
+  total: number;
+  items: { id: string; species: string; stage: GardenStage; nextStage: GardenStage }[];
+  meadow?: Record<string, number>;
+}
 
 export interface Store {
   schema: 1;
@@ -38,6 +66,13 @@ export interface Store {
   sessions: StoredSession[];
   /** Summary of sessions folded out of the list: totals[profile][game] */
   totals: Record<string, Record<string, Totals>>;
+  /** gardens[profile][game]. A garden with an unknown (newer) `v` is kept as is and never written to. */
+  gardens: Record<string, Record<string, Garden>>;
+  /**
+   * Set when the saved document has a newer schema than this code understands (an old tab still open after a
+   * deploy). The tab still works for this visit, but `save` never writes to storage, so newer data is never lost.
+   */
+  readOnly?: true;
 }
 
 export const AVATARS = [
@@ -52,7 +87,7 @@ export const COLORS = ['orange', 'teal', 'pink', 'sky', 'sun', 'leaf'] as const;
 
 export const emptyStore = (): Store => ({
   schema: 1, updatedAt: new Date().toISOString(), activeProfile: null,
-  settings: { audio: true, music: true, reducedMotion: false }, profiles: {}, sessions: [], totals: {},
+  settings: { audio: true, music: true, reducedMotion: false }, profiles: {}, sessions: [], totals: {}, gardens: {},
 });
 
 export function randomId(prefix: string): string {
@@ -61,19 +96,31 @@ export function randomId(prefix: string): string {
   return prefix + '_' + Array.from(bytes, b => (b % 36).toString(36)).join('');
 }
 
-/** Accepts anything (corrupt data, an older schema) and returns a valid store. Never throws. */
+const isObj = (x: unknown): x is Record<string, any> => !!x && typeof x === 'object' && !Array.isArray(x);
+
+/**
+ * Accepts anything (corrupt data, an older schema) and returns a valid store. Never throws.
+ * A NEWER schema is not corrupt: it is real data written by newer code. We cannot safely read it (fields may have
+ * changed meaning), so we start this tab empty and mark it read-only, and `save` leaves the stored document alone.
+ */
 export function parseStore(raw: string | null): Store {
   if (!raw) return emptyStore();
   try {
     const d = JSON.parse(raw);
-    if (!d || d.schema !== 1 || typeof d.profiles !== 'object' || !Array.isArray(d.sessions)) return emptyStore();
+    if (isObj(d) && typeof d.schema === 'number' && d.schema > 1) return { ...emptyStore(), readOnly: true };
+    if (!isObj(d) || d.schema !== 1 || !isObj(d.profiles) || !Array.isArray(d.sessions)) return emptyStore();
     const s = emptyStore();
-    return {
+    // Spreading `d` first keeps fields this code does not know (for example `stickers`), so saving writes them back.
+    const store: Store = {
       ...s, ...d,
       settings: { ...s.settings, ...d.settings },
-      totals: d.totals ?? {},
+      totals: isObj(d.totals) ? d.totals : {},
+      gardens: isObj(d.gardens) ? d.gardens : {},
       activeProfile: d.activeProfile && d.profiles[d.activeProfile] ? d.activeProfile : null,
     };
+    delete store.readOnly; // only this function decides that, never the stored document
+    harvestStrayRewards(store);
+    return store;
   } catch {
     return emptyStore();
   }
@@ -107,6 +154,7 @@ export function ensureProfile(store: Store): Profile {
 export function deleteProfile(store: Store, id: string) {
   delete store.profiles[id];
   delete store.totals[id];
+  delete store.gardens[id];
   store.sessions = store.sessions.filter(s => s.profile !== id);
   if (store.activeProfile === id) store.activeProfile = Object.keys(store.profiles)[0] ?? null;
 }
@@ -119,18 +167,151 @@ const isRecord = (r: unknown): r is SessionRecord => {
     Number.isFinite(x.questions) && Number.isFinite(x.firstTry) && Array.isArray(x.missed);
 };
 
+/**
+ * Copies only the fields we know. Why: the website decides what child data it keeps. If a future game sends an
+ * extra field, it is ignored (protocol rule) instead of being saved without anyone deciding to.
+ */
+const KNOWN: (keyof SessionRecord)[] = ['id', 'game', 'gameVersion', 'skill', 'startedAt', 'durationSec', 'questions',
+  'firstTry', 'levelStart', 'levelEnd', 'maxDifficulty', 'completed', 'missed', 'mistakes'];
+
 /** Adds a finished session. Duplicates (same id) are ignored, which also makes a future sync merge trivial. */
 export function addSession(store: Store, profile: string, record: unknown): boolean {
   if (!isRecord(record) || !store.profiles[profile]) return false;
   if (store.sessions.some(s => s.id === record.id)) return false;
-  store.sessions.push({ ...record, missed: record.missed.slice(0, 30), profile });
+  const kept = Object.fromEntries(KNOWN.filter(k => k in record).map(k => [k, record[k]])) as unknown as SessionRecord;
+  const stored: StoredSession = { ...kept, missed: record.missed.slice(0, 30), mistakes: isObj(record.mistakes) ? record.mistakes : {}, profile };
+  if (Number.isFinite(record.hints)) stored.hints = record.hints;
+  // One seed per solved order, and a solved order is a question, so never more seeds than questions.
+  const rewards = validRewards(record.rewards).slice(0, Math.max(0, record.questions));
+  if (rewards.length) stored.seeds = rewards.length;
+  store.sessions.push(stored);
   const mine = store.sessions.filter(s => s.profile === profile && s.game === record.game);
   for (const old of mine.slice(0, Math.max(0, mine.length - SESSIONS_KEPT))) {
     const t = ((store.totals[profile] ??= {})[old.game] ??= { sessions: 0, questions: 0, firstTry: 0 });
     t.sessions++; t.questions += old.questions; t.firstTry += old.firstTry;
     store.sessions.splice(store.sessions.indexOf(old), 1);
   }
+  if (rewards.length) plant(store, profile, record.game, record.id, rewards);
   return true;
+}
+
+// ---------- Garden (facts: planted seeds; opinion: their stage) ----------
+
+export const GARDEN_V = 1;
+/** Kept per child per game. About 90 bytes each, so 300 is about 27 KB, far inside localStorage limits. */
+export const GARDEN_MAX_ITEMS = 300;
+/** Newest items sent to the game for the plot. Older ones are drawn as a meadow band. */
+export const GARDEN_VIEW_ITEMS = 30;
+/**
+ * Addition Garden's species, in the fixed cycle the kit uses (game.json `reward.species`). Never random:
+ * decisions.md bans variable rewards. The kit picks the species; this copy is for tests and a future garden page.
+ */
+export const GARDEN_SPECIES = ['sunflower', 'tulip', 'daisy', 'lavender', 'strawberry', 'small-tree'] as const;
+/** Species of the next seed: same formula as the kit's speciesFor (design section 6.4). */
+export const speciesFor = (species: readonly string[], total: number, solved = 0) =>
+  species[((total + solved) % species.length + species.length) % species.length];
+
+const SPECIES_RE = /^[a-z][a-z-]{0,31}$/;
+const validRewards = (list: unknown): Reward[] => {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set<string>();
+  return list.filter((r): r is Reward => isObj(r) && r.kind === 'garden' && typeof r.id === 'string' && r.id.length > 0 &&
+    r.id.length <= 64 && typeof r.species === 'string' && SPECIES_RE.test(r.species) && typeof r.at === 'string' &&
+    !seen.has(r.id) && !!seen.add(r.id));
+};
+
+const isGardenV1 = (g: unknown): g is Garden => isObj(g) && g.v === GARDEN_V && Array.isArray(g.items);
+
+/** The garden to write to, or null when a newer garden schema is stored (then we leave it alone). */
+function gardenFor(store: Store, profile: string, game: string): Garden | null {
+  const byGame = (store.gardens[profile] ??= {});
+  const g = (byGame[game] ??= { v: GARDEN_V, items: [], meadow: {} });
+  if (!isGardenV1(g)) return null;
+  if (!isObj(g.meadow)) g.meadow = {};
+  return g;
+}
+
+function plant(store: Store, profile: string, game: string, session: string, rewards: Reward[]) {
+  const g = gardenFor(store, profile, game);
+  if (!g) return;
+  const have = new Set(g.items.map(i => i.id));
+  for (const r of rewards) {
+    if (have.has(r.id)) continue; // merge = union by id, so a repeat never plants twice
+    g.items.push({ id: r.id, species: r.species, at: r.at, session });
+    have.add(r.id);
+  }
+  foldGarden(store, profile, game, g);
+}
+
+/** Over the cap, the oldest blooms become meadow counts. Total (items plus meadow) never changes. */
+function foldGarden(store: Store, profile: string, game: string, g: Garden) {
+  let extra = g.items.length - GARDEN_MAX_ITEMS;
+  if (extra <= 0) return;
+  const stages = stagesOf(store, profile, game, g.items);
+  const out = new Set<number>();
+  for (let i = 0; i < g.items.length && out.size < extra; i++) if (stages[i] === 2) out.add(i);
+  // Safety net: if not enough blooms exist (should not happen), fold the oldest anyway so the cap holds.
+  for (let i = 0; i < g.items.length && out.size < extra; i++) out.add(i);
+  for (const i of out) g.meadow[g.items[i].species] = (g.meadow[g.items[i].species] ?? 0) + 1;
+  g.items = g.items.filter((_, i) => !out.has(i));
+}
+
+/** Decision 3: a session helps the garden grow when the child solved at least one order, finished or not. */
+const countsForGrowth = (s: StoredSession) => (s.seeds ?? 0) >= 1;
+
+/**
+ * Stage per item: how many counting sessions of this game came AFTER the item's session, capped at 2.
+ * Only play moves it, never elapsed time, so a child who comes back after a month finds the same garden.
+ * "After" means later in the session list (the order they were saved on this device), not a clock comparison,
+ * so a wrong device clock cannot freeze or jump the garden. A sync merge must keep the list ordered by startedAt.
+ * An item whose session was folded away (50 per game cap) has at least 50 newer sessions, so it is a bloom.
+ */
+function stagesOf(store: Store, profile: string, game: string, items: GardenItem[]): GardenStage[] {
+  const mine = store.sessions.filter(s => s.profile === profile && s.game === game);
+  const after = new Map<string, number>(); // session id -> counting sessions after it
+  let n = 0;
+  for (let i = mine.length - 1; i >= 0; i--) { after.set(mine[i].id, n); if (countsForGrowth(mine[i])) n++; }
+  return items.map(it => {
+    const k = after.get(it.session);
+    return (k === undefined ? 2 : Math.min(2, k)) as GardenStage;
+  });
+}
+
+/**
+ * The garden as the game sees it. `nextStage` is what each stage becomes if this coming session counts: the website
+ * owns the growth rule, the kit only animates stage to nextStage. Items are newest first (the kit shows the start).
+ * Returns undefined when the stored garden has a newer schema than this code knows.
+ */
+export function gardenView(store: Store, profile: string, game: string): GardenView | undefined {
+  const g = store.gardens[profile]?.[game];
+  if (g === undefined) return { total: 0, items: [] };
+  if (!isGardenV1(g)) return undefined;
+  const stages = stagesOf(store, profile, game, g.items);
+  const meadow: Record<string, number> = { ...(isObj(g.meadow) ? g.meadow : {}) };
+  const cut = Math.max(0, g.items.length - GARDEN_VIEW_ITEMS);
+  // Older than the newest 30: summed into the meadow band so the plot stays readable.
+  for (const it of g.items.slice(0, cut)) meadow[it.species] = (meadow[it.species] ?? 0) + 1;
+  const items = g.items.slice(cut).map((it, i) => {
+    const stage = stages[cut + i];
+    return { id: it.id, species: it.species, stage, nextStage: Math.min(2, stage + 1) as GardenStage };
+  }).reverse();
+  const total = g.items.length + Object.values(isObj(g.meadow) ? g.meadow : {}).reduce((a, b) => a + (Number(b) || 0), 0);
+  return Object.keys(meadow).length ? { total, items, meadow } : { total, items };
+}
+
+/**
+ * An old tab (code from before gardens) saves sessions with `rewards` still inside. On the next load, move them
+ * into the garden so those seeds are not lost, and strip them from the session like a fresh save would.
+ */
+function harvestStrayRewards(store: Store) {
+  for (const s of store.sessions as (StoredSession & { rewards?: unknown })[]) {
+    if (!isObj(s) || !('rewards' in s)) continue;
+    const rewards = validRewards(s.rewards).slice(0, Math.max(0, s.questions));
+    delete s.rewards;
+    if (!rewards.length || !store.profiles[s.profile]) continue;
+    s.seeds = rewards.length;
+    plant(store, s.profile, s.game, s.id, rewards);
+  }
 }
 
 // ---------- Derived values (opinions) ----------
@@ -208,6 +389,8 @@ export function load(): Store {
 }
 
 export function save(store: Store) {
+  // Newer data on disk: keep this tab's changes in memory only, never overwrite what newer code wrote.
+  if (store.readOnly) { memory = store; return; }
   store.updatedAt = new Date().toISOString();
   try { localStorage.setItem(KEY, JSON.stringify(store)); memory = null; } catch { memory = store; }
 }
