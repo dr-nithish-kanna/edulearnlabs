@@ -1,0 +1,95 @@
+---
+// PENDING PAGE (not built). Lives outside src/pages on purpose so the site builds before the game is synced.
+// To publish: add the catalog entry and skill, then `git mv` this file to src/pages/math-games/. See the wiring steps.
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import GamePlayer from '../../components/GamePlayer.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import games from '../../data/games.json';
+import skills from '../../data/skills.json';
+import { url } from '../../config';
+
+const game = games.find(g => g.id === 'subtraction-grade-1')!;
+const skill = skills[game.skill as keyof typeof skills];
+const page = new URL(url('math-games/subtraction-for-grade-1/'), Astro.site).href;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org', '@type': 'LearningResource', name: `${game.keywordTitle}: ${game.title}`,
+    url: page, description: game.summary, isAccessibleForFree: true, inLanguage: 'en',
+    learningResourceType: 'Educational game', educationalLevel: 'Grade 1', typicalAgeRange: '6-7',
+    teaches: 'Subtraction within 20', timeRequired: 'PT3M', image: new URL(url(game.poster), Astro.site).href,
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: new URL(url(), Astro.site).href },
+      { '@type': 'ListItem', position: 2, name: 'Math games', item: new URL(url('math-games/'), Astro.site).href },
+      { '@type': 'ListItem', position: 3, name: game.keywordTitle, item: page },
+    ],
+  },
+];
+---
+<Base
+  title="Subtraction for Grade 1: Free Math Game for Ages 6 to 7 | EduLearnLabs"
+  description="A free subtraction game for Grade 1. Kids send frogs off a lily pad, take away within 20 and light up the night. Friendly hints, no ads, no login, 3 minutes a game."
+  path="math-games/subtraction-for-grade-1/" nav="math" image={game.poster} jsonLd={jsonLd}>
+
+  <Breadcrumbs back={{ name: 'Math games', path: 'math-games/' }}
+    items={[{ name: 'Home', path: '' }, { name: 'Math games', path: 'math-games/' }, { name: game.keywordTitle, path: 'math-games/subtraction-for-grade-1/' }]} />
+
+  <h1>Subtraction for Grade 1</h1>
+  <p class="lead" style="font-size:20px;max-width:44em">Play <strong>{game.title}</strong>: help pond friends send
+    frogs off a lily pad, take away numbers up to 20 and fill the evening with fireflies. Ten orders, about 3 minutes, free.</p>
+
+  <GamePlayer game={game} topDifficulty={skill.topDifficulty} />
+
+  <section class="prose">
+    <h2>What is Pond Hop?</h2>
+    <p>Pond Hop is a short subtraction game for first graders, set at a pond at dusk where Hazel the owl keeps the
+      lantern. A duckling, turtle, dragonfly or fish swims by and says something like "3 frogs are going for a
+      swim!" Your child sends three frogs hopping off the lily pad into the water, and each leap makes a ripple and
+      a gentle note. Then comes the real question: how many are still on the pad? Your child taps one of three
+      answers. After ten orders the game ends with stars, and every solved order lights one firefly in the night sky.</p>
+
+    <h2>What kids learn</h2>
+    <p>The game practices subtracting within 20, a core Grade 1 skill. Children do not just pick an answer. They take
+      things away with their own hands and see what is left, which is exactly what subtraction means. It moves
+      through five small steps:</p>
+    <ul>
+      <li>Taking away within 5, like 4 - 1</li>
+      <li>Taking away within 10, like 9 - 3</li>
+      <li>Keep a number: "Keep 5 on the pad. How many hopped away?", which shows that subtraction can ask for the part that left</li>
+      <li>A teen number minus a small number, like 14 - 3, with fireflies in a lantern made of ten-frames</li>
+      <li>Taking away across ten, like 13 - 5, by breaking the ten and counting what is left</li>
+    </ul>
+
+    <h2>Who it is for</h2>
+    <p>Children in Grade 1, usually ages 6 and 7. It also suits Kindergarten children who already add with
+      confidence and Grade 2 children who want quick, calm practice. Every order is spoken aloud, so early readers can
+      play alone. It works best on a tablet, a computer or a phone held sideways.</p>
+
+    <h2>How to play</h2>
+    <ol>
+      <li>Press Play, then tap the big button to start.</li>
+      <li>Listen to the order, then drag frogs off the lily pad into the water. You can also tap a frog and then tap
+        the water.</li>
+      <li>When the right number have left, tap how many are still on the pad.</li>
+      <li>Not sure? Hazel helps. She points at the order, counts along with you, and never gives the answer away.</li>
+    </ol>
+
+    <h2>A sky full of fireflies</h2>
+    <p>Each solved order lights a firefly, and by the end of the game the sky glows. The fireflies belong to that game
+      only, so there is nothing to lose and no pressure to come back. Your child's stars are saved on your own device,
+      and the game never asks for a name, an email or a login.</p>
+
+    <h2>Why it helps</h2>
+    <p>The game starts easy and steps up after three right answers in a row, then steps back after two misses, so
+      your child practices at the right level. Mistakes are never a dead end: if too many frogs leave, the extra one
+      simply hops back, a wrong choice fades, and your child makes the last tap. Orders your child missed come back
+      in the next game for another go. And because the wrong choices are real mistakes, like being one away or adding
+      instead of taking away, the <a href={url('grown-ups/')}>Grown-ups page</a> can tell you what to practice together.</p>
+    <p class="note">More to play: try <a href={url('math-games/addition-for-grade-1/')}>Addition for Grade 1</a>, the
+      other half of the pair, or see all <a href={url('math-games/')}>free math games</a>.</p>
+  </section>
+
+  <AdSlot id="game-bottom" />
+</Base>

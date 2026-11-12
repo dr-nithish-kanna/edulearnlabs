@@ -2,7 +2,17 @@
   "math.addition.within-20": {
     "name": "Addition within 20",
     "parentLabel": "Adding numbers up to 20",
-    "grade": ["1"],
+    "grade": [
+      "1"
+    ],
+    "topDifficulty": 5
+  },
+  "math.subtraction.within-20": {
+    "name": "Subtraction within 20",
+    "parentLabel": "Taking away within 20",
+    "grade": [
+      "1"
+    ],
     "topDifficulty": 5
   }
 }

@@ -15,7 +15,12 @@ Not to be confused with the Nifty Games Studios site (the owner's indie studio, 
 - Tell me when a task is better done on Opus (see Model guidance).
 - I am not strong at marketing. Make sensible marketing, pricing and SEO choices and explain them simply.
 - Do not use em dashes in any docs or copy.
-- Do not commit or push unless I ask.
+- Commit and push to the working branch yourself once tests pass, then tell me when done (updated 2026-11-12). Ask before tags, releases, deploys to the live site or PRs, unless I said to in that message.
+
+## Start here in a new session
+
+Read `planning/game-playbook.md` first: state of play, the process that worked, design principles, reusable pieces,
+lessons and the template for planning the next game. Plan creatively with me before building anything.
 
 ## Model guidance
 
