@@ -84,7 +84,7 @@ async function playFullGame(page) {
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
 
   // Every page: one H1, a title, a description, no layout shift.
-  for (const p of ['', 'math-games/', 'math-games/addition-for-grade-1/', 'grown-ups/', 'privacy/']) {
+  for (const p of ['', 'math-games/', 'math-games/addition-for-grade-1/', 'math-games/subtraction-for-grade-1/', 'grown-ups/', 'privacy/']) {
     const t0 = Date.now();
     await page.goto(origin + BASE + p, { waitUntil: 'load' });
     const loadMs = Date.now() - t0;
@@ -184,6 +184,31 @@ async function playFullGame(page) {
   const init2 = await hostInit();
   check(init2.garden?.total === 2 && init2.garden.items.every(i => i.stage === 0 && i.nextStage === 1) && init2.garden.items[0].species === 'tulip',
     `next HostInit shows the garden, newest first, seeds about to sprout: ${JSON.stringify(init2.garden)}`);
+
+  // Pond Hop, website side. Its reward is session lights only: the website sends no garden, and a session record has
+  // no `rewards`. The frame posts what the real build sends (the game's own smoke test proves the real build does).
+  await page.goto(origin + BASE + 'math-games/subtraction-for-grade-1/');
+  await page.locator('[data-play]').click({ force: true });
+  await page.locator('#player-picker .pick').nth(1).click();
+  const pondInit = await hostInit();
+  check(!('garden' in pondInit), 'Pond Hop HostInit carries no garden (lights are never stored)');
+  await gameFrame().evaluate(() => {
+    const session = { id: 's_e2epond', game: 'subtraction-grade-1', gameVersion: '1.0.0', skill: 'math.subtraction.within-20',
+      startedAt: new Date().toISOString(), durationSec: 90, questions: 10, firstTry: 6, levelStart: 1, levelEnd: 3,
+      maxDifficulty: 3, completed: true, missed: ['q-8m3', 'q-9m4', 'q-7m2', 'q-6m5'], mistakes: { 'wrong-operation': 4 }, hints: 2 };
+    parent.postMessage({ type: 'GameCompleted', session }, location.origin);
+    parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin);
+  });
+  await page.locator('.overlay').waitFor({ state: 'hidden' });
+  const pond = await page.evaluate(() => JSON.parse(localStorage.getItem('ell:v1')));
+  const ps = pond.sessions.find(x => x.id === 's_e2epond');
+  check(ps && ps.skill === 'math.subtraction.within-20' && !('rewards' in ps) && !ps.seeds, 'Pond Hop session saved with no seeds and no rewards');
+  check(!Object.values(pond.gardens || {}).some(gd => gd['subtraction-grade-1']), 'Pond Hop created no garden for any child');
+  await page.goto(origin + BASE + 'grown-ups/');
+  const gu = (await page.locator('body').textContent()).replace(/\s+/g, ' ');
+  check(gu.includes('Taking away within 20'), 'Grown-ups page lists Taking away within 20');
+  check(gu.includes('adds instead of taking away') && !gu.includes('subtracts instead of adding'), 'Grown-ups tip for the wrong operation is the subtraction one');
+  await shot(page, 'site-grown-ups-pond', true);
 
   check(errors.length === 0, `no console errors${errors.length ? ': ' + errors.join(' | ') : ''}`);
   console.log(failures ? `\n${failures} check(s) failed` : '\nPASS');

@@ -100,6 +100,13 @@ Each mechanic adds its own small fields on top of the shared item shape. Example
   ten-frame, `goal` parts or total, `spare`, `prefill`, `binKind`, `ask`). Hand-written items carry an item-form
   `fill` (`target`, `bins`). Full shape: `planning/fill-container-design.md` section 2 and the kit's
   `build/schemas/fill-container.schema.json`.
+  Kit v0.3.0 (first game: Pond Hop) adds take-away: `direction` `"remove"` (the container starts with `a`, the child
+  moves items out to one destination; generator op `-`, `binKind` required, no `spare`, `prefill` only `"a"`) and
+  `goal` `"keep"` (remove only: stop when N are left; at a keep level `q-8m5` reads "8, keep 5, how many left? 3",
+  so the How many? answer is always `item.answer`). Hand-written items cannot use remove or keep yet. Optional
+  game.json block `"sessionReward": { "type": "lights" }`: one light per solved order, drawn in the session only,
+  never stored and never sent to the website; not allowed together with `reward`. Full shape:
+  `planning/fill-container-remove-design.md` section 2.
 We define each one when its first game is built, not now. **Why:** designing 7 mechanics up front means guessing.
 Designing each one against a real game means getting it right.
 
@@ -245,7 +252,7 @@ required, so website and games can upgrade in any order.
 |---|---|---|
 | `GameReady` | `protocol`, `gameId`, `version` | game code loaded |
 | `GameStarted` | `sessionId`, `startedAt` | child taps start |
-| `GameCompleted` | the session record from section 4, without `profile`; fill-container games add optional `hints` and `rewards` | end screen shown |
+| `GameCompleted` | the session record from section 4, without `profile`; fill-container games add optional `hints`, and garden games (stored `reward`) add `rewards`. Since kit v0.3.0 a fill game with no stored reward (Pond Hop, `sessionReward` lights) sends no `rewards` key at all | end screen shown |
 | `GameExit` | `reason`: `"home"` | child taps the in-game back button |
 | `GameError` | `code` | something broke; site shows a friendly "Let's try again" |
 
