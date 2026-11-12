@@ -17,3 +17,7 @@ you can overturn any of them in the morning. Each entry says how hard it is to c
    pass.
 
 (More entries are added below as the build goes on.)
+5. **Art preview accepted by me (Sonnet made it, I checked the screenshots).** `brand/subtraction-pond/index.html`
+   (built by `build.py`). Looks consistent with the garden. Known weak spots, left as they are for v1: the dragonfly
+   (wings read as a narrow fan, tail a bit worm-like), the turtle's neck is hidden, Hazel's pointing pose is close to
+   her neutral pose. A redraw of the dragonfly is the first thing I would change if you dislike it. Easy to change.
