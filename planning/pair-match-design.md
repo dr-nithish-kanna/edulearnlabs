@@ -1,6 +1,6 @@
 # pair-match: kit design for Quilt Picnic (kit v0.4.0 to v0.5.0)
 
-Status: DESIGN, 2026-11-13. Opus design pass for the mechanic asked for in `planning/memory-match-design.md` section 8.
+Status: DESIGN and BUILT, 2026-11-13. Opus design pass for the mechanic asked for in `planning/memory-match-design.md` section 8.
 The owner was asleep and asked for an unattended build, so every open point is decided below with a recommendation,
 a reason and the default used. Built on the kit branch `ccr-4d0bb17c-4dbh4d` (continues from kit v0.4.0 at
 `fc6a32b`). Section 12 records where the build differs from this doc.
@@ -121,7 +121,7 @@ the defaults of section 10), `planning/slot-build-design.md` (the model), `plann
       column, so it never covers a card.
     - At 667 x 375 (landscape phone, scale 0.625), the back button covers the scene down to about y 112, so the board
       starts at y 124. Resulting cards: 2x2 180 scene px (112 px real), 2x3 164 (102 px), 2x4 119 (74 px),
-      3x4 119 (74 px), 4x4 109 (68 px). So small boards (2x2, 2x3) are at least 96 px and every board at least 64 px.
+      3x4 119 (74 px), 4x4 106 (66 px). So small boards (2x2, 2x3) are at least 96 px and every board at least 64 px.
     - Upright phones get the existing "Turn your phone sideways" prompt (class `ell-pair-rotate`).
 20. **Validator rules** (`build/validate.mjs`, build time only):
     - game level: `pictures` is a list of 4 or more items; each has a unique slug id, `prompt.text`, `prompt.image`
@@ -306,6 +306,41 @@ void startGame(def as unknown as GameDef, { mechanics: { 'pair-match': pairMatch
 2. `upAfterCorrect` 1 (decision 12). Default: 1 for Quilt Picnic. Raise to 2 if children climb too fast.
 3. Board layout changes every session (decision 7). Default: yes.
 
-## 12. Implementation notes
+## 12. Implementation notes (kit v0.5.0, 2026-11-13)
 
-Filled in after the build (see below).
+Built on the kit branch `ccr-4d0bb17c-4dbh4d` in two commits (logic, then screen, playground, browser checks and
+docs). Nothing from the design was cut. The `v0.5.0` tag is not on GitHub (tag pushes are blocked); the owner creates it.
+
+**Where the build differs from sections 1 to 11, and why**
+1. **4x4 cards are 106 scene px, not 109** (the board area is 466 px tall: 4 cards and 3 gaps of 14). On a 667 x 375
+   phone that is 66 px, measured in the browser check. Still at least 64.
+2. **The planner never leaves a need of exactly 1 that no picture can meet.** The first version tried to make 4 near
+   pairs on a 3x4 board from an anchor in a group of 3 (ladybug, bee, snail) and got stuck at 3. It now looks one step
+   ahead and starts a second near group instead (for example 2 bugs and 2 animals). Found by the "every anchor, every
+   level, 12 seeds, never relaxed" test.
+3. **The side-by-side rule starts at 3 pairs.** On a 2x2 board the two pairs are either both side by side or both
+   diagonal; forcing "diagonal" every time would itself be a giveaway, so 2x2 takes any layout.
+4. **`hashSeed` moved from `slot.ts` to `random.ts`** (still exported from `slot.ts`), so pair-match does not import the
+   slot module.
+5. **Skill id:** the validator wants a skill that starts with the subject, so the playground uses
+   `logic-memory.memory.matching-pairs`. `planning/memory-match-design.md` says `logic.memory.matching-pairs`; the game
+   repo must use the `logic-memory.` form (and add it to the skills list).
+6. **Clicks, not pointer events.** With no drag there is no reason for Pointer Events: one `click` listener per card
+   covers tap, mouse, Enter and Space, and `touch-action: manipulation` (base CSS) removes the tap delay.
+
+**Checks.** Unit: 211 tests (172 before plus 39 in `tests/pair.test.ts`), typecheck clean, golden files unchanged.
+Browser (`tests/pair-e2e.cjs`): 68 checks, all ok: no drag or other mechanic code in the pair bundle; a throttled full
+session that climbs 2x2, 2x3, 2x4, 3x4, 4x4 with one miss, keyboard play (Tab, arrows, Enter and Space), card sizes per
+board, the mini quilt from HostInit, notes (two flaps of a pair share a note, then a 3 note chord), the record (5 clean,
+1 miss, 0 hints, levels 1 to 5, 5 patches continuing the cycle after the last HostInit patch), the end-screen quilt;
+third-tap close, Peek after 3 misses (all 8 flaps, taps wait), Sparkle after 6 (exactly one flap, never a match), the
+completion tune after a 2.5 s fake voice line, in note order, Hazel help, Back mid-session (record not completed, then
+GameExit); reduced motion (flaps fade, no transform animation); 667 x 375 and 960 x 600 on the 4x4 board (cards, back
+button, quilt and Hazel's bubble never overlap a card); the rotate prompt on an upright phone. On the new code the
+word checks pass 66 of 66 and the fill and pond checks 327 of 327.
+
+**Size.** Pair page 15.75 KB JS with the playground skin, 14.89 KB with no skin, CSS 3.23 KB, Before Play 54.0 KB.
+About 5.5 KB more than a quiz-only game. Every other page grew about 0.15 KB (shared session changes).
+
+**Still open:** website support (HostInit `quilt`, `kind: "patch"` rewards and a `quilts` store in `progress.ts`, keep
+`misses`), the art preview and the game repo, real touch devices, the owner's `v0.5.0` tag.

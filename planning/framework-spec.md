@@ -32,7 +32,7 @@ Every ID is lowercase, stable, and never reused. Changing an ID breaks saved pro
 | `subject` | `math`, `language`, `science`, `logic-memory` | `math` |
 | `topic` | free slug inside a subject | `addition` |
 | `skill` | global micro-skill ID, `subject.topic.detail` | `math.addition.within-20` |
-| `mechanic` | `quiz`, `match`, `sort`, `order`, `memory`, `drag-drop`, `number-line`, `fill-container`, `slot-build` (`drag-drop` stays reserved, unused) | `quiz` |
+| `mechanic` | `quiz`, `match`, `sort`, `order`, `memory`, `drag-drop`, `number-line`, `fill-container`, `slot-build`, `pair-match` (`drag-drop` and `memory` stay reserved, unused) | `quiz` |
 | `difficulty` | integer 1 to 5, per level | `2` |
 
 The list of valid skills lives in one file in the website repo: `content/skills.json`. A game may only use a skill
@@ -184,6 +184,10 @@ deleting a profile deletes both; stores saved before a section existed load with
 - `walls[profile][game]`: `{ "v": 1, "words": [{ "wordId": "w-cat", "at": "2026-11-13T10:00:00Z", "session": "s_x81ka2" }] }`
   (word wall games, since 2026-11-13). Oldest first in the order saved on the device, one card per `wordId` (the first
   time stays), at most 200 cards per child per game. HostInit sends only `{ "words": [ids] }`.
+- `quilts[profile][game]`: `{ "v": 1, "patches": [{ "patch": "dots-blue", "at": "2026-11-14T10:00:00Z", "session": "s_x81ka2" }] }`
+  (quilt games, kit v0.5.0, recommended; not built on the website yet). Oldest first, every patch kept (repeats of a
+  patch id are normal), deduped by reward `id`, at most 200 per child per game. HostInit sends `{ "patches": [ids] }`,
+  at most the newest 64.
 
 ### Why this shape is ready to sync later
 - **Sessions are facts** and are only ever added, never edited. Merging two devices later is simple: put both lists
@@ -259,7 +263,7 @@ required, so website and games can upgrade in any order.
 
 | Type | Data | When |
 |---|---|---|
-| `HostInit` | `protocol`, `avatar`, `color`, `startLevel`, `practiceItems` (recently missed item IDs), `settings`, optional `garden` (garden view, garden games only), optional `wall` (`{ words: string[] }`, word ids already on the child's word wall for this game, oldest first; word wall games only, kit v0.4.0) | right after `GameReady` |
+| `HostInit` | `protocol`, `avatar`, `color`, `startLevel`, `practiceItems` (recently missed item IDs), `settings`, optional `garden` (garden view, garden games only), optional `wall` (`{ words: string[] }`, word ids already on the child's word wall for this game, oldest first; word wall games only, kit v0.4.0), optional `quilt` (`{ patches: string[] }`, patch ids on the child's quilt for this game, oldest first; quilt games only, kit v0.5.0) | right after `GameReady` |
 | `HostSettings` | `settings` | audio, music or motion toggled on the site |
 | `HostPause` / `HostResume` | none | tab hidden or shown |
 
@@ -269,7 +273,7 @@ required, so website and games can upgrade in any order.
 |---|---|---|
 | `GameReady` | `protocol`, `gameId`, `version` | game code loaded |
 | `GameStarted` | `sessionId`, `startedAt` | child taps start |
-| `GameCompleted` | the session record from section 4, without `profile`; fill-container games add optional `hints`, and garden games (stored `reward`) add `rewards`. Since kit v0.3.0 a fill game with no stored reward (Pond Hop, `sessionReward` lights) sends no `rewards` key at all. Since kit v0.4.0 word wall games (slot-build) send `hints` and one `rewards` entry per solved word, `{ id, kind: "word", wordId, at }` (`id` is session id plus question index, repeats of a word allowed: the website keeps the first per `wordId`), and `mistakes` may use the letter kinds | end screen shown |
+| `GameCompleted` | the session record from section 4, without `profile`; fill-container games add optional `hints`, and garden games (stored `reward`) add `rewards`. Since kit v0.3.0 a fill game with no stored reward (Pond Hop, `sessionReward` lights) sends no `rewards` key at all. Since kit v0.4.0 word wall games (slot-build) send `hints` and one `rewards` entry per solved word, `{ id, kind: "word", wordId, at }` (`id` is session id plus question index, repeats of a word allowed: the website keeps the first per `wordId`), and `mistakes` may use the letter kinds. Since kit v0.5.0 quilt games (pair-match) send `hints` (Peeks and Sparkles), `misses` (total misses, never shown to the child) and one `rewards` entry per finished board, `{ id, kind: "patch", patch, at }` (repeats of a patch id are normal; the website keeps every entry, deduped by `id`) | end screen shown |
 | `GameExit` | `reason`: `"home"` | child taps the in-game back button |
 | `GameError` | `code` | something broke; site shows a friendly "Let's try again" |
 
@@ -303,7 +307,7 @@ Its own repo (`edulearnlabs-kit`). Games install it pinned to a tag, for example
 | `audio` | Web Audio manager, unlock, sound sprites, voice queue, music ducking under voice, mute |
 | `ui` | tap-to-start screen, progress indicator, shared mascot slot, end screen with stars, back button |
 | `mechanics/quiz` | the first mechanic. Others are added when their first game needs them |
-| `mechanics/fill-container`, `mechanics/slot-build` | opt-in mechanics (v0.2.0 to v0.4.0); a game registers only the one it uses, so others ship none of their code |
+| `mechanics/fill-container`, `mechanics/slot-build`, `mechanics/pair-match` | opt-in mechanics (v0.2.0 to v0.5.0); a game registers only the one it uses, so others ship none of their code (pair-match has no drag code at all) |
 
 Budget: kit code 15 KB brotli or less. Game code on top: 15 KB or less. Art and audio are separate (after Play).
 
