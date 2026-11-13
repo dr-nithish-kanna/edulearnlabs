@@ -12,3 +12,11 @@ Owner accepted all defaults of the pitch and asked for an unattended build. Each
    robin tail looks a little odd, Hazel's pointing pose is subtle, letter shapes are hand-drawn paths (i, j, l, y, t are the
    least polished, please look at the alphabet sheet), and on a 667x375 phone tiles show at about 55 px (below the 64 px
    target) because the fixed 960x600 scene shrinks. The game will need a bigger-tile layout on small screens or the rotate prompt.
+6. **Kit v0.4.0 built by Opus** (kit commit `fc6a32b5c2a9de112875d38ceb1e1eb2f9ef21d8`, branch `ccr-d63a6d4f-g77ft0`).
+   I re-ran 172 unit tests and typecheck (pass) and read two screenshots. Design doc: `planning/slot-build-design.md` (13 decisions).
+   Make the `v0.4.0` tag on GitHub at that commit when you like. Key calls: a tile is judged against the slot it lands on (wrong
+   tile wobbles back, right tile stays); trial and error is allowed but never counts as first try; keyboard letters fill the
+   first empty slot left to right; no magnetic snap; wall shows pictures only during play (so a child cannot copy a spelling off
+   the wall) and picture plus word on the end screen. Kit JS for a word game is about 16.9 KB brotli (over the 15 KB target, accepted
+   like the other games). Known flakes in the older fill tests (one timing check failed once per run, one also on untouched v0.3.0).
+   Not verified: real touch devices and real speech quality (cat and cut can sound alike).
