@@ -136,3 +136,18 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
 - Owner chose MVP number 17, asked for basics only, then went to sleep. Draft design with defaults: `planning/memory-match-design.md`.
   Nothing built. Needs an Opus design pass for the new `pair-match` kit mechanic before any code.
 - Reminder: the kit's latest work (v0.4.0) is on branch `ccr-d63a6d4f-g77ft0`, not on the branch the session started on. Check `git branch -r` first.
+
+## 10. Update 2026-11-13 (night): website support for Quilt Picnic (game 4, first logic and memory game)
+
+- Built unattended, same recipe as Letter Workshop (commits `cdef932`, `e784fb2`, `82677bb`). Game id `memory-match-prek`, kit v0.5.0
+  mechanic `pair-match`, reward type quilt. Decisions: `planning/memory-match-decisions-log.md`.
+- Progress store: `quilts[profile][game]` (own `v`, newer-schema guard, facts only, deduped by reward id, 200 cap that folds the oldest
+  into a count), `HostInit.quilt` (newest 64 slugs, oldest first), `kind: "patch"` rewards stored by `addSession`, `misses` kept in the
+  stored session. Protocol stays 1.
+- Pages: `/logic-games/` (nav label "Memory games") and `/logic-games/memory-match-for-preschool/`, catalog entry, skill
+  `logic-memory.memory.matching-pairs`, home card, privacy text. The sitemap is generated, so it needed no change.
+- New testing trick: before a game is synced, the play round trip runs against a labelled STAND-IN frame (the site's own 404 page posting
+  `GameReady`, same origin and sandbox). It proves the website side only. After the sync, the same checks run against the real frame.
+- Still to do by the owner or the next session: sync the game (`npm run sync-game -- ../memory-match-prek`), which also brings
+  `poster.webp` (the catalog points at `play/memory-match-prek/poster.webp` and the source commit says PENDING until then), then
+  `npm run build && npm run test:e2e` and look for the lines that say `[real game frame]` and no `SKIPPED` line. Open: parent "My quilt" page.
