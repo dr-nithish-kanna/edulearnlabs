@@ -530,7 +530,7 @@ test('letter mistake tips: one friendly tip per kind, only once it repeats', () 
     const tip = mistakeTip(s, p.id, WSKILL)!;
     assert.match(tip, re, kind);
     assert.ok(tip.length < 170, `${kind}: short`);
-    assert.doesNotMatch(tip, /—|wrong|bad|fail|careless|lazy|should have/i, `${kind}: friendly, no blame, no em dash`);
+    assert.doesNotMatch(tip, /\u2014|wrong|bad|fail|careless|lazy|should have/i, `${kind}: friendly, no blame, no em dash`);
   }
 });
 
