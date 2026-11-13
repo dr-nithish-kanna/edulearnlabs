@@ -16,7 +16,8 @@
 10. Drag letter to object (Pre-K)
 11. Phonics: sound to letter (Kindergarten)
 12. Sight word balloons (Kindergarten)
-13. Word building (Grade 1)
+13. Word building (Grade 1). Built as "Letter Workshop" on 2026-11-13 (slot-build mechanic, kit v0.4.0, word wall
+    reward). Page at `/language-games/word-building-for-grade-1/` (`language.phonics.word-building`).
 14. Sentence completion (Grade 1)
 15. Spelling, 4 to 6 letters (Grade 2)
 16. Noun and verb sort (Grade 2)
