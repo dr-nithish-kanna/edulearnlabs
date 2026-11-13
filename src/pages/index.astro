@@ -59,11 +59,11 @@ const jsonLd = [{
       <span><strong style="font: 600 22px/1.25 var(--font-display)">Reading games</strong><br>
         <span class="muted">Letters, sounds and first words. {counts('language-games')}</span></span>
     </a>
-    <div class="card subject-card soon">
+    <a class="card subject-card" href={url('logic-games/')}>
       <span class="icon" style="background:#D2EFFC">🧩</span>
       <span><strong style="font: 600 22px/1.25 var(--font-display)">Logic and memory</strong><br>
-        <span class="muted">Patterns, odd one out, memory cards. Coming soon.</span></span>
-    </div>
+        <span class="muted">Memory pairs, patterns and odd one out. {counts('logic-games')}</span></span>
+    </a>
   </div>
 
   <AdSlot id="home-mid" />
