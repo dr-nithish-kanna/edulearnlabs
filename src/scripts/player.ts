@@ -2,7 +2,7 @@
 // The website owns all child data. The game gets an avatar, a color, a start level and practice items,
 // never a profile id. Only messages from our own iframe on our own origin are trusted.
 // Protocol rule: unknown fields are ignored on both sides, so website and games can upgrade in any order.
-import { addSession, avatarOf, gardenView, load, practiceItems, startLevel, update } from './progress';
+import { addSession, hostInitFor, load, update } from './progress';
 import { pickPlayer, renderProgress } from './site';
 
 const PROTOCOL = 1;
@@ -67,18 +67,15 @@ export function initPlayer(root: HTMLElement) {
         const s = load();
         const p = profileId ? s.profiles[profileId] : null;
         if (!p) return close();
-        // Garden games only (catalog `reward: "garden"`). The view has ids, species and stages, never the profile id.
-        const garden = reward === 'garden' ? gardenView(s, p.id, game) : undefined;
-        send({
-          type: 'HostInit', protocol: PROTOCOL, avatar: avatarOf(p).id, color: p.color,
-          startLevel: startLevel(s, p.id, game), practiceItems: practiceItems(s, p.id, game), settings: s.settings,
-          ...(garden ? { garden } : {}),
-        });
+        // The catalog `reward` decides the extras: "garden" adds the garden view, "wall" adds the word wall
+        // (word ids, oldest first). Built by a pure function in progress.ts so it is unit tested. Never the profile id.
+        send({ type: 'HostInit', protocol: PROTOCOL, ...hostInitFor(s, p, game, reward) });
         break;
       }
       case 'GameCompleted':
-        // addSession keeps known fields only, stores `hints`, and plants one seed per solved order from `rewards`
-        // under the profile WE chose. The game never says whose seeds they are.
+        // addSession keeps known fields only, stores `hints`, plants one seed per solved order (garden rewards) and
+        // puts one card per new word on the wall (word rewards), under the profile WE chose. The game never says whose
+        // rewards they are.
         if (profileId) update(s => addSession(s, profileId!, m.session));
         renderProgress();
         break;

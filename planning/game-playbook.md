@@ -118,3 +118,15 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
 5. Write `planning/<game>-design.md` with defaults for unanswered questions, then the owner critiques it.
 6. If a new kit mechanic is needed: Opus design pass doc first, then implementation.
 7. Static art preview in `brand/<game>/`, owner approves, then build.
+
+## 8. Update 2026-11-13: Letter Workshop (game 3, first language game)
+
+- Built unattended, same process as Pond Hop. Game repo `dr-nithish-kanna/word-building-grade-1` (synced at `36d8b2e`),
+  kit v0.4.0 at `fc6a32b5c2a9de112875d38ceb1e1eb2f9ef21d8` (new mechanic `slot-build`, design in
+  `planning/slot-build-design.md`). Both are untagged; the owner makes tags `v0.2.0`, `v0.3.0` and `v0.4.0` on GitHub.
+- Website: persistent word wall in the progress store (`walls`, own `v`, facts only), `HostInit.wall`, `/language-games/` category
+  (nav says "Reading games"), game page, letter mistake tips. Decisions: `planning/word-building-decisions-log.md`.
+- New lesson: check `git log` of every repo against section 1 at the start. The kit checkout was stale (v0.1.0) while the real work
+  was on another branch. Fan out in parallel (kit Opus agent, scene art, picture art), then game build and website store in parallel.
+- Open: parent "My word wall" page, real-device touch and speech check, friends hold a placeholder card, kit layout is fixed
+  (slots centered) so the preview's easel-left layout was not reproduced, recorded voice for words, portrait layout.

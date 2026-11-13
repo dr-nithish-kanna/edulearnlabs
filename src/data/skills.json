@@ -5,11 +5,22 @@
     "grade": [
       "1"
     ],
-    "topDifficulty": 5
+    "topDifficulty": 5,
+    "subject": "math"
   },
   "math.subtraction.within-20": {
     "name": "Subtraction within 20",
     "parentLabel": "Taking away within 20",
+    "grade": [
+      "1"
+    ],
+    "topDifficulty": 5,
+    "subject": "math"
+  },
+  "language.phonics.word-building": {
+    "name": "Word building",
+    "parentLabel": "Spelling short words from sounds",
+    "subject": "language",
     "grade": [
       "1"
     ],
