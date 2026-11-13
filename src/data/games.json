@@ -40,5 +40,26 @@
       "repo": "dr-nithish-kanna/subtraction-grade-1",
       "commit": "e2ed6e9"
     }
+  },
+  {
+    "id": "word-building-grade-1",
+    "title": "Letter Workshop",
+    "keywordTitle": "Word Building for Grade 1",
+    "category": "language-games",
+    "slug": "word-building-for-grade-1",
+    "grade": [
+      "1"
+    ],
+    "ages": "6 to 7",
+    "skill": "language.phonics.word-building",
+    "mechanic": "slot-build",
+    "reward": "wall",
+    "summary": "Hear a word, then drag letter tiles into place to spell it for a workshop friend. Build 36 picture words, from cat to truck, with friendly hints and a word wall that grows.",
+    "minutes": "2 to 3",
+    "poster": "play/word-building-grade-1/poster.webp",
+    "source": {
+      "repo": "dr-nithish-kanna/word-building-grade-1",
+      "commit": "PENDING"
+    }
   }
 ]
