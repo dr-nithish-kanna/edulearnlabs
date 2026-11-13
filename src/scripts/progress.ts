@@ -26,13 +26,15 @@ export interface SessionRecord {
   completed: boolean;
   missed: string[];
   mistakes: Partial<Record<MistakeKind, number>>;
-  /** fill-container and slot-build games: H2 and H3 hints shown this session. Absent in quiz records. */
+  /** fill-container, slot-build and pair-match games: hints shown this session. Absent in quiz records. */
   hints?: number;
+  /** pair-match only (kit v0.5.0): total missed pairs this session. A fact for a parent page, never shown to the child. */
+  misses?: number;
   /**
    * Garden games: one seed per solved order (moved into `gardens`). Word wall games: one word card per solved word
-   * (moved into `walls`). Never stored in the session itself.
+   * (moved into `walls`). Quilt games: one patch per finished board (moved into `quilts`). Never stored in the session itself.
    */
-  rewards?: (Reward | WordReward)[];
+  rewards?: (Reward | WordReward | PatchReward)[];
 }
 /**
  * A stored session never keeps `rewards` (they live in `gardens` and `walls`). It keeps `seeds`, the count of solved orders,
@@ -74,6 +76,24 @@ export interface Wall { v: 1; words: WallWord[] }
 /** What the game receives in HostInit: word ids only, oldest first. No profile id, no timestamps. */
 export interface WallView { words: string[] }
 
+// ---------- Quilt types (planning/pair-match-design.md, sections 2.4 and 12; memory-match-design.md, section 7) ----------
+
+/**
+ * What a pair-match game reports per finished board. Id is the session id plus the board index. `patch` is a pattern
+ * slug from the game's `reward.patches`. Unlike words, the same patch repeats all the time (a quilt has many squares of
+ * one pattern), so rewards dedupe by `id`, never by `patch`.
+ */
+export interface PatchReward { id: string; kind: 'patch'; patch: string; at: string }
+/** One square on the quilt: a fact. `id` is the reward id (the dedupe key), `session` the session that earned it. */
+export interface QuiltPatch { id: string; patch: string; at: string; session: string }
+/**
+ * v is the quilt's own schema number, like the garden's and the wall's. `folded` counts the oldest patches that were
+ * dropped past the cap, so the child's total stays exact.
+ */
+export interface Quilt { v: 1; patches: QuiltPatch[]; folded?: number }
+/** What the game receives in HostInit: patch slugs only, oldest first, newest 64 at most. No profile id, no times. */
+export interface QuiltView { patches: string[] }
+
 export interface Store {
   schema: 1;
   updatedAt: string;
@@ -87,6 +107,8 @@ export interface Store {
   gardens: Record<string, Record<string, Garden>>;
   /** walls[profile][game]. Same rule as gardens: a wall with an unknown (newer) `v` is kept as is, never written to. */
   walls: Record<string, Record<string, Wall>>;
+  /** quilts[profile][game]. Same rule as walls: a quilt with an unknown (newer) `v` is kept as is, never written to. */
+  quilts: Record<string, Record<string, Quilt>>;
   /**
    * Set when the saved document has a newer schema than this code understands (an old tab still open after a
    * deploy). The tab still works for this visit, but `save` never writes to storage, so newer data is never lost.
@@ -107,7 +129,7 @@ export const COLORS = ['orange', 'teal', 'pink', 'sky', 'sun', 'leaf'] as const;
 export const emptyStore = (): Store => ({
   schema: 1, updatedAt: new Date().toISOString(), activeProfile: null,
   settings: { audio: true, music: true, reducedMotion: false }, profiles: {}, sessions: [], totals: {}, gardens: {},
-  walls: {},
+  walls: {}, quilts: {},
 });
 
 export function randomId(prefix: string): string {
@@ -138,6 +160,8 @@ export function parseStore(raw: string | null): Store {
       gardens: isObj(d.gardens) ? d.gardens : {},
       // Stores saved before word walls existed have no `walls`: an empty default, no schema bump (same as gardens).
       walls: isObj(d.walls) ? d.walls : {},
+      // Same for quilts: stores saved before pair-match existed get an empty default, no top-level schema bump.
+      quilts: isObj(d.quilts) ? d.quilts : {},
       activeProfile: d.activeProfile && d.profiles[d.activeProfile] ? d.activeProfile : null,
     };
     delete store.readOnly; // only this function decides that, never the stored document
@@ -178,6 +202,7 @@ export function deleteProfile(store: Store, id: string) {
   delete store.totals[id];
   delete store.gardens[id];
   delete store.walls[id];
+  delete store.quilts[id];
   store.sessions = store.sessions.filter(s => s.profile !== id);
   if (store.activeProfile === id) store.activeProfile = Object.keys(store.profiles)[0] ?? null;
 }
@@ -204,11 +229,14 @@ export function addSession(store: Store, profile: string, record: unknown): bool
   const kept = Object.fromEntries(KNOWN.filter(k => k in record).map(k => [k, record[k]])) as unknown as SessionRecord;
   const stored: StoredSession = { ...kept, missed: record.missed.slice(0, 30), mistakes: isObj(record.mistakes) ? record.mistakes : {}, profile };
   if (Number.isFinite(record.hints)) stored.hints = record.hints;
+  if (Number.isFinite(record.misses) && record.misses! >= 0) stored.misses = record.misses;
   // One seed per solved order, and a solved order is a question, so never more seeds than questions.
   const rewards = validRewards(record.rewards).slice(0, Math.max(0, record.questions));
   if (rewards.length) stored.seeds = rewards.length;
   // One card per solved word, so never more cards than questions either. Repeats are fine: the wall dedupes.
   const words = validWordRewards(record.rewards).slice(0, Math.max(0, record.questions));
+  // One patch per finished board, and a pair-match question is a board, so never more patches than questions.
+  const patches = validPatchRewards(record.rewards).slice(0, Math.max(0, record.questions));
   store.sessions.push(stored);
   const mine = store.sessions.filter(s => s.profile === profile && s.game === record.game);
   for (const old of mine.slice(0, Math.max(0, mine.length - SESSIONS_KEPT))) {
@@ -218,6 +246,7 @@ export function addSession(store: Store, profile: string, record: unknown): bool
   }
   if (rewards.length) plant(store, profile, record.game, record.id, rewards);
   if (words.length) pinWords(store, profile, record.game, record.id, words);
+  if (patches.length) stitch(store, profile, record.game, record.id, patches);
   return true;
 }
 
@@ -334,10 +363,12 @@ function harvestStrayRewards(store: Store) {
     if (!isObj(s) || !('rewards' in s)) continue;
     const rewards = validRewards(s.rewards).slice(0, Math.max(0, s.questions));
     const words = validWordRewards(s.rewards).slice(0, Math.max(0, s.questions));
+    const patches = validPatchRewards(s.rewards).slice(0, Math.max(0, s.questions));
     delete s.rewards;
     if (!store.profiles[s.profile]) continue;
     if (rewards.length) { s.seeds = rewards.length; plant(store, s.profile, s.game, s.id, rewards); }
     if (words.length) pinWords(store, s.profile, s.game, s.id, words);
+    if (patches.length) stitch(store, s.profile, s.game, s.id, patches);
   }
 }
 
@@ -403,23 +434,93 @@ export function wallView(store: Store, profile: string, game: string): WallView 
   return { words: w.words.filter(isWallWord).map(x => x.wordId) };
 }
 
+// ---------- Quilt (facts: which patch, when; the game draws the quilt) ----------
+
+export const QUILT_V = 1;
+/**
+ * Patches kept per child per game. One patch per finished board and about 5 boards a session, so 200 is about 40
+ * sessions. About 90 bytes a patch, so 200 is about 18 KB. Past the cap the OLDEST fold into `folded` (a count), because
+ * the game continues its pattern from the newest patch: freezing the quilt at the cap would freeze the pattern too.
+ */
+export const QUILT_MAX_PATCHES = 200;
+/** Newest patches sent to the game (the kit design recommends at most 64). The mini quilt shows 9, the end screen 16. */
+export const QUILT_VIEW_PATCHES = 64;
+
+/** Pattern slugs like "gingham-red". Strict on purpose: slugs go back to the game and may be shown on a parent page. */
+const PATCH_RE = /^[a-z][a-z0-9-]{0,31}$/;
+const validPatchRewards = (list: unknown): PatchReward[] => {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set<string>();
+  return list.filter((r): r is PatchReward => isObj(r) && r.kind === 'patch' && typeof r.id === 'string' && r.id.length > 0 &&
+    r.id.length <= 64 && typeof r.patch === 'string' && PATCH_RE.test(r.patch) && typeof r.at === 'string' &&
+    r.at.length <= 40 && !seen.has(r.id) && !!seen.add(r.id));
+};
+
+const isQuiltV1 = (q: unknown): q is Quilt => isObj(q) && q.v === QUILT_V && Array.isArray(q.patches);
+const isQuiltPatch = (x: unknown): x is QuiltPatch => isObj(x) && typeof x.patch === 'string' && PATCH_RE.test(x.patch);
+
+/** The quilt to write to, or null when a newer quilt schema is stored (then we leave it alone). */
+function quiltFor(store: Store, profile: string, game: string): Quilt | null {
+  if (!isObj(store.quilts[profile])) store.quilts[profile] = {}; // missing or corrupt; versions live one level down
+  const byGame = store.quilts[profile];
+  // Missing or corrupt (not an object, or no `v` at all): start a fresh quilt. Anything with a `v` this code does not
+  // know is real data from newer code, so it is left alone.
+  const cur: unknown = byGame[game];
+  if (!isObj(cur) || !('v' in cur)) byGame[game] = { v: QUILT_V, patches: [] };
+  const q = byGame[game];
+  return isQuiltV1(q) ? q : null;
+}
+
+/**
+ * Adds patches in the order they were earned. A reward id already on the quilt is skipped (merge = union by id, so a
+ * repeated session or a future sync never doubles a patch), but a repeated PATTERN is normal and always kept. Order is
+ * the order of saving on this device, never the reward clock, so a wrong device clock cannot reshuffle the quilt.
+ */
+function stitch(store: Store, profile: string, game: string, session: string, rewards: PatchReward[]) {
+  const q = quiltFor(store, profile, game);
+  if (!q) return;
+  const have = new Set(q.patches.filter(isQuiltPatch).map(x => x.id));
+  for (const r of rewards) {
+    if (have.has(r.id)) continue;
+    q.patches.push({ id: r.id, patch: r.patch, at: r.at, session });
+    have.add(r.id);
+  }
+  const extra = q.patches.length - QUILT_MAX_PATCHES;
+  if (extra > 0) {
+    q.patches.splice(0, extra);
+    q.folded = (Number.isFinite(q.folded) ? q.folded! : 0) + extra;
+  }
+}
+
+/** The quilt as the game sees it (HostInit.quilt): newest 64 at most, oldest first. Undefined when the stored quilt has a newer schema. */
+export function quiltView(store: Store, profile: string, game: string): QuiltView | undefined {
+  const byGame = store.quilts[profile];
+  const q = isObj(byGame) ? byGame[game] : undefined;
+  if (q === undefined) return { patches: [] };
+  if (!isQuiltV1(q)) return undefined;
+  return { patches: q.patches.filter(isQuiltPatch).map(x => x.patch).slice(-QUILT_VIEW_PATCHES) };
+}
+
 // ---------- HostInit (the website side of the contract, kept pure so it can be unit tested) ----------
 
 /**
  * Everything HostInit carries apart from `type` and `protocol`. The catalog `reward` decides the extras:
- * "garden" adds the garden view, "wall" adds the word wall, anything else (Pond Hop's "lights") adds nothing.
+ * "garden" adds the garden view, "wall" adds the word wall, "quilt" adds the quilt, anything else (Pond Hop's "lights")
+ * adds nothing.
  * Never a profile id: the game only learns the avatar and color.
  */
 export function hostInitFor(store: Store, p: Profile, game: string, reward: string) {
   const garden = reward === 'garden' ? gardenView(store, p.id, game) : undefined;
   const wall = reward === 'wall' ? wallView(store, p.id, game) : undefined;
+  const quilt = reward === 'quilt' ? quiltView(store, p.id, game) : undefined;
   return {
     avatar: avatarOf(p).id, color: p.color,
     startLevel: startLevel(store, p.id, game), practiceItems: practiceItems(store, p.id, game), settings: store.settings,
     ...(garden ? { garden } : {}),
     ...(wall ? { wall } : {}),
+    ...(quilt ? { quilt } : {}),
   } as { avatar: string; color: string; startLevel: number; practiceItems: string[]; settings: Settings;
-    garden?: GardenView; wall?: WallView };
+    garden?: GardenView; wall?: WallView; quilt?: QuiltView };
 }
 
 // ---------- Derived values (opinions) ----------

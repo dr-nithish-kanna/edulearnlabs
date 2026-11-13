@@ -2,8 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   addSession, bestStars, createProfile, deleteProfile, emptyStore, ensureProfile, GARDEN_MAX_ITEMS, GARDEN_SPECIES,
-  clearAll, gardenView, hostInitFor, KEY, load, mastery, MAX_PROFILES, mistakeTip, parseStore, practiceItems, save, speciesFor,
-  startLevel, update, wallView, WALL_MAX_WORDS, type Reward, type SessionRecord, type Store, type WordReward,
+  clearAll, gardenView, hostInitFor, KEY, load, mastery, MAX_PROFILES, mistakeTip, parseStore, practiceItems, quiltView, QUILT_MAX_PATCHES,
+  QUILT_VIEW_PATCHES, save, speciesFor, startLevel, update, wallView, WALL_MAX_WORDS, type PatchReward, type Reward, type SessionRecord,
+  type Store, type WordReward,
 } from '../src/scripts/progress.ts';
 
 let n = 0;
@@ -493,6 +494,243 @@ test('old tab saved word rewards inside a session: next load moves them onto the
   assert.deepEqual(wallView(back, p.id, W), { words: ['w-cat', 'w-dog'] });
   assert.equal('rewards' in back.sessions[0], false);
   assert.deepEqual(parseStore(JSON.stringify(back)).walls[p.id][W].words.length, 2, 'idempotent');
+});
+
+// ---------- Quilt (planning/pair-match-design.md, sections 2.4 and 12) ----------
+
+const Q = 'memory-match-prek';
+const QSKILL = 'logic-memory.memory.matching-pairs';
+const SLUGS = ['gingham-red', 'dots-blue', 'stripe-green', 'flower-yellow'];
+/** A pair-match session: one patch reward per finished board, the pattern cycling through SLUGS from `from`. */
+const stitched = (count: number, o: Partial<SessionRecord> & { from?: number } = {}): SessionRecord => {
+  const { from = 0, ...rest } = o;
+  const r = rec({ game: Q, skill: QSKILL, questions: Math.max(count, rest.questions ?? count), hints: 0, misses: 0, ...rest });
+  r.rewards = Array.from({ length: count }, (_, i): PatchReward => ({
+    id: `${r.id}-${i}`, kind: 'patch', patch: SLUGS[(from + i) % SLUGS.length], at: `2026-11-13T10:00:0${i % 10}Z`,
+  }));
+  return r;
+};
+const quilt = (s: Store, p: string) => s.quilts[p][Q];
+
+test('patch rewards move from the session into the quilt, stripped from the stored session', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  assert.ok(addSession(s, p.id, stitched(3, { misses: 2, hints: 1 })));
+  assert.equal(quilt(s, p.id).v, 1);
+  assert.deepEqual(quilt(s, p.id).patches.map(x => x.patch), ['gingham-red', 'dots-blue', 'stripe-green']);
+  assert.deepEqual(quilt(s, p.id).patches[0], { id: `${s.sessions[0].id}-0`, patch: 'gingham-red', at: '2026-11-13T10:00:00Z', session: s.sessions[0].id });
+  assert.equal('rewards' in s.sessions[0], false);
+  assert.equal(s.sessions[0].seeds, undefined, 'patches are not garden seeds');
+  assert.equal(s.sessions[0].misses, 2, 'misses are kept as a fact');
+  assert.equal(s.sessions[0].hints, 1);
+  assert.equal(s.gardens[p.id], undefined, 'a quilt game makes no garden');
+  assert.equal(s.walls[p.id], undefined, 'a quilt game makes no word wall');
+});
+
+test('misses are stored when they are a sane number, ignored otherwise', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  addSession(s, p.id, stitched(1, { misses: 0 }));
+  assert.equal(s.sessions[0].misses, 0, 'zero misses is a fact too');
+  for (const bad of [-1, NaN, '3', null, undefined]) {
+    addSession(s, p.id, stitched(1, { misses: bad as any }));
+    assert.equal('misses' in s.sessions.at(-1)!, false, String(bad));
+  }
+  addSession(s, p.id, rec({ misses: 4 }));
+  assert.equal(s.sessions.at(-1)!.misses, 4, 'kept for any record that carries it');
+});
+
+test('quilt keeps repeats of a pattern and dedupes by reward id only', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const r = stitched(4); // gingham, dots, stripe, flower
+  addSession(s, p.id, r);
+  const again = stitched(4, { from: 3 }); // flower, gingham, dots, stripe: repeats of earlier patterns
+  addSession(s, p.id, again);
+  assert.deepEqual(quiltView(s, p.id, Q), { patches: [...SLUGS, 'flower-yellow', 'gingham-red', 'dots-blue', 'stripe-green'] });
+  assert.equal(addSession(s, p.id, r), false, 'the same session twice is not saved again');
+  assert.equal(quilt(s, p.id).patches.length, 8);
+  // The same reward ids arriving inside another session record (a replay) add nothing either.
+  const replay = stitched(2); replay.rewards = r.rewards!.slice(0, 2);
+  addSession(s, p.id, replay);
+  assert.equal(quilt(s, p.id).patches.length, 8, 'union by id');
+  const same = stitched(3); same.rewards![1].id = same.rewards![0].id; // one reward id twice inside one record
+  addSession(s, p.id, same);
+  assert.equal(quilt(s, p.id).patches.length, 10, 'two new ids added, the repeated id once');
+});
+
+test('quilt order is the order patches were earned on this device, not the reward clock', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  addSession(s, p.id, stitched(1));
+  const late = stitched(1, { from: 1 });
+  late.rewards![0].at = '2020-01-01T00:00:00Z';
+  addSession(s, p.id, late);
+  assert.deepEqual(quiltView(s, p.id, Q), { patches: ['gingham-red', 'dots-blue'] });
+});
+
+test('quilt view: slugs only, oldest first; empty for a child with no quilt; newest 64 at most', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  assert.deepEqual(quiltView(s, p.id, Q), { patches: [] });
+  addSession(s, p.id, stitched(2));
+  const v = quiltView(s, p.id, Q)!;
+  assert.deepEqual(v, { patches: ['gingham-red', 'dots-blue'] });
+  assert.doesNotMatch(JSON.stringify(v), /p_|2026|s_/, 'no profile id, no timestamps, no session ids');
+  const t = emptyStore(); const q = ensureProfile(t);
+  for (let k = 0; k < 8; k++) addSession(t, q.id, stitched(10, { from: k * 10 }));
+  const big = quiltView(t, q.id, Q)!.patches;
+  assert.equal(big.length, QUILT_VIEW_PATCHES);
+  assert.equal(quilt(t, q.id).patches.length, 80, 'all 80 are stored');
+  assert.equal(big.at(-1), quilt(t, q.id).patches.at(-1)!.patch, 'the newest is last');
+  assert.equal(big[0], quilt(t, q.id).patches[80 - 64].patch, 'the view is the newest 64');
+});
+
+test('invalid patch rewards are dropped; unknown kinds are ignored; never more patches than questions', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const r = stitched(1);
+  r.rewards!.push(
+    r.rewards![0],
+    { id: 'a', kind: 'patch', patch: '<img src=x>', at: 'x' } as any,
+    { id: 'b', kind: 'patch', patch: '', at: 'x' } as any,
+    { id: 'c', kind: 'patch', patch: 'p' + 'x'.repeat(40), at: 'x' } as any,
+    { id: 'd', kind: 'patch', patch: 'dots-blue' } as any, // no time
+    { id: '', kind: 'patch', patch: 'dots-blue', at: 'x' } as any,
+    { id: 'e', kind: 'sticker', patch: 'dots-blue', at: 'x' } as any,
+    { id: 'f', kind: 'patch', patch: 42, at: 'x' } as any,
+    { id: 'g', kind: 'patch', patch: 'Dots-Blue', at: 'x' } as any, // slugs are lower case
+    'dots-blue' as any, null as any,
+  );
+  addSession(s, p.id, r);
+  assert.deepEqual(quiltView(s, p.id, Q), { patches: ['gingham-red'] });
+  addSession(s, p.id, stitched(5, { questions: 2 }));
+  assert.deepEqual(quiltView(s, p.id, Q), { patches: ['gingham-red', 'gingham-red', 'dots-blue'] }, 'two boards, two patches');
+  const notList = rec({ game: Q, skill: QSKILL }) as any; notList.rewards = { id: 'x', kind: 'patch' };
+  assert.ok(addSession(s, p.id, notList), 'a broken rewards field never blocks saving the session');
+});
+
+test('quilt is capped: the oldest fold into a count, the newest stay, the pattern can continue', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const total = QUILT_MAX_PATCHES + 15;
+  for (let k = 0; k < total; k += 5) addSession(s, p.id, stitched(5, { from: k }));
+  const q = quilt(s, p.id);
+  assert.equal(q.patches.length, QUILT_MAX_PATCHES);
+  assert.equal(q.folded, 15, 'the total stays exact: kept plus folded');
+  assert.equal(q.patches.at(-1)!.patch, SLUGS[(total - 1) % SLUGS.length], 'the newest patch is still the last');
+  assert.equal(quiltView(s, p.id, Q)!.patches.length, QUILT_VIEW_PATCHES);
+  assert.deepEqual(parseStore(JSON.stringify(s)).quilts[p.id][Q], q, 'survives a load and save');
+});
+
+test('quilts are per child and per game; deleting a child deletes their quilt', () => {
+  const s = emptyStore(); const p = ensureProfile(s); const q = createProfile(s)!;
+  addSession(s, p.id, stitched(1));
+  addSession(s, q.id, stitched(2, { from: 1 }));
+  addSession(s, q.id, stitched(1, { from: 2, game: 'memory-match-k' }));
+  assert.deepEqual(quiltView(s, q.id, Q), { patches: ['dots-blue', 'stripe-green'] });
+  assert.deepEqual(quiltView(s, q.id, 'memory-match-k'), { patches: ['stripe-green'] });
+  assert.deepEqual(quiltView(s, p.id, Q), { patches: ['gingham-red'] });
+  deleteProfile(s, p.id);
+  assert.equal(s.quilts[p.id], undefined);
+  assert.deepEqual(quiltView(s, q.id, Q), { patches: ['dots-blue', 'stripe-green'] });
+});
+
+test('a quilt with a newer sub-schema is kept untouched, never written to and not shown', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const future = { v: 2, squares: [{ any: 'thing' }] };
+  (s.quilts as any)[p.id] = { [Q]: future };
+  addSession(s, p.id, stitched(2, { misses: 1 }));
+  assert.deepEqual(s.quilts[p.id][Q], future);
+  assert.equal(quiltView(s, p.id, Q), undefined);
+  assert.equal(s.sessions.length, 1, 'the session itself is still saved');
+  assert.equal(s.sessions[0].misses, 1, 'and keeps its facts');
+  assert.deepEqual(parseStore(JSON.stringify(s)).quilts[p.id][Q], future, 'survives a load and save');
+  assert.equal(hostInitFor(s, s.profiles[p.id], Q, 'quilt').quilt, undefined, 'HostInit sends no quilt it cannot read');
+});
+
+test('a store written before quilts existed loads, gets an empty quilts field and keeps schema 1', () => {
+  const doc = {
+    schema: 1, profiles: { p_a: { id: 'p_a', avatar: 'fox', color: 'orange', createdAt: 'x' } }, activeProfile: 'p_a',
+    sessions: [{ ...rec(), profile: 'p_a' }], gardens: {}, walls: { p_a: { [W]: { v: 1, words: [{ wordId: 'w-cat', at: 'x', session: 's' }] } } },
+  };
+  const { data } = fakeStorage({ [KEY]: JSON.stringify(doc) });
+  const s = load();
+  assert.deepEqual(s.quilts, {});
+  assert.equal(s.readOnly, undefined);
+  update(st => addSession(st, 'p_a', stitched(2)));
+  const saved = JSON.parse(data.get(KEY)!);
+  assert.equal(saved.schema, 1, 'top-level schema stays 1');
+  assert.deepEqual(saved.quilts.p_a[Q].patches.map((x: any) => x.patch), ['gingham-red', 'dots-blue']);
+  assert.deepEqual(saved.walls, doc.walls, 'walls untouched');
+  for (const bad of ['x', 7, [], null]) assert.deepEqual(parseStore(JSON.stringify({ ...doc, quilts: bad })).quilts, {});
+});
+
+test('corrupt quilt data never crashes saving or HostInit', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  (s.quilts as any)[p.id] = 'broken';
+  assert.ok(addSession(s, p.id, stitched(1)));
+  assert.deepEqual(quiltView(s, p.id, Q), { patches: ['gingham-red'] });
+  (s.quilts as any)[p.id][Q].patches.push(null, { patch: 7 }, { patch: '<b>' });
+  assert.deepEqual(quiltView(s, p.id, Q), { patches: ['gingham-red'] }, 'junk entries are not shown');
+  addSession(s, p.id, stitched(1, { from: 1 }));
+  assert.deepEqual(quiltView(s, p.id, Q), { patches: ['gingham-red', 'dots-blue'] });
+  for (const bad of ['x', 3, null, { patches: 'nope' }]) {
+    (s.quilts as any)[p.id][Q] = bad; // no `v`: corrupt, not newer, so a fresh quilt replaces it
+    assert.ok(addSession(s, p.id, stitched(1, { from: 2 })));
+    assert.deepEqual(quiltView(s, p.id, Q), { patches: ['stripe-green'] }, JSON.stringify(bad));
+  }
+});
+
+test('gardens, walls and quilts side by side: each game feeds only its own reward', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  addSession(s, p.id, played(2));
+  addSession(s, p.id, spelled(['w-cat']));
+  addSession(s, p.id, stitched(3));
+  const mixed = rec({ game: Q, skill: QSKILL, questions: 4 }); // one list with all kinds: each goes to its own place
+  mixed.rewards = [
+    { id: mixed.id + '-0', kind: 'patch', patch: 'dots-blue', at: 'x' },
+    { id: mixed.id + '-1', kind: 'word', wordId: 'w-sun', at: 'x' },
+    { id: mixed.id + '-2', kind: 'garden', species: 'tulip', at: 'x' },
+  ] as any;
+  addSession(s, p.id, mixed);
+  const back = parseStore(JSON.stringify(s));
+  assert.deepEqual(quiltView(back, p.id, Q), { patches: ['gingham-red', 'dots-blue', 'stripe-green', 'dots-blue'] });
+  assert.deepEqual(wallView(back, p.id, W), { words: ['w-cat'] }, 'the word game keeps its own wall');
+  assert.deepEqual(wallView(back, p.id, Q), { words: ['w-sun'] }, 'a word reward inside a quilt record goes to that game\'s wall');
+  assert.equal(gardenView(back, p.id, G)!.total, 2, 'the addition garden is untouched');
+  assert.equal(gardenView(back, p.id, Q)!.total, 1, 'a garden reward inside a quilt record goes to that game\'s garden');
+  assert.equal(back.quilts[p.id][G], undefined, 'the garden game has no quilt');
+  assert.equal(back.quilts[p.id][W], undefined, 'the word game has no quilt');
+  deleteProfile(back, p.id);
+  assert.deepEqual([back.quilts, back.walls, back.gardens, back.sessions], [{}, {}, {}, []]);
+});
+
+test('old tab saved patch rewards inside a session: next load moves them onto the quilt', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const r = stitched(3);
+  s.sessions.push({ ...r, profile: p.id } as any);
+  const back = parseStore(JSON.stringify(s));
+  assert.deepEqual(quiltView(back, p.id, Q), { patches: ['gingham-red', 'dots-blue', 'stripe-green'] });
+  assert.equal('rewards' in back.sessions[0], false);
+  assert.equal(back.sessions[0].misses, 0, 'misses survive the move');
+  assert.equal(parseStore(JSON.stringify(back)).quilts[p.id][Q].patches.length, 3, 'idempotent');
+});
+
+test('HostInit: quilt games get a quilt, nobody else does; never a profile id', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  addSession(s, p.id, played(2));
+  addSession(s, p.id, spelled(['w-cat']));
+  addSession(s, p.id, stitched(3, { levelEnd: 4, missed: ['q-3'] }));
+  const quiltInit = hostInitFor(s, p, Q, 'quilt');
+  assert.deepEqual(Object.keys(quiltInit).sort(), ['avatar', 'color', 'practiceItems', 'quilt', 'settings', 'startLevel']);
+  assert.deepEqual(quiltInit.quilt, { patches: ['gingham-red', 'dots-blue', 'stripe-green'] });
+  assert.equal(quiltInit.startLevel, 3);
+  assert.deepEqual(quiltInit.practiceItems, ['q-3']);
+  assert.equal(hostInitFor(emptyStore(), p, Q, 'quilt').quilt!.patches.length, 0, 'a new child gets an empty quilt');
+  assert.equal(hostInitFor(s, p, Q, 'garden').quilt, undefined, 'the catalog reward decides, not the game id');
+  for (const other of [hostInitFor(s, p, G, 'garden'), hostInitFor(s, p, W, 'wall'), hostInitFor(s, p, 'subtraction-grade-1', 'lights')])
+    assert.equal('quilt' in other, false);
+  assert.doesNotMatch(JSON.stringify(quiltInit), /p_/);
+});
+
+test('misses never turn into a parent tip (a memory miss has no kind)', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  for (let i = 0; i < 4; i++) addSession(s, p.id, stitched(1, { misses: 9, mistakes: {} }));
+  assert.equal(mistakeTip(s, p.id, QSKILL), null);
 });
 
 // ---------- HostInit (what player.ts sends) ----------
