@@ -184,10 +184,12 @@ deleting a profile deletes both; stores saved before a section existed load with
 - `walls[profile][game]`: `{ "v": 1, "words": [{ "wordId": "w-cat", "at": "2026-11-13T10:00:00Z", "session": "s_x81ka2" }] }`
   (word wall games, since 2026-11-13). Oldest first in the order saved on the device, one card per `wordId` (the first
   time stays), at most 200 cards per child per game. HostInit sends only `{ "words": [ids] }`.
-- `quilts[profile][game]`: `{ "v": 1, "patches": [{ "patch": "dots-blue", "at": "2026-11-14T10:00:00Z", "session": "s_x81ka2" }] }`
-  (quilt games, kit v0.5.0, recommended; not built on the website yet). Oldest first, every patch kept (repeats of a
-  patch id are normal), deduped by reward `id`, at most 200 per child per game. HostInit sends `{ "patches": [ids] }`,
-  at most the newest 64.
+- `quilts[profile][game]`: `{ "v": 1, "patches": [{ "id": "s_x81ka2-0", "patch": "dots-blue", "at": "2026-11-14T10:00:00Z", "session": "s_x81ka2" }], "folded": 0 }`
+  (quilt games, kit v0.5.0, built on the website 2026-11-13). Oldest first in the order saved on the device, every patch
+  kept (repeats of a patch slug are normal), deduped by reward `id` (which is kept in the entry), never more patches than
+  questions in one session. At most 200 per child per game: past that the OLDEST fold into the `folded` count (the game
+  continues its pattern from the newest patch, so freezing the quilt would freeze the pattern). HostInit sends only
+  `{ "patches": [slugs] }`, at most the newest 64, oldest first. A stored session keeps `misses` (pair-match, 0 or more).
 
 ### Why this shape is ready to sync later
 - **Sessions are facts** and are only ever added, never edited. Merging two devices later is simple: put both lists
