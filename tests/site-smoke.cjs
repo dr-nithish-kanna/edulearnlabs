@@ -358,7 +358,7 @@ async function playFullGame(page) {
     await page.locator(`main a[href="${BASE}logic-games/"]`).count() >= 1, 'memory game page: links to Letter Workshop, Addition Garden and the category');
   const memText = await page.locator('main').innerText();
   check(/quilt/i.test(memText) && /Nothing is sent anywhere/.test(memText), 'memory game page: explains the quilt stays on this device');
-  check(!/—/.test(memText), 'memory game page: no em dashes');
+  check(!/\u2014/.test(memText), 'memory game page: no em dashes');
   const sitemap2 = fs.readdirSync(DIST).filter(f => /^sitemap-\d+\.xml$/.test(f)).map(f => fs.readFileSync(path.join(DIST, f), 'utf8')).join('');
   check(sitemap2.includes('/logic-games/</loc>') && sitemap2.includes('/logic-games/memory-match-for-preschool/</loc>') && !sitemap2.includes('/play/'),
     'sitemap lists the logic category and the memory game page, and no /play/ files');
