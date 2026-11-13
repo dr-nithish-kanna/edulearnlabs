@@ -7,6 +7,9 @@ export const MAX_PROFILES = 12;
 const SESSIONS_KEPT = 50; // per profile per game; older ones fold into totals
 
 export type DistractorKind = 'off-by-one' | 'off-by-two' | 'wrong-operation';
+/** Word games (slot-build, kit v0.4.0): how a letter tile missed. Recorded at most once per word by the kit. */
+export type LetterMistake = 'letter-order' | 'wrong-vowel' | 'look-alike' | 'wrong-letter';
+export type MistakeKind = DistractorKind | LetterMistake;
 
 export interface SessionRecord {
   id: string;
@@ -22,14 +25,17 @@ export interface SessionRecord {
   maxDifficulty: number;
   completed: boolean;
   missed: string[];
-  mistakes: Partial<Record<DistractorKind, number>>;
-  /** fill-container games: H2 and H3 hints shown this session. Absent in quiz records. */
+  mistakes: Partial<Record<MistakeKind, number>>;
+  /** fill-container and slot-build games: H2 and H3 hints shown this session. Absent in quiz records. */
   hints?: number;
-  /** fill-container games: garden seeds earned, one per solved order. Moved into `gardens` on save, never stored here. */
-  rewards?: Reward[];
+  /**
+   * Garden games: one seed per solved order (moved into `gardens`). Word wall games: one word card per solved word
+   * (moved into `walls`). Never stored in the session itself.
+   */
+  rewards?: (Reward | WordReward)[];
 }
 /**
- * A stored session never keeps `rewards` (they live in `gardens`). It keeps `seeds`, the count of solved orders,
+ * A stored session never keeps `rewards` (they live in `gardens` and `walls`). It keeps `seeds`, the count of solved orders,
  * because growth needs to know which sessions had at least one, even after old garden items are folded away.
  */
 export interface StoredSession extends Omit<SessionRecord, 'rewards'> { profile: string; seeds?: number }
@@ -57,6 +63,17 @@ export interface GardenView {
   meadow?: Record<string, number>;
 }
 
+// ---------- Word wall types (planning/slot-build-design.md, decision 13) ----------
+
+/** What a word game reports per solved word. Id is the session id plus the question index; wordId is the item id. */
+export interface WordReward { id: string; kind: 'word'; wordId: string; at: string }
+/** One card on the wall: a fact. `at` is when it was FIRST earned, `session` the session that earned it. */
+export interface WallWord { wordId: string; at: string; session: string }
+/** v is the wall's own schema number, like the garden's: the wall can change shape without a top-level schema bump. */
+export interface Wall { v: 1; words: WallWord[] }
+/** What the game receives in HostInit: word ids only, oldest first. No profile id, no timestamps. */
+export interface WallView { words: string[] }
+
 export interface Store {
   schema: 1;
   updatedAt: string;
@@ -68,6 +85,8 @@ export interface Store {
   totals: Record<string, Record<string, Totals>>;
   /** gardens[profile][game]. A garden with an unknown (newer) `v` is kept as is and never written to. */
   gardens: Record<string, Record<string, Garden>>;
+  /** walls[profile][game]. Same rule as gardens: a wall with an unknown (newer) `v` is kept as is, never written to. */
+  walls: Record<string, Record<string, Wall>>;
   /**
    * Set when the saved document has a newer schema than this code understands (an old tab still open after a
    * deploy). The tab still works for this visit, but `save` never writes to storage, so newer data is never lost.
@@ -88,6 +107,7 @@ export const COLORS = ['orange', 'teal', 'pink', 'sky', 'sun', 'leaf'] as const;
 export const emptyStore = (): Store => ({
   schema: 1, updatedAt: new Date().toISOString(), activeProfile: null,
   settings: { audio: true, music: true, reducedMotion: false }, profiles: {}, sessions: [], totals: {}, gardens: {},
+  walls: {},
 });
 
 export function randomId(prefix: string): string {
@@ -116,6 +136,8 @@ export function parseStore(raw: string | null): Store {
       settings: { ...s.settings, ...d.settings },
       totals: isObj(d.totals) ? d.totals : {},
       gardens: isObj(d.gardens) ? d.gardens : {},
+      // Stores saved before word walls existed have no `walls`: an empty default, no schema bump (same as gardens).
+      walls: isObj(d.walls) ? d.walls : {},
       activeProfile: d.activeProfile && d.profiles[d.activeProfile] ? d.activeProfile : null,
     };
     delete store.readOnly; // only this function decides that, never the stored document
@@ -155,6 +177,7 @@ export function deleteProfile(store: Store, id: string) {
   delete store.profiles[id];
   delete store.totals[id];
   delete store.gardens[id];
+  delete store.walls[id];
   store.sessions = store.sessions.filter(s => s.profile !== id);
   if (store.activeProfile === id) store.activeProfile = Object.keys(store.profiles)[0] ?? null;
 }
@@ -184,6 +207,8 @@ export function addSession(store: Store, profile: string, record: unknown): bool
   // One seed per solved order, and a solved order is a question, so never more seeds than questions.
   const rewards = validRewards(record.rewards).slice(0, Math.max(0, record.questions));
   if (rewards.length) stored.seeds = rewards.length;
+  // One card per solved word, so never more cards than questions either. Repeats are fine: the wall dedupes.
+  const words = validWordRewards(record.rewards).slice(0, Math.max(0, record.questions));
   store.sessions.push(stored);
   const mine = store.sessions.filter(s => s.profile === profile && s.game === record.game);
   for (const old of mine.slice(0, Math.max(0, mine.length - SESSIONS_KEPT))) {
@@ -192,6 +217,7 @@ export function addSession(store: Store, profile: string, record: unknown): bool
     store.sessions.splice(store.sessions.indexOf(old), 1);
   }
   if (rewards.length) plant(store, profile, record.game, record.id, rewards);
+  if (words.length) pinWords(store, profile, record.game, record.id, words);
   return true;
 }
 
@@ -307,11 +333,93 @@ function harvestStrayRewards(store: Store) {
   for (const s of store.sessions as (StoredSession & { rewards?: unknown })[]) {
     if (!isObj(s) || !('rewards' in s)) continue;
     const rewards = validRewards(s.rewards).slice(0, Math.max(0, s.questions));
+    const words = validWordRewards(s.rewards).slice(0, Math.max(0, s.questions));
     delete s.rewards;
-    if (!rewards.length || !store.profiles[s.profile]) continue;
-    s.seeds = rewards.length;
-    plant(store, s.profile, s.game, s.id, rewards);
+    if (!store.profiles[s.profile]) continue;
+    if (rewards.length) { s.seeds = rewards.length; plant(store, s.profile, s.game, s.id, rewards); }
+    if (words.length) pinWords(store, s.profile, s.game, s.id, words);
   }
+}
+
+// ---------- Word wall (facts: which words, first earned when; the game draws the shelf) ----------
+
+export const WALL_V = 1;
+/**
+ * Cards kept per child per game. A word game's bank is small (Letter Workshop has about 40 words) and a word counts
+ * once, so a real child never gets near this. It only bounds storage if a buggy game sends made-up ids.
+ * About 70 bytes a card, so 200 is about 14 KB.
+ */
+export const WALL_MAX_WORDS = 200;
+
+/** Item ids like "w-cat". Strict on purpose: ids go back to the game and may be shown on a parent page later. */
+const WORD_ID_RE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,47}$/;
+const validWordRewards = (list: unknown): WordReward[] => {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set<string>();
+  return list.filter((r): r is WordReward => isObj(r) && r.kind === 'word' && typeof r.id === 'string' && r.id.length > 0 &&
+    r.id.length <= 64 && typeof r.wordId === 'string' && WORD_ID_RE.test(r.wordId) && typeof r.at === 'string' &&
+    r.at.length <= 40 && !seen.has(r.id) && !!seen.add(r.id));
+};
+
+const isWallV1 = (w: unknown): w is Wall => isObj(w) && w.v === WALL_V && Array.isArray(w.words);
+const isWallWord = (x: unknown): x is WallWord => isObj(x) && typeof x.wordId === 'string' && WORD_ID_RE.test(x.wordId);
+
+/** The wall to write to, or null when a newer wall schema is stored (then we leave it alone). */
+function wallFor(store: Store, profile: string, game: string): Wall | null {
+  if (!isObj(store.walls[profile])) store.walls[profile] = {}; // missing or corrupt; versions live one level down
+  const byGame = store.walls[profile];
+  // Missing or corrupt (not an object, or no `v` at all): start a fresh wall. Anything with a `v` this code does not
+  // know is real data from newer code, so it is left alone.
+  const cur: unknown = byGame[game];
+  if (!isObj(cur) || !('v' in cur)) byGame[game] = { v: WALL_V, words: [] };
+  const w = byGame[game];
+  return isWallV1(w) ? w : null;
+}
+
+/**
+ * Adds cards in the order they were earned. A word already on the wall is skipped, so its first time stays
+ * (merge = union by wordId, which also keeps a future sync simple). Order is the order of saving on this device,
+ * never the reward clock, so a wrong device clock cannot reshuffle the shelf. Past the cap, new words are not added:
+ * cards a child earned are never dropped to make room.
+ */
+function pinWords(store: Store, profile: string, game: string, session: string, rewards: WordReward[]) {
+  const w = wallFor(store, profile, game);
+  if (!w) return;
+  const have = new Set(w.words.filter(isWallWord).map(x => x.wordId));
+  for (const r of rewards) {
+    if (have.has(r.wordId)) continue;
+    if (w.words.length >= WALL_MAX_WORDS) break;
+    w.words.push({ wordId: r.wordId, at: r.at, session });
+    have.add(r.wordId);
+  }
+}
+
+/** The wall as the game sees it (HostInit.wall), oldest first. Undefined when the stored wall has a newer schema. */
+export function wallView(store: Store, profile: string, game: string): WallView | undefined {
+  const byGame = store.walls[profile];
+  const w = isObj(byGame) ? byGame[game] : undefined;
+  if (w === undefined) return { words: [] };
+  if (!isWallV1(w)) return undefined;
+  return { words: w.words.filter(isWallWord).map(x => x.wordId) };
+}
+
+// ---------- HostInit (the website side of the contract, kept pure so it can be unit tested) ----------
+
+/**
+ * Everything HostInit carries apart from `type` and `protocol`. The catalog `reward` decides the extras:
+ * "garden" adds the garden view, "wall" adds the word wall, anything else (Pond Hop's "lights") adds nothing.
+ * Never a profile id: the game only learns the avatar and color.
+ */
+export function hostInitFor(store: Store, p: Profile, game: string, reward: string) {
+  const garden = reward === 'garden' ? gardenView(store, p.id, game) : undefined;
+  const wall = reward === 'wall' ? wallView(store, p.id, game) : undefined;
+  return {
+    avatar: avatarOf(p).id, color: p.color,
+    startLevel: startLevel(store, p.id, game), practiceItems: practiceItems(store, p.id, game), settings: store.settings,
+    ...(garden ? { garden } : {}),
+    ...(wall ? { wall } : {}),
+  } as { avatar: string; color: string; startLevel: number; practiceItems: string[]; settings: Settings;
+    garden?: GardenView; wall?: WallView };
 }
 
 // ---------- Derived values (opinions) ----------
@@ -371,19 +479,33 @@ const WRONG_OPERATION_TIPS = {
   subtraction: 'Sometimes adds instead of taking away. Point at the minus sign and say "minus means take away", then count what is left.',
 };
 
+/**
+ * Word games (kit v0.4.0). Written for a parent of a 5 to 7 year old: these slips are normal at this age, so each tip
+ * says what is happening in plain words and gives one thing to try together. Never blames the child.
+ */
+const LETTER_TIPS: Record<LetterMistake, string> = {
+  'letter-order': 'Knows the letters, and sometimes puts them in a different order. Say the word slowly together and point left to right.',
+  'wrong-vowel': 'Sometimes mixes up the middle sound, like cut for cat. Stretch the word, "c-a-a-t", and listen for the vowel together.',
+  'look-alike': 'Sometimes swaps letters that look alike, like b and d. Very common at this age. Trace the letter and say its sound.',
+  'wrong-letter': 'Sometimes picks a letter that is not in the word. Say the word one sound at a time and find each sound together.',
+};
+
 /** Plain words for parents: which mistake shows up most for this skill, if any shows up often. */
 export function mistakeTip(store: Store, profile: string, skill: string): string | null {
-  const counts: Partial<Record<DistractorKind, number>> = {};
+  const counts: Record<string, number> = {};
   for (const s of sessionsOf(store, profile, x => x.skill === skill).slice(-5))
-    for (const [k, n] of Object.entries(s.mistakes)) counts[k as DistractorKind] = (counts[k as DistractorKind] ?? 0) + (n ?? 0);
-  const [kind, n] = (Object.entries(counts) as [DistractorKind, number][]).sort((a, b) => b[1] - a[1])[0] ?? [];
+    for (const [k, n] of Object.entries(isObj(s.mistakes) ? s.mistakes : {})) counts[k] = (counts[k] ?? 0) + (Number(n) || 0);
+  const [kind, n] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0] ?? [];
   if (!kind || n < 3) return null;
   if (kind === 'wrong-operation' && skill.startsWith('math.subtraction.')) return WRONG_OPERATION_TIPS.subtraction;
-  return {
+  const tips: Record<string, string> = {
     'off-by-one': 'Often lands one away from the answer. Counting on fingers or dots, slowly, helps.',
     'off-by-two': 'Sometimes lands two away from the answer. Practice counting on from the bigger number.',
     'wrong-operation': WRONG_OPERATION_TIPS.default,
-  }[kind];
+    ...LETTER_TIPS,
+  };
+  // A kind this code does not know yet (a newer game) gets no tip rather than a wrong one.
+  return Object.prototype.hasOwnProperty.call(tips, kind) ? tips[kind] : null;
 }
 
 // ---------- Persistence ----------
