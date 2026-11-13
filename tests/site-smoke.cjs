@@ -23,9 +23,13 @@ let failures = 0;
 // needs /play/word-building-grade-1/ is skipped OUT LOUD (a silent skip proves nothing, see the playbook).
 const WORD = 'word-building-grade-1';
 const WORD_SYNCED = fs.existsSync(path.join(DIST, 'play', WORD, 'index.html'));
+// Quilt Picnic (memory-match-prek) is the same: its pages and the quilt store are checked without a build, and the play
+// round trip runs against a labelled STAND-IN frame (see below) until `npm run sync-game -- ../memory-match-prek` is done.
+const MEMORY = 'memory-match-prek';
+const MEMORY_SYNCED = fs.existsSync(path.join(DIST, 'play', MEMORY, 'index.html'));
 const skipped = [];
 const skip = msg => { console.log(`SKIPPED: game build not synced: ${msg}`); skipped.push(msg); };
-let unsyncedMisses = 0; // requests for the missing build (poster, manifest) that 404 before the sync
+let unsyncedMisses = 0; // requests for the missing builds (poster, manifest) that 404 before the sync
 // Screenshots only when SHOTS=<folder> is set, for a human to look at.
 const shot = (page, name, fullPage = false) => process.env.SHOTS ? page.screenshot({ path: `${process.env.SHOTS}/${name}.png`, fullPage }) : null;
 const check = (ok, msg) => { console.log(`${ok ? 'ok  ' : 'FAIL'} ${msg}`); if (!ok) failures++; };
@@ -73,9 +77,11 @@ async function playFullGame(page) {
     if (m.type() !== 'error') return;
     // Before the sync, the Letter Workshop poster and asset manifest 404. Counted and reported, never silently dropped.
     if (!WORD_SYNCED && (m.location().url || '').includes(`/play/${WORD}/`)) { unsyncedMisses++; return; }
+    if (!MEMORY_SYNCED && (m.location().url || '').includes(`/play/${MEMORY}/`)) { unsyncedMisses++; return; }
     errors.push(m.text());
   });
   if (!WORD_SYNCED) console.log(`SKIPPED: game build not synced: dist/play/${WORD}/ is missing, so the Letter Workshop play checks below are skipped. Run npm run sync-game -- ../${WORD}, then npm run build && npm run test:e2e.`);
+  if (!MEMORY_SYNCED) console.log(`SKIPPED: game build not synced: dist/play/${MEMORY}/ is missing, so the real-game Quilt Picnic checks are replaced by STAND-IN frame checks below (labelled). Run npm run sync-game -- ../${MEMORY}, then npm run build && npm run test:e2e.`);
   await page.addInitScript(() => {
     window.__cls = 0;
     new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; })
@@ -98,7 +104,8 @@ async function playFullGame(page) {
 
   // Every page: one H1, a title, a description, no layout shift.
   for (const p of ['', 'math-games/', 'math-games/addition-for-grade-1/', 'math-games/subtraction-for-grade-1/',
-    'language-games/', 'language-games/word-building-for-grade-1/', 'grown-ups/', 'privacy/']) {
+    'language-games/', 'language-games/word-building-for-grade-1/', 'logic-games/', 'logic-games/memory-match-for-preschool/',
+    'grown-ups/', 'privacy/']) {
     const t0 = Date.now();
     await page.goto(origin + BASE + p, { waitUntil: 'load' });
     const loadMs = Date.now() - t0;
@@ -231,6 +238,11 @@ async function playFullGame(page) {
   check(home.includes('2 games ready, 6 on the way') && home.includes('1 game ready, 7 on the way'),
     'home page counts: math 2 ready 6 on the way, reading 1 ready 7 on the way');
   check(await page.locator(`main a.subject-card[href="${BASE}language-games/"]`).count() === 1, 'home page Reading games card links to /language-games/');
+  check(home.includes('1 game ready, 3 on the way'), 'home page counts: logic 1 ready 3 on the way (Memory flip cards is off the coming-soon list)');
+  check(await page.locator(`main a.subject-card[href="${BASE}logic-games/"]`).count() === 1, 'home page Logic and memory card links to /logic-games/');
+  check(await page.locator(`main a.game-card[href="${BASE}logic-games/memory-match-for-preschool/"]`).count() === 1, 'home page lists Quilt Picnic');
+  check(await page.locator(`.site-header nav a[href="${BASE}logic-games/"]`).innerText() === 'Memory games' &&
+    await page.locator(`.site-footer nav a[href="${BASE}logic-games/"]`).innerText() === 'Memory games', 'header and footer navigation have a Memory games entry');
   check(await page.locator(`main a.game-card[href="${BASE}language-games/word-building-for-grade-1/"]`).count() === 1, 'home page lists Letter Workshop');
   await page.goto(origin + BASE + 'language-games/');
   check((await page.locator('h1').innerText()).includes('reading and language games'), 'language category page: H1');
@@ -310,6 +322,111 @@ async function playFullGame(page) {
   await gameFrame().evaluate(() => parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin));
   await page.locator('.overlay').waitFor({ state: 'hidden' });
 
+
+  // ---------- Quilt Picnic: category page, game page, navigation, sitemap (no game build needed) ----------
+  await page.goto(origin + BASE + 'logic-games/');
+  check((await page.locator('h1').innerText()).includes('memory and logic games'), 'logic category page: H1');
+  check(await page.locator('.site-header a[aria-current="page"]').innerText() === 'Memory games', 'logic category page: Memory games is the current nav item');
+  check(await page.locator(`.crumbs a.back[href="${BASE}"]`).count() === 1 && (await page.locator('.crumbs [aria-current=page]').innerText()) === 'Memory games',
+    'logic category page: breadcrumbs Home > Memory games with a back button');
+  check(await page.locator(`.grid a.game-card[href="${BASE}logic-games/memory-match-for-preschool/"]`).count() === 1, 'logic category page: lists the memory game');
+  const logicSoon = await page.locator('.soon-list').innerText();
+  check(!/Memory flip cards/.test(logicSoon) && /Odd one out/.test(logicSoon), 'logic category page: Memory flip cards is off the coming-soon list');
+  const logicWords = await words('main');
+  check(logicWords >= 500 && logicWords <= 1100, `logic category page: ${logicWords} words of text (target 500 to 1000 of prose)`);
+  check(await page.locator(`main section.prose a[href="${BASE}logic-games/memory-match-for-preschool/"]`).count() >= 1 &&
+    await page.locator(`main section.prose a[href="${BASE}language-games/word-building-for-grade-1/"]`).count() >= 1 &&
+    await page.locator(`main section.prose a[href="${BASE}math-games/addition-for-grade-1/"]`).count() >= 1, 'logic category page: links to the memory game, Letter Workshop and Addition Garden');
+  await page.goto(origin + BASE + 'logic-games/memory-match-for-preschool/');
+  check(await page.locator('h1').innerText() === 'Memory Games for Preschool and Kindergarten', 'memory game page: H1 is the keyword title');
+  check((await page.title()).startsWith('Memory Games for Preschool and Kindergarten'), `memory game page: title "${await page.title()}"`);
+  check(await page.locator('.site-header a[aria-current="page"]').innerText() === 'Memory games', 'memory game page: Memory games is the current nav item');
+  check(await page.locator(`.crumbs a.back[href="${BASE}logic-games/"]`).count() === 1, 'memory game page: back button goes to Memory games');
+  const memWords = await words('main section.prose');
+  check(memWords >= 300 && memWords <= 600, `memory game page: ${memWords} words of text (target 300 to 600)`);
+  check(await page.locator(`[data-game-player][data-game="${MEMORY}"][data-reward="quilt"]`).count() === 1, 'memory game page: player is wired with reward "quilt"');
+  check(await page.locator(`[data-game-player][data-src$="/play/${MEMORY}/index.html"]`).count() === 1, 'memory game page: play path is /play/memory-match-prek/');
+  check(await page.locator('.player img').getAttribute('src') === `${BASE}play/${MEMORY}/poster.webp` && await page.locator('.player img').getAttribute('width') === '1200',
+    'memory game page: poster image with fixed size (no layout shift)');
+  const memOrder = await page.evaluate(() => {
+    const text = document.querySelector('main section.prose'), player = document.querySelector('[data-game-player]');
+    return !!(player.compareDocumentPosition(text) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  check(memOrder && await page.locator('iframe').count() === 0, 'memory game page: text comes after the player and no game frame exists before Play');
+  check(await page.locator(`main a[href="${BASE}language-games/word-building-for-grade-1/"]`).count() >= 1 &&
+    await page.locator(`main a[href="${BASE}math-games/addition-for-grade-1/"]`).count() >= 1 &&
+    await page.locator(`main a[href="${BASE}logic-games/"]`).count() >= 1, 'memory game page: links to Letter Workshop, Addition Garden and the category');
+  const memText = await page.locator('main').innerText();
+  check(/quilt/i.test(memText) && /Nothing is sent anywhere/.test(memText), 'memory game page: explains the quilt stays on this device');
+  check(!/—/.test(memText), 'memory game page: no em dashes');
+  const sitemap2 = fs.readdirSync(DIST).filter(f => /^sitemap-\d+\.xml$/.test(f)).map(f => fs.readFileSync(path.join(DIST, f), 'utf8')).join('');
+  check(sitemap2.includes('/logic-games/</loc>') && sitemap2.includes('/logic-games/memory-match-for-preschool/</loc>') && !sitemap2.includes('/play/'),
+    'sitemap lists the logic category and the memory game page, and no /play/ files');
+  await page.goto(origin + BASE + 'privacy/');
+  check(/Quilt Picnic quilt/.test(await page.locator('main').innerText()), 'privacy page mentions the quilt');
+
+  // ---------- Quilt Picnic: play round trip ----------
+  // Same pattern as the word checks. With the real build (MEMORY_SYNCED) the REAL game frame sends GameReady. Until the
+  // sync, a STAND-IN stands in for the game: the frame opens on the site's own 404 page (same origin, same sandbox, so
+  // player.ts's real origin and source checks apply) and posts GameReady itself. This proves the WEBSITE side of the
+  // contract (HostInit.quilt, patch rewards, misses) but NOT the game. Re-run after the sync for the real thing.
+  const memLabel = MEMORY_SYNCED ? 'real game frame' : 'STAND-IN frame (game build not synced)';
+  const openMemory = async () => {
+    await page.goto(origin + BASE + 'logic-games/memory-match-for-preschool/');
+    await page.locator('[data-play]').click({ force: true });
+    await page.locator('#player-picker .pick').nth(1).click();
+    if (!MEMORY_SYNCED) {
+      await page.locator('.overlay iframe').waitFor();
+      const f = page.frames().filter(fr => fr.url().includes('/play/')).at(-1);
+      await f.waitForLoadState('load');
+      await f.evaluate(() => parent.postMessage({ type: 'GameReady' }, location.origin));
+    }
+    return hostInit();
+  };
+  const q1 = await openMemory();
+  check(JSON.stringify(q1.quilt) === '{"patches":[]}' && !('garden' in q1) && !('wall' in q1), `[${memLabel}] HostInit carries an empty quilt and no garden or wall: ${JSON.stringify(q1.quilt)}`);
+  check(!JSON.stringify(q1).includes('p_'), `[${memLabel}] HostInit for a quilt game carries no profile id`);
+  check(q1.protocol === 1, `[${memLabel}] HostInit protocol stays 1`);
+  await gameFrame().evaluate(() => {
+    const at = new Date().toISOString();
+    const session = { id: 's_e2equilt', game: 'memory-match-prek', gameVersion: '1.0.0', skill: 'logic-memory.memory.matching-pairs',
+      startedAt: at, durationSec: 150, questions: 5, firstTry: 4, levelStart: 1, levelEnd: 5, maxDifficulty: 5, completed: true,
+      missed: [], mistakes: {}, hints: 1, misses: 3, dragPath: [1],
+      rewards: [
+        { id: 's_e2equilt-0', kind: 'patch', patch: 'gingham-red', at }, { id: 's_e2equilt-1', kind: 'patch', patch: 'dots-blue', at },
+        { id: 's_e2equilt-2', kind: 'patch', patch: 'gingham-red', at }, // the same pattern again: a normal repeat, kept
+        { id: 's_e2equilt-3', kind: 'patch', patch: '<b>', at }, { id: 's_e2equilt-4', kind: 'sticker', patch: 'dots-blue', at },
+        { id: 's_e2equilt-0', kind: 'patch', patch: 'flower-yellow', at }, // the same reward id twice: kept once
+      ] };
+    parent.postMessage({ type: 'GameCompleted', session }, location.origin);
+    parent.postMessage({ type: 'GameCompleted', session }, location.origin); // a repeated message must not stitch twice
+    parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin);
+  });
+  await page.locator('.overlay').waitFor({ state: 'hidden' });
+  const qs = await page.evaluate(() => JSON.parse(localStorage.getItem('ell:v1')));
+  const qsess = qs.sessions.find(x => x.id === 's_e2equilt');
+  const qquilt = qs.quilts?.[qsess?.profile]?.['memory-match-prek'];
+  check(qsess && qsess.misses === 3 && qsess.hints === 1 && !('rewards' in qsess) && !('dragPath' in qsess) && !qsess.seeds,
+    `[${memLabel}] quilt session saved: misses and hints kept, rewards moved out, unknown field dropped`);
+  check(qquilt && qquilt.v === 1 && qquilt.patches.map(x => x.patch).join() === 'gingham-red,dots-blue,gingham-red',
+    `[${memLabel}] quilt stored once per reward id, a repeated pattern kept, junk and unknown kinds dropped: ${JSON.stringify(qquilt && qquilt.patches.map(x => x.patch))}`);
+  check(!qs.quilts?.[firstProfile]?.['memory-match-prek'], `[${memLabel}] the other child's quilt is untouched`);
+  check(!Object.values(qs.walls || {}).some(w => w['memory-match-prek']) && !Object.values(qs.gardens || {}).some(gd => gd['memory-match-prek']),
+    `[${memLabel}] a quilt game makes no garden and no word wall`);
+  const q2 = await openMemory();
+  check(JSON.stringify(q2.quilt) === '{"patches":["gingham-red","dots-blue","gingham-red"]}', `[${memLabel}] next HostInit shows the quilt, oldest first: ${JSON.stringify(q2.quilt)}`);
+  await gameFrame().evaluate(() => parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin));
+  await page.locator('.overlay').waitFor({ state: 'hidden' });
+  if (!MEMORY_SYNCED) skip('Quilt Picnic real game frame: the build sends GameReady, HostInit.quilt reaches it and its own GameCompleted stores patches (run after sync-game)');
+  // The other games must still get exactly what they got before the quilt existed.
+  await page.goto(origin + BASE + 'math-games/subtraction-for-grade-1/');
+  await page.locator('[data-play]').click({ force: true });
+  await page.locator('#player-picker .pick').nth(1).click();
+  const pondQuilt = await hostInit();
+  check(!('quilt' in pondQuilt), 'Pond Hop HostInit still carries no quilt');
+  await gameFrame().evaluate(() => parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin));
+  await page.locator('.overlay').waitFor({ state: 'hidden' });
+
   // ---------- Word wall store round trip through the built site (no game build needed) ----------
   // A store saved by this code's future self: a wall, a garden, a wall with a newer sub-schema and letter mistakes.
   // The Grown-ups page loads it, saves it (adding a player), and must keep every wall byte for byte.
@@ -324,7 +441,10 @@ async function playFullGame(page) {
       totals: {}, gardens: { p_wall: { 'addition-grade-1': { v: 1, items: [{ id: 'g1', species: 'tulip', at, session: 's_x' }], meadow: {} } } },
       walls: { p_wall: {
         'word-building-grade-1': { v: 1, words: [{ wordId: 'w-cat', at, session: 's_w1' }, { wordId: 'w-frog', at, session: 's_w2' }] },
-        'spelling-grade-2': { v: 9, anything: ['newer code wrote this'] } } } };
+        'spelling-grade-2': { v: 9, anything: ['newer code wrote this'] } } },
+      quilts: { p_wall: {
+        'memory-match-prek': { v: 1, patches: [{ id: 's_q1-0', patch: 'gingham-red', at, session: 's_q1' }, { id: 's_q1-1', patch: 'gingham-red', at, session: 's_q1' }], folded: 3 },
+        'memory-match-k': { v: 7, squares: ['newer code wrote this'] } } } };
     localStorage.setItem('ell:v1', JSON.stringify(doc));
     return doc;
   });
@@ -333,6 +453,8 @@ async function playFullGame(page) {
   check(guWords.includes('Word building') && guWords.includes('look alike'), 'Grown-ups shows the Word building skill and the look-alike tip');
   await page.getByRole('button', { name: '+ Add a player' }).click();
   const after = await page.evaluate(() => JSON.parse(localStorage.getItem('ell:v1')));
+  check(JSON.stringify(after.quilts) === JSON.stringify(seeded.quilts), 'quilt store round trip: load and save keep quilts (a repeated pattern, the folded count and a newer-v quilt) byte for byte');
+  check(guWords.includes('Matching pairs'), 'Grown-ups shows the Matching pairs skill');
   check(after.schema === 1 && Object.keys(after.profiles).length === 2 && JSON.stringify(after.walls) === JSON.stringify(seeded.walls) &&
     JSON.stringify(after.gardens) === JSON.stringify(seeded.gardens), 'word wall store round trip: load and save keep walls (and a newer-v wall) and gardens unchanged');
   const delBtn = page.locator('[data-delete="p_wall"]');
@@ -342,8 +464,9 @@ async function playFullGame(page) {
   const gone = await page.evaluate(() => JSON.parse(localStorage.getItem('ell:v1')));
   check(!gone.profiles.p_wall && !gone.walls.p_wall && !gone.gardens.p_wall && !gone.sessions.some(x => x.profile === 'p_wall'),
     'deleting a player (hold to confirm) deletes their word wall, garden and sessions');
+  check(!gone.quilts.p_wall, 'deleting a player (hold to confirm) deletes their quilt too');
 
-  if (!WORD_SYNCED) console.log(`SKIPPED: game build not synced: ${skipped.length} play check(s) skipped, ${unsyncedMisses} request(s) for the missing build answered 404 and were not counted as errors.`);
+  if (!WORD_SYNCED || !MEMORY_SYNCED) console.log(`SKIPPED: game build not synced: ${skipped.length} play check(s) skipped, ${unsyncedMisses} request(s) for the missing build answered 404 and were not counted as errors.`);
   check(errors.length === 0, `no console errors${errors.length ? ': ' + errors.join(' | ') : ''}`);
   console.log(failures ? `\n${failures} check(s) failed` : '\nPASS');
   await browser.close(); server.close();
