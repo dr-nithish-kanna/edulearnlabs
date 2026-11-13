@@ -4,9 +4,16 @@ import Hazel from '../components/Hazel.astro';
 import GameCard from '../components/GameCard.astro';
 import AdSlot from '../components/AdSlot.astro';
 import games from '../data/games.json';
+import soon from '../data/coming-soon.json';
 import { SITE, url } from '../config';
 
 const featured = games[0];
+/** "2 games ready, 6 on the way", counted from the catalog so the numbers never go stale. */
+const counts = (category: keyof typeof soon) => {
+  const ready = games.filter(g => g.category === category).length;
+  const later = soon[category].length;
+  return `${ready} game${ready === 1 ? '' : 's'} ready, ${later} on the way.`;
+};
 const jsonLd = [{
   '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name,
   url: new URL(url(), Astro.site).href, description: 'Free educational games for kids from Pre-K to Grade 2.',
@@ -26,6 +33,7 @@ const jsonLd = [{
       <div class="hero-actions">
         <a class="btn btn--primary" href={url(`${featured.category}/${featured.slug}/`)}>▶ Play {featured.title}</a>
         <a class="btn btn--plain" href={url('math-games/')}>See math games</a>
+        <a class="btn btn--plain" href={url('language-games/')}>See reading games</a>
       </div>
       <ul class="trust">
         <li>Free</li><li>No ads</li><li>No login</li><li>No data collected</li>
@@ -36,7 +44,7 @@ const jsonLd = [{
 
   <h2>Start playing</h2>
   <div class="grid">
-    <GameCard game={featured} />
+    {games.map(g => <GameCard game={g} />)}
   </div>
 
   <h2>Pick a subject</h2>
@@ -44,13 +52,13 @@ const jsonLd = [{
     <a class="card subject-card" href={url('math-games/')}>
       <span class="icon" style="background:#D3F5E4">➕</span>
       <span><strong style="font: 600 22px/1.25 var(--font-display)">Math games</strong><br>
-        <span class="muted">Counting, adding, taking away and shapes. 2 games ready, 6 on the way.</span></span>
+        <span class="muted">Counting, adding, taking away and shapes. {counts('math-games')}</span></span>
     </a>
-    <div class="card subject-card soon">
+    <a class="card subject-card" href={url('language-games/')}>
       <span class="icon" style="background:#FFD8EA">🔤</span>
       <span><strong style="font: 600 22px/1.25 var(--font-display)">Reading games</strong><br>
-        <span class="muted">Letters, sounds and first words. Coming soon.</span></span>
-    </div>
+        <span class="muted">Letters, sounds and first words. {counts('language-games')}</span></span>
+    </a>
     <div class="card subject-card soon">
       <span class="icon" style="background:#D2EFFC">🧩</span>
       <span><strong style="font: 600 22px/1.25 var(--font-display)">Logic and memory</strong><br>
@@ -62,8 +70,8 @@ const jsonLd = [{
 
   <section class="prose">
     <h2>Why parents like EduLearnLabs</h2>
-    <p><strong>One skill per game.</strong> Each game practices one small thing, like adding numbers up to 20,
-      so your child gets real practice instead of a mix of everything.</p>
+    <p><strong>One skill per game.</strong> Each game practices one small thing, like adding numbers up to 20
+      or spelling short words from their sounds, so your child gets real practice instead of a mix of everything.</p>
     <p><strong>Short on purpose.</strong> Games end after about 10 questions. Your child finishes with a win and
       a clear stopping point, not an endless loop.</p>
     <p><strong>Kind feedback.</strong> A wrong answer gets a gentle hint and another try. There is no "Game Over",

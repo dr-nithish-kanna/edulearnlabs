@@ -12,7 +12,7 @@ interface Props {
   path: string;
   image?: string;
   jsonLd?: object[];
-  nav?: 'home' | 'math' | 'grown-ups' | 'privacy' | 'none';
+  nav?: 'home' | 'math' | 'language' | 'grown-ups' | 'privacy' | 'none';
 }
 const { title, description, path, image = 'og.png', jsonLd = [], nav = 'none' } = Astro.props;
 const canonical = new URL(url(path), Astro.site).href;
@@ -49,6 +49,7 @@ const ogImage = new URL(url(image), Astro.site).href;
       </a>
       <nav class="nav" aria-label="Main">
         <a href={url('math-games/')} aria-current={nav === 'math' ? 'page' : undefined}>Math games</a>
+        <a href={url('language-games/')} aria-current={nav === 'language' ? 'page' : undefined}>Reading games</a>
         <a href={url('grown-ups/')} aria-current={nav === 'grown-ups' ? 'page' : undefined}>Grown-ups</a>
       </nav>
       <div class="tools">
@@ -70,6 +71,7 @@ const ogImage = new URL(url(image), Astro.site).href;
       <p>{SITE.name}: {SITE.tagline}. Made by <a href={SITE.makerUrl}>{SITE.maker}</a>.</p>
       <nav aria-label="Footer">
         <a href={url('math-games/')}>Math games</a>
+        <a href={url('language-games/')}>Reading games</a>
         <a href={url('grown-ups/')}>Grown-ups</a>
         <a href={url('privacy/')}>Privacy</a>
       </nav>

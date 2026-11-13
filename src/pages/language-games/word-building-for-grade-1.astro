@@ -1,0 +1,103 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import GamePlayer from '../../components/GamePlayer.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import games from '../../data/games.json';
+import skills from '../../data/skills.json';
+import { url } from '../../config';
+
+const game = games.find(g => g.id === 'word-building-grade-1')!;
+const skill = skills[game.skill as keyof typeof skills];
+const page = new URL(url('language-games/word-building-for-grade-1/'), Astro.site).href;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org', '@type': 'LearningResource', name: `${game.keywordTitle}: ${game.title}`,
+    url: page, description: game.summary, isAccessibleForFree: true, inLanguage: 'en',
+    learningResourceType: 'Educational game', educationalLevel: 'Grade 1', typicalAgeRange: '5-7',
+    teaches: 'Blending sounds and spelling short words', timeRequired: 'PT3M', image: new URL(url(game.poster), Astro.site).href,
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: new URL(url(), Astro.site).href },
+      { '@type': 'ListItem', position: 2, name: 'Reading games', item: new URL(url('language-games/'), Astro.site).href },
+      { '@type': 'ListItem', position: 3, name: game.keywordTitle, item: page },
+    ],
+  },
+];
+---
+<Base
+  title="Word Building for Grade 1: Free Spelling Game for Ages 5 to 7 | EduLearnLabs"
+  description="A free word building game for Grade 1. Kids hear a word, drag letter tiles to spell it and fill a word wall with 36 picture words. Friendly hints, no ads, no login."
+  path="language-games/word-building-for-grade-1/" nav="language" image={game.poster} jsonLd={jsonLd}>
+
+  <Breadcrumbs back={{ name: 'Reading games', path: 'language-games/' }}
+    items={[{ name: 'Home', path: '' }, { name: 'Reading games', path: 'language-games/' }, { name: game.keywordTitle, path: 'language-games/word-building-for-grade-1/' }]} />
+
+  <h1>Word Building for Grade 1</h1>
+  <p class="lead" style="font-size:20px;max-width:44em">Play <strong>{game.title}</strong>: listen to a word, look at
+    its picture and drag letter tiles into place to spell it. Eight words, about 3 minutes, free.</p>
+
+  <GamePlayer game={game} topDifficulty={skill.topDifficulty}
+    posterAlt={`${game.title} game screen: a picture card, empty letter slots, a tray of letter tiles and Hazel the owl`} />
+
+  <section class="prose">
+    <h2>What is Letter Workshop?</h2>
+    <p>Letter Workshop is a short spelling game for first graders, set in a cozy craft room where Hazel the owl runs
+      the shop. A mouse, hedgehog, bunny or robin comes in holding a picture card, and the voice says the word: "frog".
+      Your child drags letter tiles from the tray into the slots on the workbench to build it. Each tile clicks in with
+      its own little note, and when the word is done the letters light up one by one, the word is spoken, and a card of
+      it goes onto your child's word wall.</p>
+
+    <h2>What kids learn</h2>
+    <p>The game practices blending sounds into words and spelling them, a core Grade 1 reading skill. Children hear
+      a word, break it into sounds and find the letter for each sound, from left to right. They also match the picture
+      to the spoken word, so the word means something. There are 36 picture words in five small steps:</p>
+    <ul>
+      <li>Three letter words like cat, sun and bed</li>
+      <li>Three letter words with an extra vowel tile in the tray, so cat and cut are not mixed up</li>
+      <li>Missing letters: some tiles are already in place and your child adds the rest</li>
+      <li>Four letter words with two consonants together, like frog, drum and star</li>
+      <li>Five letter picture words like truck, plant and bread</li>
+    </ul>
+
+    <h2>Who it is for</h2>
+    <p>Children in Grade 1, usually ages 6 and 7, and Kindergarten children about 5 who already know most letter
+      sounds. Every word is spoken aloud and shown as a picture, so early readers can play alone. It works best on a
+      tablet, a computer or a phone held sideways.</p>
+
+    <h2>How to play</h2>
+    <ol>
+      <li>Press Play, then tap the big button to start.</li>
+      <li>Listen to the word. Tap the picture to hear it again any time.</li>
+      <li>Drag a letter tile into a slot. You can also tap a tile and then tap a slot, or type the letter on a keyboard.</li>
+      <li>A letter in the wrong place hops back to the tray, ready for another try.</li>
+      <li>Not sure? Tap Hazel. She says the word again, shows where the next letter goes, or lights up the letters that
+        belong. She never spells the word for you.</li>
+    </ol>
+
+    <h2>Your word wall</h2>
+    <p>Every word your child builds becomes a small picture card on their word wall, a shelf of word cards kept on
+      this device. Nothing is sent anywhere. A word counts once, the wall never shrinks, and there are no streaks or
+      timers, so there is nothing to lose and no pressure to come back.</p>
+
+    <h2>Why it helps</h2>
+    <p>Spelling a word by its sounds is the other side of reading it. When a child builds "c, a, t" and hears "cat",
+      the link between sounds and letters gets stronger. The game starts easy, steps up after a few words in a row
+      and steps back after a couple of tricky ones, so practice stays at the right level. Words your child found hard
+      come back next time.</p>
+
+    <h2>Tips for parents</h2>
+    <ul>
+      <li>Play the first game together. Stretch each word as you say it, "fffrrrog", and point left to right.</li>
+      <li>Help with letter sounds, not letter names: "c" as in cat, not "see".</li>
+      <li>Mixing up b and d is normal at this age. The <a href={url('grown-ups/')}>Grown-ups page</a> shows a simple
+        tip when a slip keeps coming back.</li>
+    </ul>
+    <p class="note">More to play: see all <a href={url('language-games/')}>free reading games</a>, or switch to numbers with
+      <a href={url('math-games/addition-for-grade-1/')}>Addition for Grade 1</a> and
+      <a href={url('math-games/subtraction-for-grade-1/')}>Subtraction for Grade 1</a>.</p>
+  </section>
+
+  <AdSlot id="game-bottom" />
+</Base>

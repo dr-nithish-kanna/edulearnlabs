@@ -1,0 +1,109 @@
+---
+import Base from '../../layouts/Base.astro';
+import GameCard from '../../components/GameCard.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import games from '../../data/games.json';
+import soon from '../../data/coming-soon.json';
+import { url } from '../../config';
+
+const language = games.filter(g => g.category === 'language-games');
+const jsonLd = [{
+  '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: new URL(url(), Astro.site).href },
+    { '@type': 'ListItem', position: 2, name: 'Reading games', item: new URL(url('language-games/'), Astro.site).href },
+  ],
+}];
+---
+<Base
+  title="Free Reading and Language Games for Kids, Pre-K to Grade 2 | EduLearnLabs"
+  description="Free reading games for kids ages 4 to 8: letters, sounds, phonics and first words. Short, kind, ad-free practice that adapts to your child. No login."
+  path="language-games/" nav="language" jsonLd={jsonLd}>
+
+  <Breadcrumbs back={{ name: 'Home', path: '' }} items={[{ name: 'Home', path: '' }, { name: 'Reading games', path: 'language-games/' }]} />
+
+  <h1>Free reading and language games for kids</h1>
+  <p class="lead prose" style="font-size:20px">Short reading games for Pre-K to Grade 2. Each one practices a single skill,
+    like hearing the sounds in a word or spelling it with letter tiles, takes about 2 to 5 minutes and ends with a happy win.</p>
+
+  <div class="grid">
+    {language.map(g => <GameCard game={g} />)}
+  </div>
+
+  <h2>Coming soon</h2>
+  <ul class="soon-list">
+    {soon['language-games'].map(g => <li>{g.title} <span class="muted">({g.grade})</span></li>)}
+  </ul>
+
+  <AdSlot id="language-mid" />
+
+  <section class="prose">
+    <h2>What kids learn, grade by grade</h2>
+    <h3>Pre-K (ages 4 to 5)</h3>
+    <p>Knowing letters by shape and name, and noticing that words are made of sounds. A child who can point to the
+      letter that starts their own name, or say that "sun" and "sock" start the same way, is building the base for
+      reading. At this age it is about play and noticing, not about getting every letter right.</p>
+    <h3>Kindergarten (ages 5 to 6)</h3>
+    <p>Matching each letter to its sound, hearing the first, middle and last sound in a short word, and reading a few
+      sight words like "the", "and" and "is" at a glance. Kids learn that letters stand for sounds, and that sounds put
+      together make words.</p>
+    <h3>Grade 1 (ages 6 to 7)</h3>
+    <p>Blending sounds into words and spelling short words by their sounds: c, a, t makes cat. Then words with two
+      consonants together, like frog and stop, and longer picture words like truck. This is where
+      <a href={url('language-games/word-building-for-grade-1/')}>Word Building for Grade 1</a> fits: children hear a word,
+      look at its picture and drag letter tiles into place from left to right, then hear the word they built.</p>
+    <h3>Grade 2 (ages 7 to 8)</h3>
+    <p>Spelling longer words of 4 to 6 letters, finishing sentences with the right word, and sorting words into
+      naming words and doing words (nouns and verbs). Reading moves from sounding out to reading for meaning.</p>
+
+    <h2>Learning goals</h2>
+    <ul>
+      <li><strong>Sounds first.</strong> Hear the separate sounds in a spoken word, the skill reading experts call
+        phonemic awareness.</li>
+      <li><strong>Sound to letter.</strong> Know which letter, or pair of letters, writes each sound.</li>
+      <li><strong>Left to right.</strong> Build and read words in order, first sound first.</li>
+      <li><strong>Word meaning.</strong> Connect a written word to a picture and to the thing it names.</li>
+      <li><strong>Confidence.</strong> Try a word, get a gentle hint, try again, and finish with a word that is right.</li>
+    </ul>
+
+    <h2>How our reading games work</h2>
+    <p><strong>One skill, one game.</strong> A spelling game only asks your child to spell. Clear practice helps a
+      child feel progress, and it helps you see what they can do.</p>
+    <p><strong>Hear it, see it, build it.</strong> Every word is spoken out loud and shown as a picture, so early
+      readers can play alone. Children move real letter tiles instead of picking from a list, so the game shows how
+      sounds turn into letters.</p>
+    <p><strong>Hints, never the answer.</strong> A letter in the wrong place simply hops back. Hazel the owl can say
+      the word again, show where the next letter goes, or light up the letters that belong. The child always places
+      the last letter themselves, and nobody sees a failure screen.</p>
+    <p><strong>Just right difficulty.</strong> A few words right in a row and the game steps up, from three letter
+      words to longer ones. A couple of tricky words and it steps back. Words your child found hard come back next time.</p>
+    <p><strong>Mistakes that teach us something.</strong> Mixing up b and d, or the middle sound in cat and cut, is
+      normal at this age. The <a href={url('grown-ups/')}>Grown-ups page</a> turns a slip that keeps coming back
+      into a simple tip you can try together.</p>
+
+    <h2>How parents can help</h2>
+    <ul>
+      <li>Play one game together first. Say the word slowly, stretch the sounds, "sssun", and let your child find the letters.</li>
+      <li>Say letter sounds, not letter names, when you help: "c" as in cat, not "see".</li>
+      <li>Short and often beats long and rare. One game a day is plenty.</li>
+      <li>Praise effort: "You listened for every sound" helps more than "You are so smart".</li>
+      <li>Read together every day, even for five minutes. Games practice a skill; stories give a reason to read.</li>
+    </ul>
+    <p>Want some numbers too? Try <a href={url('math-games/addition-for-grade-1/')}>Addition for Grade 1</a> and
+      <a href={url('math-games/subtraction-for-grade-1/')}>Subtraction for Grade 1</a>, or see all
+      <a href={url('math-games/')}>free math games</a>.</p>
+
+    <h2>Questions parents ask</h2>
+    <h3>Are the reading games really free?</h3>
+    <p>Yes. Every game is free to play, with no ads inside games, no in-game purchases and nothing to unlock with money.</p>
+    <h3>My child cannot read yet. Can they still play?</h3>
+    <p>Yes. Every word is spoken aloud and has a picture, and the buttons use pictures and short words. The games are
+      made for children who are just starting to read.</p>
+    <h3>Does my child need an account?</h3>
+    <p>No. There is no login and no sign up. Progress is saved only in this browser on this device, and you can
+      clear it any time on the Grown-ups page.</p>
+    <h3>Which devices work?</h3>
+    <p>Any modern browser: tablets, phones held sideways, laptops and Chromebooks. The games are small and load in a few
+      seconds, even on older school computers and slow connections.</p>
+  </section>
+</Base>
