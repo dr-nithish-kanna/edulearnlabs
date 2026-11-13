@@ -157,8 +157,9 @@ export interface SlotItemSpec { given?: number[]; tray?: string[] }
 Item.slot?: SlotItemSpec;   Level.slot?: SlotLevel;
 export interface WallRewardDef { type: 'wall' }
 export interface GardenRewardDef { type: 'garden'; species: string[] }
-GameDef.reward?: GardenRewardDef | WallRewardDef;
-export interface WordReward { id: string; kind: 'word'; wordId: string; at: string }
+GameDef.reward?: GardenRewardDef;                      // unchanged type, see section 11 note 1
+export interface SlotGameDef extends Omit<GameDef, 'reward'> { reward?: WallRewardDef }
+export interface WordReward { id: string; kind: 'word'; wordId: string; at: string; species?: never }
 export interface WallView { words: string[] }          // HostInit.wall
 SessionRecord.mistakes: Partial<Record<MistakeKind, number>>;
 SessionRecord.rewards?: (Reward | WordReward)[];
@@ -203,8 +204,8 @@ typist cannot slip a tile in while another flies.
 ## 4. Screen (`src/mechanics/slot-build.ts`, `src/styles/slot.css`)
 
 Scene 960 x 600, scaled by one transform, bottom-anchored (same approach as fill). Starting layout in scene px:
-word wall board 24 to 224 x 92 to 300, picture card 300 to 540 x 92 to 300 (a button: tap to hear), the friend
-beside it 556 to 716, Hazel at `skin.hazel` (default 790, 120), slots centered at y 318 (104 px, 14 px gaps),
+word wall board 24 to 224 x 116 to 300, picture card 300 to 540 x 88 to 280 (a button: tap to hear), the friend
+beside it 552 to 722, Hazel at `skin.hazel` (default 790, 112), slots centered at y 318 (104 px, 14 px gaps),
 tray centered at y 470 (104 px, 8 px gaps). Hooks for tests and tools: `.ell-slot-view[data-phase]`
 (`build`, `lighting`, `word`, `reward`), `[data-hint]`, `.ell-slot-cell[data-want]` (never shown or spoken),
 `.ell-tile[data-letter]`, `.is-given`, `.is-filled`, `.is-lit`, `.is-picked`, `.is-cursor`, `.is-help`.
@@ -216,11 +217,11 @@ The polite live region says what was placed and how many letters are left, never
 |---|---|
 | `symbols` | `<symbol>` markup injected once |
 | `backdrop` | SVG markup on 960 x 600 (may extend past the edges for wide screens) |
-| `picture(image)` | full `<svg>` markup for an image id, drawn in a 220 x 190 frame; `''` for unknown ids |
+| `picture(image)` | full `<svg>` markup for an image id, drawn in a 220 x 172 box; `''` for unknown ids. Never put the word in it |
 | `tile`, `given`, `slot` | SVG markup on 104 x 104 behind a tile letter, a given letter, an empty slot |
 | `cast` | friends who bring the words, one per word in turn: `{ symbol, viewBox, happy?, enter? }` |
 | `hazel` | Hazel's spot `{ x, y }` in scene px |
-| `wall` | board art behind the wall thumbnails, SVG on 200 x 208 |
+| `wall` | board art behind the wall thumbnails, SVG on 200 x 184 |
 | `say(word, item)` | voice hook: return a promise to play the game's recording, or nothing for the kit voice |
 
 Every field is optional: without a skin the kit draws plain blocks, dashed slots and a neutral picture frame, so the
@@ -272,5 +273,36 @@ void startGame(def as unknown as GameDef, { mechanics: { 'slot-build': slotBuild
 
 ## 11. Implementation notes (kit v0.4.0, 2026-11-13)
 
-See the kit README "v0.4.0" section for measured sizes and the list of checks. Differences from this doc found while
-building are listed there and below.
+Built on the kit branch `ccr-d63a6d4f-g77ft0` in two commits (logic, then screen, fixture, browser checks and docs).
+Nothing from the design was cut.
+
+**Where the build differs from sections 1 to 10, and why**
+1. **`GameDef.reward` keeps its garden type.** Widening it to a union broke the type check of existing tests and of any
+   game code that reads `def.reward.species`. So the TypeScript type is unchanged, the JSON still says
+   `"reward": { "type": "wall" }`, and slot games are typed `SlotGameDef` (`reward?: WallRewardDef`). Fill code now
+   checks `reward.type === 'garden'` (same truth value for every valid fill game). `WordReward` declares
+   `species?: never` so code that maps `rewards` to `r.species` still compiles.
+2. **The word wall board starts at y 116, not 92.** On a 667 x 375 phone the shell's back button covers the scene down
+   to about y 112 and hid the board title (seen in a screenshot).
+3. **Tile letters use Andika 400**, the only weight the kit ships (a synthetic bold looked smudgy).
+4. **The tray is shuffled from `seeded(hash(wordId + "|" + levelId))`**, so a word reused at the missing-letter level
+   gets a different (but still fixed) tray and given slots there.
+5. **A wrong tile from the tray is classified against the slot it landed on**, not against the planner's intent
+   (`SlotTile.trap` is kept for tools and tests only).
+
+**Checks.** Unit: 172 tests (138 before plus 34 in `tests/slot.test.ts`), typecheck clean, golden files unchanged.
+Browser (`tests/word-e2e.cjs`, the session and hint runs on the throttled profile): 66 checks covering hit targets,
+the wall from HostInit, drag, tap-tap, letter keys, Enter on a tile then a slot, wobble-back, given slots, H1 to H3,
+the completion beat order with a 900 ms fake voice (letters light after the voice ends, left to right, each with its
+note, then the word is spoken), session end with word rewards and the record, Back mid-session, reduced motion and
+muted, a 667 x 375 phone with 8 tiles (smallest 65 px), and the rotate prompt.
+Fill suites on the new code: garden 137 checks (one run hit the known "H2: exactly one count badge" timing flake),
+pond 190 of 190. The `pond-extra` check also failed once on the untouched v0.3.0 code on this machine, so it is a
+timing flake that predates this release.
+
+**Size.** Quiz page +0.06 KB, fill page +0.09 KB, pond page +0.06 KB. Word page 16.9 KB JS (16.0 KB with no skin):
+about 6.8 KB more than a quiz-only game, of which about 5.5 KB is slot-build itself. Over the +4 KB aimed for; the
+kit for Letter Workshop is still about 6 KB smaller than Pond Hop's. Trim candidates are in the kit README.
+
+**Still open:** website support (HostInit `wall`, `kind: "word"` rewards in `progress.ts`, parent tips for the letter
+mistake kinds), recorded word audio through `skin.say`, real touch devices, the owner's `v0.4.0` tag.

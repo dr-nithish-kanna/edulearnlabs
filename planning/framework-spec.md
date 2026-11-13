@@ -32,7 +32,7 @@ Every ID is lowercase, stable, and never reused. Changing an ID breaks saved pro
 | `subject` | `math`, `language`, `science`, `logic-memory` | `math` |
 | `topic` | free slug inside a subject | `addition` |
 | `skill` | global micro-skill ID, `subject.topic.detail` | `math.addition.within-20` |
-| `mechanic` | `quiz`, `match`, `sort`, `order`, `memory`, `drag-drop`, `number-line`, `fill-container` (`drag-drop` stays reserved, unused) | `quiz` |
+| `mechanic` | `quiz`, `match`, `sort`, `order`, `memory`, `drag-drop`, `number-line`, `fill-container`, `slot-build` (`drag-drop` stays reserved, unused) | `quiz` |
 | `difficulty` | integer 1 to 5, per level | `2` |
 
 The list of valid skills lives in one file in the website repo: `content/skills.json`. A game may only use a skill
@@ -107,6 +107,15 @@ Each mechanic adds its own small fields on top of the shared item shape. Example
   game.json block `"sessionReward": { "type": "lights" }`: one light per solved order, drawn in the session only,
   never stored and never sent to the website; not allowed together with `reward`. Full shape:
   `planning/fill-container-remove-design.md` section 2.
+- `slot-build` (kit v0.4.0, first game: Letter Workshop): letter tiles dragged into ordered slots to spell a word.
+  Words are hand-written items (no generator, no `choices` block): `answer` is the word in lowercase a to z (2 to 8
+  letters), `prompt.say` is what the voice says, `prompt.image` names the picture. A level-wide `"slot"` block plans the
+  tray: `distractors` (0 to 4, default 1), `vowelTrap` (one distractor is a wrong vowel), `lookAlikes` (allow b/d style
+  traps, default off), `given` (slots that start filled: a count or `[min, max]`). An item may add
+  `"slot": { "given": [0], "tray": ["e", "h"] }`. At most 8 tiles per tray. A word id means one word in every level.
+  Game-level `"reward": { "type": "wall" }`: one word card per solved word, stored by the website (the word wall).
+  Letter mistakes are recorded as `letter-order`, `wrong-vowel`, `look-alike`, `wrong-letter` (each at most once per
+  word). Full shape: `planning/slot-build-design.md`.
 We define each one when its first game is built, not now. **Why:** designing 7 mechanics up front means guessing.
 Designing each one against a real game means getting it right.
 
@@ -242,7 +251,7 @@ required, so website and games can upgrade in any order.
 
 | Type | Data | When |
 |---|---|---|
-| `HostInit` | `protocol`, `avatar`, `color`, `startLevel`, `practiceItems` (recently missed item IDs), `settings`, optional `garden` (garden view, garden games only) | right after `GameReady` |
+| `HostInit` | `protocol`, `avatar`, `color`, `startLevel`, `practiceItems` (recently missed item IDs), `settings`, optional `garden` (garden view, garden games only), optional `wall` (`{ words: string[] }`, word ids already on the child's word wall for this game, oldest first; word wall games only, kit v0.4.0) | right after `GameReady` |
 | `HostSettings` | `settings` | audio, music or motion toggled on the site |
 | `HostPause` / `HostResume` | none | tab hidden or shown |
 
@@ -252,7 +261,7 @@ required, so website and games can upgrade in any order.
 |---|---|---|
 | `GameReady` | `protocol`, `gameId`, `version` | game code loaded |
 | `GameStarted` | `sessionId`, `startedAt` | child taps start |
-| `GameCompleted` | the session record from section 4, without `profile`; fill-container games add optional `hints`, and garden games (stored `reward`) add `rewards`. Since kit v0.3.0 a fill game with no stored reward (Pond Hop, `sessionReward` lights) sends no `rewards` key at all | end screen shown |
+| `GameCompleted` | the session record from section 4, without `profile`; fill-container games add optional `hints`, and garden games (stored `reward`) add `rewards`. Since kit v0.3.0 a fill game with no stored reward (Pond Hop, `sessionReward` lights) sends no `rewards` key at all. Since kit v0.4.0 word wall games (slot-build) send `hints` and one `rewards` entry per solved word, `{ id, kind: "word", wordId, at }` (`id` is session id plus question index, repeats of a word allowed: the website keeps the first per `wordId`), and `mistakes` may use the letter kinds | end screen shown |
 | `GameExit` | `reason`: `"home"` | child taps the in-game back button |
 | `GameError` | `code` | something broke; site shows a friendly "Let's try again" |
 
@@ -286,6 +295,7 @@ Its own repo (`edulearnlabs-kit`). Games install it pinned to a tag, for example
 | `audio` | Web Audio manager, unlock, sound sprites, voice queue, music ducking under voice, mute |
 | `ui` | tap-to-start screen, progress indicator, shared mascot slot, end screen with stars, back button |
 | `mechanics/quiz` | the first mechanic. Others are added when their first game needs them |
+| `mechanics/fill-container`, `mechanics/slot-build` | opt-in mechanics (v0.2.0 to v0.4.0); a game registers only the one it uses, so others ship none of their code |
 
 Budget: kit code 15 KB brotli or less. Game code on top: 15 KB or less. Art and audio are separate (after Play).
 
