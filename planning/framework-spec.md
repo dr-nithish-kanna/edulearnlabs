@@ -177,6 +177,14 @@ the browser. **Why:** it would cost bytes on every play to catch mistakes we can
 }
 ```
 
+Reward sections (website owned, facts only, each with its own sub-schema `v` so it can change without a top-level
+`schema` bump; an unknown newer `v` is kept as is and never written to; a stored session never keeps `rewards`;
+deleting a profile deletes both; stores saved before a section existed load with an empty one):
+- `gardens[profile][game]`: `{ "v": 1, "items": [{ "id", "species", "at", "session" }], "meadow": {} }` (garden games).
+- `walls[profile][game]`: `{ "v": 1, "words": [{ "wordId": "w-cat", "at": "2026-11-13T10:00:00Z", "session": "s_x81ka2" }] }`
+  (word wall games, since 2026-11-13). Oldest first in the order saved on the device, one card per `wordId` (the first
+  time stays), at most 200 cards per child per game. HostInit sends only `{ "words": [ids] }`.
+
 ### Why this shape is ready to sync later
 - **Sessions are facts** and are only ever added, never edited. Merging two devices later is simple: put both lists
   together and drop duplicates by `id`. No conflicts.
