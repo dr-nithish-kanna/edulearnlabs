@@ -130,3 +130,9 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
   was on another branch. Fan out in parallel (kit Opus agent, scene art, picture art), then game build and website store in parallel.
 - Open: parent "My word wall" page, real-device touch and speech check, friends hold a placeholder card, kit layout is fixed
   (slots centered) so the preview's easel-left layout was not reproduced, recorded voice for words, portrait layout.
+
+## 9. Update 2026-11-13 (later): game 4 planning started, Memory Match (Quilt Picnic)
+
+- Owner chose MVP number 17, asked for basics only, then went to sleep. Draft design with defaults: `planning/memory-match-design.md`.
+  Nothing built. Needs an Opus design pass for the new `pair-match` kit mechanic before any code.
+- Reminder: the kit's latest work (v0.4.0) is on branch `ccr-d63a6d4f-g77ft0`, not on the branch the session started on. Check `git branch -r` first.
