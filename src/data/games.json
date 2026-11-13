@@ -61,5 +61,27 @@
       "repo": "dr-nithish-kanna/word-building-grade-1",
       "commit": "36d8b2e"
     }
+  },
+  {
+    "id": "memory-match-prek",
+    "title": "Quilt Picnic",
+    "keywordTitle": "Memory Games for Preschool and Kindergarten",
+    "category": "logic-games",
+    "slug": "memory-match-for-preschool",
+    "grade": [
+      "prek",
+      "k"
+    ],
+    "ages": "4 to 6",
+    "skill": "logic-memory.memory.matching-pairs",
+    "mechanic": "pair-match",
+    "reward": "quilt",
+    "summary": "Lift the flaps on a patchwork quilt and find two friends that match. Train visual memory with boards from 2 pairs up to 8, gentle hints and a quilt that grows patch by patch.",
+    "minutes": "2 to 4",
+    "poster": "play/memory-match-prek/poster.webp",
+    "source": {
+      "repo": "dr-nithish-kanna/memory-match-prek",
+      "commit": "PENDING"
+    }
   }
 ]
