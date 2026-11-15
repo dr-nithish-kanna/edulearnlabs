@@ -67,3 +67,7 @@ Owner accepted all defaults of the pitch and asked for an unattended build. Each
     that need `/play/word-building-grade-1/` print `SKIPPED: game build not synced` lines and a final count, and the 404s
     for the missing build are counted and reported, not hidden among errors. After the sync they run with no edits. Easy.
 22. **Still not built**: the parent "My word wall" page (entry 3). The store already has what it needs.
+7. **Picture off-centre in its frame (owner report, 2026-11-15), fixed.** Cause: the kit's `.ell-slot-board button { padding: 0 }` beat
+   `.ell-slot-pic { padding: 10px }`, so the picture sat flush left in its frame. Fixed in the kit (commit `464ef27`, one rule, 172 tests
+   still pass), the game is re-pinned to it (game `7b99af9`, 141 of 141 checks) and the poster was rebuilt. Measured before and after:
+   picture left edge 300 px, now 310 px, so 10 px of cream mat on every side.
