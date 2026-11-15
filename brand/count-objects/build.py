@@ -187,14 +187,14 @@ def eye(x, y, r=4.4):
 SH = '<ellipse cx="50" cy="95" rx="30" ry="4" fill="#2b3a67" opacity=".15"/>'
 
 CHICK = SH + f'''
-<path d="M40 90 L36 97 M40 90 L42 97 M60 90 L58 97 M60 90 L64 97" stroke="#FF9F43" stroke-width="3.2" stroke-linecap="round" fill="none"/>
-<ellipse cx="20" cy="62" rx="9" ry="14" transform="rotate(20 20 62)" fill="#FFD24D" stroke="#E0B93A" stroke-width="2.5"/>
-<ellipse cx="80" cy="62" rx="9" ry="14" transform="rotate(-20 80 62)" fill="#FFD24D" stroke="#E0B93A" stroke-width="2.5"/>
-<circle cx="50" cy="58" r="31" fill="#FFE27A" stroke="#E0B93A" stroke-width="2.5"/>
-<path d="M44 28 Q42 16 50 14 Q52 22 50 28 M52 28 Q58 16 66 20 Q62 26 56 30" fill="#FFE27A" stroke="#E0B93A" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M40 90 L36 97 M40 90 L42 97 M60 90 L58 97 M60 90 L64 97" stroke="#E5532E" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+<ellipse cx="20" cy="62" rx="9" ry="14" transform="rotate(20 20 62)" fill="#FFB36B" stroke="#D9822B" stroke-width="2.5"/>
+<ellipse cx="80" cy="62" rx="9" ry="14" transform="rotate(-20 80 62)" fill="#FFB36B" stroke="#D9822B" stroke-width="2.5"/>
+<circle cx="50" cy="58" r="31" fill="#FFCB94" stroke="#D9822B" stroke-width="2.5"/>
+<path d="M44 28 Q42 16 50 14 Q52 22 50 28 M52 28 Q58 16 66 20 Q62 26 56 30" fill="#FFCB94" stroke="#D9822B" stroke-width="2.5" stroke-linejoin="round"/>
 <ellipse cx="34" cy="64" rx="5.5" ry="3.6" fill="#FF6FB5" opacity=".6"/><ellipse cx="66" cy="64" rx="5.5" ry="3.6" fill="#FF6FB5" opacity=".6"/>
 {eye(39, 52)}{eye(61, 52)}
-<path d="M43 60 Q50 57 57 60 Q55 69 50 70 Q45 69 43 60Z" fill="#FF9F43" stroke="#D9792A" stroke-width="2" stroke-linejoin="round"/>'''
+<path d="M43 60 Q50 57 57 60 Q55 69 50 70 Q45 69 43 60Z" fill="#E5532E" stroke="#B8401F" stroke-width="2" stroke-linejoin="round"/>'''
 
 LAMB = SH + f'''
 <rect x="38" y="82" width="8" height="12" rx="4" fill="#6E432A"/><rect x="54" y="82" width="8" height="12" rx="4" fill="#6E432A"/>
@@ -238,9 +238,9 @@ PIGLET = SH + f'''
 BUNNY = SH + f'''
 <ellipse cx="38" cy="92" rx="8" ry="4.5" fill="#E9D0AE" stroke="#B89466" stroke-width="2"/><ellipse cx="62" cy="92" rx="8" ry="4.5" fill="#E9D0AE" stroke="#B89466" stroke-width="2"/>
 <ellipse cx="50" cy="82" rx="22" ry="13" fill="#E9D0AE" stroke="#B89466" stroke-width="2.5"/>
-<ellipse cx="35" cy="22" rx="9.5" ry="22" transform="rotate(-8 35 22)" fill="#E9D0AE" stroke="#B89466" stroke-width="2.5"/>
-<ellipse cx="65" cy="22" rx="9.5" ry="22" transform="rotate(8 65 22)" fill="#E9D0AE" stroke="#B89466" stroke-width="2.5"/>
-<ellipse cx="35" cy="24" rx="4.6" ry="15" transform="rotate(-8 35 24)" fill="#FFB3DA"/><ellipse cx="65" cy="24" rx="4.6" ry="15" transform="rotate(8 65 24)" fill="#FFB3DA"/>
+<ellipse cx="35" cy="28" rx="9.5" ry="21" transform="rotate(-8 35 28)" fill="#E9D0AE" stroke="#B89466" stroke-width="2.5"/>
+<ellipse cx="65" cy="28" rx="9.5" ry="21" transform="rotate(8 65 28)" fill="#E9D0AE" stroke="#B89466" stroke-width="2.5"/>
+<ellipse cx="35" cy="31" rx="4.6" ry="14" transform="rotate(-8 35 31)" fill="#FFB3DA"/><ellipse cx="65" cy="31" rx="4.6" ry="14" transform="rotate(8 65 31)" fill="#FFB3DA"/>
 <circle cx="50" cy="60" r="28" fill="#E9D0AE" stroke="#B89466" stroke-width="2.5"/>
 <ellipse cx="50" cy="68" rx="15" ry="11" fill="#FFF3DF"/>
 <ellipse cx="32" cy="68" rx="5.5" ry="3.6" fill="#FF6FB5" opacity=".55"/><ellipse cx="68" cy="68" rx="5.5" ry="3.6" fill="#FF6FB5" opacity=".55"/>
@@ -333,7 +333,7 @@ def blanket(top=(352, 902, 168), bottom=(312, 944, 470), shadow=True):
             f'<path d="M{tl} {ty} L{tr} {ty} L{br} {by} L{bl} {by}Z" fill="none" stroke="#9FD6D0" stroke-width="3" stroke-linejoin="round"/>')
 
 
-def hazel_helper(x=800, y=68, w=62):
+def hazel_helper(x=800, y=36, w=62):
     h = w * 262 / 240
     return (f'<g filter="url(#soft)"><rect x="{x - 6}" y="{y + h - 8}" width="{w + 12}" height="22" rx="11" fill="#C8996A"/>'
             f'<rect x="{x - 6}" y="{y + h - 8}" width="{w + 12}" height="9" rx="4.5" fill="#E6C9A0"/></g>'
@@ -455,7 +455,7 @@ def sceneL2():
     return scene('Level 2: the duck asks for pebbles, two neat rows of five. Seven have been tapped.', body, 2)
 
 
-SCATTER = [(392, 238, -6), (524, 212, 4), (664, 240, -3), (806, 214, 8), (452, 350, 5), (596, 352, -8), (740, 364, 3), (868, 330, -5)]
+SCATTER = [(392, 232, -6), (552, 206, 8), (716, 262, -4), (868, 222, 5), (430, 378, 7), (596, 344, -9), (740, 396, 3), (872, 356, -6)]
 
 
 def sceneL3():
@@ -843,8 +843,8 @@ Gentle motion only (bobbing, hop, twinkle), all transform and opacity, with a re
 <h2>11. Decisions for the owner</h2>
 <div class="decide"><ul>
 <li><b>Palette.</b> The page uses the v3 tokens. Two additions to approve: a soft warm grey-lilac for the mouse (#D9D2E3), and a pale teal gingham for the blanket (#BFE6E1 on white). Apples are red (#EF5B45). The style guide bans red in feedback, not in objects, and the ladybug already set that precedent. Say if you want green apples instead.</li>
-<li><b>Cast likeness.</b> Hedgehog has a cream face and a layered brown spiky back. Duck is sun yellow with a sky blue bow (so it never looks like the chick). Mouse is lilac grey with big pink ears. All three share Hazel's chibi look. Hedgehog brown is close to Hazel's brown, so Hazel stays on her stump in the corner as a different shape.</li>
-<li><b>Parade species.</b> Chick, lamb, calf, piglet, bunny, kid goat. Each has a different silhouette: round ball, cloud wool, horns and spots, floppy pink ears, tall ears, small horns and beard. The chick is the only one close to the duck, which is why the duck wears a bow. Swap the chick for a foal if you see them as the same.</li>
+<li><b>Cast likeness.</b> Hedgehog has a cream face and a layered brown spiky back. Duck is sun yellow with a sky blue bow (and the chick is a warm peach so it never looks like the duck). Mouse is lilac grey with big pink ears. All three share Hazel's chibi look. Hedgehog brown is close to Hazel's brown, so Hazel stays on her stump in the corner as a different shape.</li>
+<li><b>Parade species.</b> Chick, lamb, calf, piglet, bunny, kid goat. Each has a different silhouette: round ball, cloud wool, horns and spots, floppy pink ears, tall ears, small horns and beard. The chick is peach with a red beak so it cannot be mistaken for the sun yellow duck.</li>
 <li><b>Front view.</b> All animals face the viewer (like Hazel) so they march in place with a bob. A side view would need new art per animal.</li>
 <li><b>Crate stock.</b> The level 4 crate shows only five apples. The real stock depends on the fill mechanic. If it is bigger than what fits, the crate needs a heaped look or the apples need to refill.</li>
 <li><b>Words in bubbles.</b> "Count the apples", "How many apples?", "Count with me!", "Did we count them all?" and "Give me 6". All short, all spoken as well.</li>
