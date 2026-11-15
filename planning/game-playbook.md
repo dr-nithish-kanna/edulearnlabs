@@ -170,3 +170,4 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
 - 2026-11-15 (later): Opus design pass done (`planning/tap-count-design.md`, found 4 flaws in the first plan). Owner took all recommendations
   (section 13 "LOCKED"). Next: static art preview in `brand/count-objects/`, owner approves, then kit v0.6.0 `tap-count` (build from the real
   kit branch `ccr-4d0bb17c-4dbh4d` at 24257a2, not the stale checkout).
+- 2026-11-15 (later): art preview built in `brand/count-objects/` (index.html, build.py, shots/). Awaiting owner approval of look, cast and parade species. Known nits: bunny ear tops look clipped in the parade, scatter on level 3 reads close to a grid, duck and chick are both yellow.
