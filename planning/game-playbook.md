@@ -171,3 +171,9 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
   (section 13 "LOCKED"). Next: static art preview in `brand/count-objects/`, owner approves, then kit v0.6.0 `tap-count` (build from the real
   kit branch `ccr-4d0bb17c-4dbh4d` at 24257a2, not the stale checkout).
 - 2026-11-15 (later): art preview built in `brand/count-objects/` (index.html, build.py, shots/). Awaiting owner approval of look, cast and parade species. The four nits (bunny ear clip, grid-like scatter, yellow chick next to the yellow duck, owl perch touching the blanket) were fixed the same day and re-checked in screenshots.
+- 2026-11-15 (later): art preview approved. Kit v0.6.0 `tap-count` built by an Opus agent and verified: kit branch `claude/amazing-albattani-g2r7l1`,
+  commit `ea8ed668983dc67bf7366ed54ba0146e9b4c77a7` (untagged, pin by full SHA; owner makes tags v0.2.0 to v0.6.0). Verified here: 266 of 266 unit tests,
+  typecheck clean, tap browser suite 124 ok. Tap page built alone: entry JS 17.9 KB, Before Play 57.8 KB, lazy fill-order chunk 7.6 KB, all in budget.
+  Deviations (Done bell position, friend-only bubbles, extra idle nudges, validator stock rule, placeholder playground art) are listed in the kit README.
+  Still to do: update `planning/framework-spec.md` for tap-count, create the game repo (`count-objects-prek`, owner decides), game scenes and art from
+  `brand/count-objects/`, website parade store and page, real-device touch and speech check. Lesson: a wait loop that greps for "Error" matches "GameError"; grep the real final line.
