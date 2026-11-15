@@ -25,5 +25,15 @@
       "1"
     ],
     "topDifficulty": 5
+  },
+  "logic-memory.memory.matching-pairs": {
+    "name": "Matching pairs",
+    "parentLabel": "Remembering where pictures are and finding pairs",
+    "subject": "logic",
+    "grade": [
+      "prek",
+      "k"
+    ],
+    "topDifficulty": 5
   }
 }

@@ -23,7 +23,9 @@
 16. Noun and verb sort (Grade 2)
 
 ## Logic and memory (4)
-17. Memory flip cards (Pre-K to Kindergarten)
+17. Memory flip cards (Pre-K to Kindergarten). Built as "Quilt Picnic" on 2026-11-13 (pair-match mechanic, kit v0.5.0,
+    quilt reward). Page at `/logic-games/memory-match-for-preschool/` (`logic-memory.memory.matching-pairs`). Website side is
+    done; the game build and poster arrive with `npm run sync-game -- ../memory-match-prek`.
 18. Color pattern repeat (Kindergarten)
 19. Odd one out (Grade 1)
 20. Pattern completion (Grade 2)

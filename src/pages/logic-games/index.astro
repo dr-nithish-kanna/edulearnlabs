@@ -1,0 +1,118 @@
+---
+import Base from '../../layouts/Base.astro';
+import GameCard from '../../components/GameCard.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import games from '../../data/games.json';
+import soon from '../../data/coming-soon.json';
+import { url } from '../../config';
+
+const logic = games.filter(g => g.category === 'logic-games');
+const jsonLd = [{
+  '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: new URL(url(), Astro.site).href },
+    { '@type': 'ListItem', position: 2, name: 'Memory games', item: new URL(url('logic-games/'), Astro.site).href },
+  ],
+}];
+---
+<Base
+  title="Free Memory and Logic Games for Kids, Pre-K to Grade 2 | EduLearnLabs"
+  description="Free memory and logic games for kids ages 4 to 8: matching pairs, visual memory, patterns and thinking skills. Short, kind, ad-free practice that adapts to your child. No login."
+  path="logic-games/" nav="logic" jsonLd={jsonLd}>
+
+  <Breadcrumbs back={{ name: 'Home', path: '' }} items={[{ name: 'Home', path: '' }, { name: 'Memory games', path: 'logic-games/' }]} />
+
+  <h1>Free memory and logic games for kids</h1>
+  <p class="lead prose" style="font-size:20px">Short memory and thinking games for Pre-K to Grade 2. Each one practices a
+    single skill, like remembering where a picture was or spotting what comes next, takes about 2 to 5 minutes and ends
+    with a happy win.</p>
+
+  <div class="grid">
+    {logic.map(g => <GameCard game={g} />)}
+  </div>
+
+  <h2>Coming soon</h2>
+  <ul class="soon-list">
+    {soon['logic-games'].map(g => <li>{g.title} <span class="muted">({g.grade})</span></li>)}
+  </ul>
+
+  <AdSlot id="logic-mid" />
+
+  <section class="prose">
+    <h2>Why memory and logic games matter</h2>
+    <p>Before children read or add, they learn to look carefully, hold things in mind and notice what goes together.
+      These quiet thinking skills sit underneath almost everything at school: following a two step direction, finding a
+      letter on a page, remembering a number while adding, or seeing that a pattern repeats. Memory and logic games
+      practice those skills directly, in a way that feels like play.</p>
+
+    <h2>What is visual memory?</h2>
+    <p>Visual memory is the ability to remember what you saw. When a child lifts a flap, sees a ladybug, closes it and
+      later remembers "the ladybug was in the top corner", they are using it. Matching pairs games, where cards are
+      turned face down and you find two that are the same, are one of the oldest and best ways to build it. Each turn
+      asks a child to look, remember a picture and its place, and compare it with a new one.</p>
+    <p>Our matching game starts with just two pairs and grows to eight, so even a four year old finishes the first
+      board with a smile. Children cannot lose: a flap that does not match closes again and they try again, and the game
+      never shows a score of mistakes.</p>
+
+    <h2>What kids learn, grade by grade</h2>
+    <h3>Pre-K (ages 4 to 5)</h3>
+    <p>Noticing that two pictures are the same, and remembering where a picture is for a few seconds. Small boards of
+      two to four pairs are plenty. The goal at this age is to enjoy looking and trying, not to win fast.</p>
+    <h3>Kindergarten (ages 5 to 6)</h3>
+    <p>Holding more pictures in mind at once, sorting pictures that look alike, and using a simple plan such as "open
+      one I have not seen yet". Boards of six to eight pairs fit here. Our
+      <a href={url('logic-games/memory-match-for-preschool/')}>memory games for preschool and Kindergarten</a> follow this
+      path from a tiny board to a full one.</p>
+    <h3>Grade 1 (ages 6 to 7)</h3>
+    <p>Finding the odd one out, comparing groups of things and noticing which item does not belong. These games are
+      planned next, and they build on the same habit of looking closely.</p>
+    <h3>Grade 2 (ages 7 to 8)</h3>
+    <p>Continuing a pattern, finding the rule behind it and predicting what comes next. Pattern work is an early
+      form of the reasoning used in math and in reading comprehension.</p>
+
+    <h2>Learning goals</h2>
+    <ul>
+      <li><strong>Visual memory.</strong> Remember what was seen and where it was.</li>
+      <li><strong>Matching.</strong> Decide whether two pictures are the same or only look alike.</li>
+      <li><strong>Attention.</strong> Look carefully before choosing, instead of guessing at once.</li>
+      <li><strong>Planning.</strong> Use what you already know to choose the next move.</li>
+      <li><strong>Persistence.</strong> Miss, try again and finish, without feeling bad about a miss.</li>
+    </ul>
+
+    <h2>How our memory games work</h2>
+    <p><strong>One skill, one game.</strong> A matching game only asks your child to find pairs. Clear practice helps a
+      child feel progress and helps you see what they can do.</p>
+    <p><strong>Hints, never the answer.</strong> If your child keeps missing, Hazel the owl lets them peek at the board
+      for a moment, and later makes one flap twinkle. She never matches a pair for them, and nobody sees a failure screen.</p>
+    <p><strong>Just right difficulty.</strong> A well remembered board and the game moves to a bigger one. A board that
+      needed a lot of help and it steps back. A new picture layout is made each time, so your child practices
+      remembering, not memorizing one picture grid.</p>
+    <p><strong>A reward that stays calm.</strong> Every finished board adds a patch to your child's own quilt, kept on
+      this device. There are no timers, no streaks and no scores to beat.</p>
+
+    <h2>How parents can help</h2>
+    <ul>
+      <li>Play the first board together and talk about what you see: "the snail was on the left".</li>
+      <li>Take turns for a few boards, then let your child lead. Say your plan out loud: "I will open a new one."</li>
+      <li>Do not rush. A child who looks for a while is practicing the skill.</li>
+      <li>Short and often beats long and rare. One game a day is plenty.</li>
+      <li>Play pretend memory games away from the screen, like "what is missing?" with three toys on a tray.</li>
+    </ul>
+    <p>Want to try other skills? Spell short words in
+      <a href={url('language-games/word-building-for-grade-1/')}>Word Building for Grade 1</a>, or practice numbers with
+      <a href={url('math-games/addition-for-grade-1/')}>Addition for Grade 1</a> and
+      <a href={url('math-games/subtraction-for-grade-1/')}>Subtraction for Grade 1</a>.</p>
+
+    <h2>Questions parents ask</h2>
+    <h3>Are the memory games really free?</h3>
+    <p>Yes. Every game is free to play, with no ads inside games, no in-game purchases and nothing to unlock with money.</p>
+    <h3>My child cannot read yet. Can they still play?</h3>
+    <p>Yes. The matching game uses pictures and a short spoken line, with no reading at all.</p>
+    <h3>Does my child need an account?</h3>
+    <p>No. There is no login and no sign up. Progress and the quilt are saved only in this browser on this device, and
+      you can clear them any time on the <a href={url('grown-ups/')}>Grown-ups page</a>.</p>
+    <h3>Which devices work?</h3>
+    <p>Any modern browser: tablets, phones held sideways, laptops and Chromebooks. The games are small and load in a few
+      seconds, even on older school computers and slow connections.</p>
+  </section>
+</Base>

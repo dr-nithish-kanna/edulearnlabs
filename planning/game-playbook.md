@@ -130,3 +130,34 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
   was on another branch. Fan out in parallel (kit Opus agent, scene art, picture art), then game build and website store in parallel.
 - Open: parent "My word wall" page, real-device touch and speech check, friends hold a placeholder card, kit layout is fixed
   (slots centered) so the preview's easel-left layout was not reproduced, recorded voice for words, portrait layout.
+
+## 9. Update 2026-11-13 (later): game 4 planning started, Memory Match (Quilt Picnic)
+
+- Owner chose MVP number 17, asked for basics only, then went to sleep. Draft design with defaults: `planning/memory-match-design.md`.
+  Nothing built. Needs an Opus design pass for the new `pair-match` kit mechanic before any code.
+- Reminder: the kit's latest work (v0.4.0) is on branch `ccr-d63a6d4f-g77ft0`, not on the branch the session started on. Check `git branch -r` first.
+
+## 10. Update 2026-11-13 (night): website support for Quilt Picnic (game 4, first logic and memory game)
+
+- Built unattended, same recipe as Letter Workshop (commits `cdef932`, `e784fb2`, `82677bb`). Game id `memory-match-prek`, kit v0.5.0
+  mechanic `pair-match`, reward type quilt. Decisions: `planning/memory-match-decisions-log.md`.
+- Progress store: `quilts[profile][game]` (own `v`, newer-schema guard, facts only, deduped by reward id, 200 cap that folds the oldest
+  into a count), `HostInit.quilt` (newest 64 slugs, oldest first), `kind: "patch"` rewards stored by `addSession`, `misses` kept in the
+  stored session. Protocol stays 1.
+- Pages: `/logic-games/` (nav label "Memory games") and `/logic-games/memory-match-for-preschool/`, catalog entry, skill
+  `logic-memory.memory.matching-pairs`, home card, privacy text. The sitemap is generated, so it needed no change.
+- New testing trick: before a game is synced, the play round trip runs against a labelled STAND-IN frame (the site's own 404 page posting
+  `GameReady`, same origin and sandbox). It proves the website side only. After the sync, the same checks run against the real frame.
+- Still to do by the owner or the next session: sync the game (`npm run sync-game -- ../memory-match-prek`), which also brings
+  `poster.webp` (the catalog points at `play/memory-match-prek/poster.webp` and the source commit says PENDING until then), then
+  `npm run build && npm run test:e2e` and look for the lines that say `[real game frame]` and no `SKIPPED` line. Open: parent "My quilt" page.
+
+## 11. Update 2026-11-13 (night): Quilt Picnic built and synced (game 4)
+
+- Game repo `dr-nithish-kanna/memory-match-prek`, branch `ccr-4d0bb17c-4dbh4d`, synced at `cb9cbc9`, pinned to kit v0.5.0 at
+  `24257a2e4c97354baafc24751f5668ce40808aac` (untagged; owner creates `v0.2.0` to `v0.5.0`). Not merged to `main` and not deployed.
+- Built unattended: Opus agent for the kit mechanic and design (`planning/pair-match-design.md`), Sonnet agents for the art preview and
+  website support, game built by hand from the Letter Workshop pattern. Game smoke test 50 of 50, website e2e 120 ok with the real game
+  frame, progress tests 59 of 59, `planBoard` never relaxed for any picture on any level.
+- Open: owner reviews design defaults (title, `upAfterCorrect` 1, level 5 colour variants), real-device touch check, "My quilt" parent
+  page, pair-match card art has the matched pair staying on the board (the preview showed matched cards collected top left).
