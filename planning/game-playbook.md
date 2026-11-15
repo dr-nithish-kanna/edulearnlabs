@@ -167,3 +167,6 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
 - Owner chose MVP number 1 (Count objects 1 to 10, Pre-K). Picks: hedgehog cast, parade of animals reward, new `tap-count` kit mechanic.
   Draft design with defaults: `planning/count-objects-design.md`. Nothing built. Needs an Opus design pass (`planning/tap-count-design.md`) first.
 - Reminder: check `git branch -r` in every repo first. The kit checkout on the session branch is stale (v0.1.0).
+- 2026-11-15 (later): Opus design pass done (`planning/tap-count-design.md`, found 4 flaws in the first plan). Owner took all recommendations
+  (section 13 "LOCKED"). Next: static art preview in `brand/count-objects/`, owner approves, then kit v0.6.0 `tap-count` (build from the real
+  kit branch `ccr-4d0bb17c-4dbh4d` at 24257a2, not the stale checkout).
