@@ -1,0 +1,100 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import GamePlayer from '../../components/GamePlayer.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import games from '../../data/games.json';
+import skills from '../../data/skills.json';
+import { url } from '../../config';
+
+const game = games.find(g => g.id === 'memory-match-prek')!;
+const skill = skills[game.skill as keyof typeof skills];
+const page = new URL(url('logic-games/memory-match-for-preschool/'), Astro.site).href;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org', '@type': 'LearningResource', name: `${game.keywordTitle}: ${game.title}`,
+    url: page, description: game.summary, isAccessibleForFree: true, inLanguage: 'en',
+    learningResourceType: 'Educational game', educationalLevel: 'Preschool and Kindergarten', typicalAgeRange: '4-6',
+    teaches: 'Visual memory and matching pairs', timeRequired: 'PT3M', image: new URL(url(game.poster), Astro.site).href,
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: new URL(url(), Astro.site).href },
+      { '@type': 'ListItem', position: 2, name: 'Memory games', item: new URL(url('logic-games/'), Astro.site).href },
+      { '@type': 'ListItem', position: 3, name: game.keywordTitle, item: page },
+    ],
+  },
+];
+---
+<Base
+  title="Memory Games for Preschool and Kindergarten: Free Matching Pairs Game | EduLearnLabs"
+  description="A free memory game for ages 4 to 6. Kids lift quilt flaps to find matching pairs, grow a patchwork quilt and train visual memory. Gentle hints, no ads, no login."
+  path="logic-games/memory-match-for-preschool/" nav="logic" image={game.poster} jsonLd={jsonLd}>
+
+  <Breadcrumbs back={{ name: 'Memory games', path: 'logic-games/' }}
+    items={[{ name: 'Home', path: '' }, { name: 'Memory games', path: 'logic-games/' }, { name: game.keywordTitle, path: 'logic-games/memory-match-for-preschool/' }]} />
+
+  <h1>Memory Games for Preschool and Kindergarten</h1>
+  <p class="lead" style="font-size:20px;max-width:44em">Play <strong>{game.title}</strong>: lift the flaps on a
+    patchwork quilt and find two friends that match. Five small boards, about 3 minutes, free.</p>
+
+  <GamePlayer game={game} topDifficulty={skill.topDifficulty}
+    posterAlt={`${game.title} game screen: a grid of closed fabric flaps, a small quilt of patches and Hazel the owl`} />
+
+  <section class="prose">
+    <h2>What is Quilt Picnic?</h2>
+    <p>Quilt Picnic is a gentle matching pairs game set on a sunny meadow picnic. Pictures of friends, like a ladybug,
+      a snail, a bee or a rabbit, are hidden under cloth flaps. Your child lifts one flap, then another, and tries to
+      find two that match. A match glows, plays a soft note and stays open. Two that do not match simply close again.
+      When every pair is found, the board turns into a new patch for your child's quilt.</p>
+
+    <h2>What kids learn</h2>
+    <p>The game trains visual memory, the skill of holding a picture in mind and remembering where it was. Children
+      also practice looking carefully, comparing two pictures, taking turns with their own attention and trying again
+      without getting upset. The boards grow in five small steps:</p>
+    <ul>
+      <li>2 pairs on a tiny board, a warm-up that nearly everyone wins</li>
+      <li>3 and 4 pairs, with pictures that look very different</li>
+      <li>6 pairs, where some friends belong to the same family, like two animals</li>
+      <li>8 pairs, with friends that look alike, so your child has to look closely</li>
+    </ul>
+
+    <h2>Who it is for</h2>
+    <p>Children in preschool and Kindergarten, usually ages 4 to 6. There is nothing to read: a short voice line says
+      "Find two that match" and the pictures do the rest. It works best on a tablet, a computer or a phone held sideways,
+      and every flap is big enough for small fingers.</p>
+
+    <h2>How to play</h2>
+    <ol>
+      <li>Press Play, then tap the big button to start.</li>
+      <li>Tap a flap to lift it, then tap a second flap.</li>
+      <li>A match stays open and glows. If the two are different, they close again after a moment.</li>
+      <li>Not sure? If your child keeps missing, Hazel the owl lets everyone peek at the board for a second, and later
+        one flap twinkles to point at a pair that is still hidden. She never matches a pair for them.</li>
+      <li>Find every pair to finish the board and add a patch to the quilt.</li>
+    </ol>
+
+    <h2>Your quilt</h2>
+    <p>Every finished board adds one patch to your child's quilt, a small patchwork of gingham, dots, stripes and
+      flowers kept on this device. Nothing is sent anywhere. The game counts missed pairs quietly to choose the next
+      board, but it never shows a score, a counter or a red mark, and there are no streaks or timers.</p>
+
+    <h2>Why it helps</h2>
+    <p>Memory grows with practice that feels like play. Finding pairs asks a child to notice, remember and compare, which
+      supports later skills like following directions, learning letters and number facts, and spotting patterns. The
+      game starts easy, steps up after a well remembered board and steps back when a board needed a lot of help, so each
+      round stays a little tricky and never frustrating.</p>
+
+    <h2>Tips for parents</h2>
+    <ul>
+      <li>Play the first board together and say what you see: "ladybug here, so where is the other ladybug?"</li>
+      <li>Missing a lot at first is normal at this age. Cheer the finding, not the speed.</li>
+      <li>Short and often works best. One quilt a day is plenty.</li>
+    </ul>
+    <p class="note">More to play: see all <a href={url('logic-games/')}>free memory games</a>, spell words with
+      <a href={url('language-games/word-building-for-grade-1/')}>Word Building for Grade 1</a>, or try
+      <a href={url('math-games/addition-for-grade-1/')}>Addition for Grade 1</a>.</p>
+  </section>
+
+  <AdSlot id="game-bottom" />
+</Base>
