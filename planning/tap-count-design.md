@@ -562,6 +562,17 @@ Validator rules (build time only):
 
 ## 13. Owner decisions
 
+### LOCKED 2026-11-15: owner said "take your recommendations"
+
+Where the default and the recommendation differed, the recommendation wins. Final picks:
+1(a) ship level 4 now with `fill.finish: "done"`. 2(a) silent count-along on the 1st wrong, voiced recount on the 2nd.
+3(a) 84 px badge on the object, fades before How many?. 4(a) neutral click and ring pulse on a re-tap.
+5(a) no sound on a wrong choice. 6(b) Done bell on level 3, skipping is a recorded mistake. 7(b) move down after 2 rounds
+in a row that needed the voiced recount. 8: 6 rounds, 180 s. 9: ranges 2 to 5, 5 to 10, 4 to 10, 3 to 10.
+10(a) digit keys pick by value. 11(a) note then word, newest wins. 12(a) lazy fill chunk plus the `check-size` change.
+13(a) ring under the counted object. 14: quiz reveal fix in its own kit release. 15: 6 baby farm animals, friends not in the parade.
+The options below are kept for the record.
+
 Default = my recommendation, except where it differs from an explicit owner pick; then the default is the owner's pick
 and the recommendation is noted.
 
