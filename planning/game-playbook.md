@@ -161,3 +161,9 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
   frame, progress tests 59 of 59, `planBoard` never relaxed for any picture on any level.
 - Open: owner reviews design defaults (title, `upAfterCorrect` 1, level 5 colour variants), real-device touch check, "My quilt" parent
   page, pair-match card art has the matched pair staying on the board (the preview showed matched cards collected top left).
+
+## 12. Update 2026-11-15: game 5 planning started, Count objects (Hedgehog Picnic)
+
+- Owner chose MVP number 1 (Count objects 1 to 10, Pre-K). Picks: hedgehog cast, parade of animals reward, new `tap-count` kit mechanic.
+  Draft design with defaults: `planning/count-objects-design.md`. Nothing built. Needs an Opus design pass (`planning/tap-count-design.md`) first.
+- Reminder: check `git branch -r` in every repo first. The kit checkout on the session branch is stale (v0.1.0).
