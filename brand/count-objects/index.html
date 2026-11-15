@@ -1,0 +1,679 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hedgehog Picnic art preview</title>
+<style>
+:root{--cream:#FFF7E8;--ink:#3B2A20;--teal:#0F857D;--teal-dark:#0A625C;--card:#fff;--spring:cubic-bezier(.34,1.56,.64,1)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:Andika,"Atkinson Hyperlegible",system-ui,sans-serif;padding:24px 16px 80px}
+.fred{font-family:Fredoka,"Arial Rounded MT Bold","Nunito","Varela Round",ui-rounded,system-ui,sans-serif}
+main{max-width:980px;margin:0 auto}
+h1,h2,h3{font-family:Fredoka,"Arial Rounded MT Bold",ui-rounded,system-ui,sans-serif}
+h1{color:var(--teal);margin:0 0 4px} h2{margin:44px 0 8px} h3{margin:22px 0 6px}
+p,li{line-height:1.5} p{max-width:70ch}
+.scene{width:100%;height:auto;border-radius:32px;box-shadow:0 10px 30px rgba(43,58,103,.18);display:block;background:#fff}
+.row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end}
+.cast{margin:0;text-align:center;background:#fff;border-radius:24px;padding:14px 18px;box-shadow:0 6px 18px rgba(43,58,103,.12)}
+.cast figcaption{font-size:15px;margin-top:6px;max-width:30ch}
+.states{align-items:stretch}.statecard{padding:0 0 12px;overflow:hidden;width:220px}.statecard figcaption{padding:0 12px;max-width:none;font-size:14px}.statecard svg{display:block;margin-bottom:8px}
+.chip{display:inline-block;background:#fff;border-radius:999px;padding:6px 14px;margin:4px;box-shadow:0 3px 10px rgba(43,58,103,.1);font-family:Fredoka,"Arial Rounded MT Bold",system-ui,sans-serif;font-weight:600}
+.note{background:#fff;border-left:6px solid var(--teal);border-radius:12px;padding:10px 16px;max-width:70ch}
+.decide{background:#fff;border:3px solid var(--teal);border-radius:24px;padding:8px 24px 18px;margin-top:20px}
+.decide li{margin:8px 0}
+table{border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(43,58,103,.1);max-width:100%}
+td,th{padding:8px 14px;text-align:left;border-bottom:1px solid #F0E6D2;font-size:15px}th{background:#E4F3F1;font-family:Fredoka,system-ui,sans-serif}
+.tablewrap{overflow-x:auto;max-width:100%}
+.trio{display:flex;gap:10px;justify-content:center;align-items:flex-end}.trio div{display:flex;flex-direction:column;align-items:center}.trio small{font-size:12px;margin-top:4px}
+.box{border:2px dashed #C8996A;border-radius:12px;background:#fff7e8}
+.sil{filter:brightness(0);background:transparent;border-color:transparent}.gray{filter:grayscale(1)}
+.cap{font-size:14px;margin:6px 0 0}.small{font-size:14px}
+.phonewrap{overflow-x:auto;max-width:100%;padding-bottom:6px}
+.phone{position:relative;background:#3B2A20;border-radius:20px;overflow:hidden;flex:none}
+.phone-in{position:absolute;left:33.5px;top:0;width:600px;height:375px}
+.phone-in .scene{border-radius:0;box-shadow:none;width:600px;height:375px}
+.ref64{position:absolute;width:64px;height:64px;border:3px dashed #FF6FB5;border-radius:10px;display:flex;align-items:flex-end;justify-content:center;pointer-events:none}
+.ref64 span{font:700 11px/1 system-ui,sans-serif;color:#fff;background:#FF6FB5;padding:2px 5px;border-radius:6px;transform:translateY(8px)}
+.demo{display:flex;flex-wrap:wrap;gap:18px;align-items:center;background:#fff;border-radius:24px;padding:14px;box-shadow:0 6px 18px rgba(43,58,103,.12);max-width:640px}
+.demo svg{border-radius:16px}
+.demo button{font:600 20px Fredoka,"Arial Rounded MT Bold",system-ui,sans-serif;color:#fff;background:var(--teal);border:0;border-radius:999px;padding:12px 24px;box-shadow:0 6px 0 var(--teal-dark);cursor:pointer;margin-bottom:10px;min-height:48px}
+.demo button:active{transform:translateY(4px);box-shadow:0 2px 0 var(--teal-dark)}
+.demo label{display:block;margin:6px 0}
+.wide{border-radius:26px}
+/* motion: transform and opacity only */
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.bob{animation:bob 2.8s ease-in-out infinite}
+@keyframes tilt{0%,100%{transform:rotate(0)}50%{transform:rotate(-3deg)}}
+.tilt{transform-box:fill-box;transform-origin:50% 100%;animation:tilt 2.4s ease-in-out infinite}
+@keyframes hop2{0%,100%{transform:translateY(0)}40%{transform:translateY(-18px)}}
+.hop2{animation:hop2 1.1s var(--spring) infinite}
+@keyframes hop{0%,100%{transform:translateY(0) scale(1,1)}45%{transform:translateY(-8px) scale(.97,1.04)}}
+.hop{transform-box:fill-box;transform-origin:50% 100%;animation:hop 1.3s var(--spring) infinite}
+@keyframes pop{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.pop{transform-box:fill-box;transform-origin:center;animation:pop 1.6s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.25}50%{opacity:1}}
+.twinkle{animation:tw 1.5s ease-in-out infinite}
+.glow{animation:tw 1.5s ease-in-out infinite}
+@keyframes lift{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.lift{animation:lift 1.6s ease-in-out infinite}
+@keyframes wob{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg)}75%{transform:rotate(9deg)}}
+.wob{transform-box:fill-box;transform-origin:50% 12%;animation:wob 1.2s ease-in-out infinite}
+@keyframes march{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.march{animation:march 1s ease-in-out infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 1.6s ease-out infinite}
+@keyframes lit{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.lit{animation:lit 1.4s var(--spring) infinite}
+@keyframes arrive{0%,100%{transform:translateY(0)}50%{transform:translateY(-26px)}}
+.arrive,.arrive2{animation:arrive 1.1s var(--spring) infinite}
+/* demo */
+.demoapple,.demobadge,.demoring{transform-box:fill-box;transform-origin:center}
+.demobadge{opacity:0}.demoring{opacity:0}
+.demo.go .demoring{animation:fadein .3s ease-out forwards}
+.demo.go .demoapple{animation:dhop .5s var(--spring)}
+.demo.go .demobadge{animation:bpop .45s var(--spring) forwards}
+@keyframes fadein{to{opacity:1}}
+@keyframes dhop{0%{transform:translateY(0)}40%{transform:translateY(-22px) scale(.97,1.04)}100%{transform:translateY(0)}}
+@keyframes bpop{0%{opacity:0;transform:scale(.4)}100%{opacity:1;transform:scale(1)}}
+.demo.rm.go .demoapple{animation:none}
+.demo.rm.go .demobadge{animation:bfade .25s linear forwards}
+@keyframes bfade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+ .bob,.tilt,.hop2,.hop,.pop,.twinkle,.glow,.lift,.wob,.march,.arrive,.arrive2,.lit{animation:none}
+ .twinkle{opacity:.85}.glow{opacity:.5}.pulse{animation:none;opacity:.5}
+ .demo.go .demoapple{animation:none}.demo.go .demobadge{animation:bfade .25s linear forwards}
+}
+@media (max-width:640px){.cast figcaption{max-width:24ch}}
+</style></head><body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="hog-n" viewBox="0 0 180 150">
+<ellipse cx="84" cy="142" rx="64" ry="6" fill="#2b3a67" opacity=".15"/>
+<ellipse cx="62" cy="136" rx="14" ry="8" fill="#C8996A" stroke="#A97A4C" stroke-width="2.5"/>
+<ellipse cx="112" cy="136" rx="14" ry="8" fill="#C8996A" stroke="#A97A4C" stroke-width="2.5"/>
+<polygon points="127.7,89.2 113.7,97.9 118.4,112.6 101.5,114.6 98.0,129.5 82.0,124.2 71.2,136.0 59.8,124.6 44.1,130.5 40.0,115.7 23.0,114.4 27.0,99.6 12.6,91.3 23.8,79.8 15.4,66.6 31.3,61.1 30.6,45.8 47.6,47.6 54.9,33.8 69.0,42.4 82.7,33.3 90.7,46.8 107.5,44.4 107.6,59.7 123.8,64.6 115.9,78.1" fill="#6E432A" stroke="#6E432A" stroke-width="9" stroke-linejoin="round"/>
+<polygon points="117.1,98.7 102.6,102.9 103.9,116.3 88.8,114.1 83.0,126.5 70.8,118.3 59.0,126.9 52.6,114.7 37.6,117.5 38.4,104.1 23.6,100.5 31.4,88.8 20.2,79.6 33.3,72.5 28.3,59.8 43.5,58.8 45.8,45.5 59.9,50.9 69.0,40.0 78.5,50.5 92.3,44.6 95.2,57.8 110.5,58.3 106.2,71.2 119.5,77.8 108.8,87.4" fill="#8B5A3C" stroke="#8B5A3C" stroke-width="8" stroke-linejoin="round"/>
+<g fill="none" stroke="#B07A52" stroke-width="3.5" stroke-linecap="round" opacity=".8"><path d="M32 78 Q38 54 58 44"/><path d="M44 92 Q44 76 54 66"/></g>
+<ellipse cx="96" cy="104" rx="30" ry="26" fill="#F6DDB8"/>
+<ellipse cx="118" cy="92" rx="38" ry="34" fill="#F6DDB8" stroke="#C8996A" stroke-width="2.5"/>
+<ellipse cx="146" cy="100" rx="19" ry="14" fill="#F6DDB8" stroke="#C8996A" stroke-width="2.5"/>
+<ellipse cx="118" cy="92" rx="35" ry="31" fill="#F6DDB8"/>
+<circle cx="104" cy="58" r="13" fill="#F6DDB8" stroke="#C8996A" stroke-width="2.5"/><circle cx="104" cy="59" r="7" fill="#FFB3DA"/>
+<circle cx="136" cy="62" r="11" fill="#F6DDB8" stroke="#C8996A" stroke-width="2.5"/><circle cx="136" cy="63" r="5.5" fill="#FFB3DA"/>
+<ellipse cx="102" cy="100" rx="7" ry="4.5" fill="#FF6FB5" opacity="0.55"/><ellipse cx="132" cy="102" rx="6" ry="4" fill="#FF6FB5" opacity="0.55"/>
+<circle cx="108" cy="84" r="8" fill="#3B2A20"/><circle cx="105.4" cy="81.0" r="3.0" fill="#fff"/><circle cx="110.9" cy="87.2" r="1.4" fill="#fff" opacity=".8"/><circle cx="130" cy="84" r="8" fill="#3B2A20"/><circle cx="127.4" cy="81.0" r="3.0" fill="#fff"/><circle cx="132.9" cy="87.2" r="1.4" fill="#fff" opacity=".8"/>
+<ellipse cx="160" cy="96" rx="8.5" ry="7" fill="#3B2A20"/><ellipse cx="157.5" cy="93.5" rx="2.6" ry="1.8" fill="#fff" opacity=".8"/>
+<path d="M146 108 Q153 116 161 108" fill="none" stroke="#3B2A20" stroke-width="3.2" stroke-linecap="round"/><ellipse cx="96" cy="124" rx="11" ry="9" fill="#F6DDB8" stroke="#C8996A" stroke-width="2.5"/></symbol>
+<symbol id="hog-h" viewBox="0 0 180 150">
+<ellipse cx="84" cy="142" rx="64" ry="6" fill="#2b3a67" opacity=".15"/>
+<ellipse cx="62" cy="136" rx="14" ry="8" fill="#C8996A" stroke="#A97A4C" stroke-width="2.5"/>
+<ellipse cx="112" cy="136" rx="14" ry="8" fill="#C8996A" stroke="#A97A4C" stroke-width="2.5"/>
+<polygon points="127.7,89.2 113.7,97.9 118.4,112.6 101.5,114.6 98.0,129.5 82.0,124.2 71.2,136.0 59.8,124.6 44.1,130.5 40.0,115.7 23.0,114.4 27.0,99.6 12.6,91.3 23.8,79.8 15.4,66.6 31.3,61.1 30.6,45.8 47.6,47.6 54.9,33.8 69.0,42.4 82.7,33.3 90.7,46.8 107.5,44.4 107.6,59.7 123.8,64.6 115.9,78.1" fill="#6E432A" stroke="#6E432A" stroke-width="9" stroke-linejoin="round"/>
+<polygon points="117.1,98.7 102.6,102.9 103.9,116.3 88.8,114.1 83.0,126.5 70.8,118.3 59.0,126.9 52.6,114.7 37.6,117.5 38.4,104.1 23.6,100.5 31.4,88.8 20.2,79.6 33.3,72.5 28.3,59.8 43.5,58.8 45.8,45.5 59.9,50.9 69.0,40.0 78.5,50.5 92.3,44.6 95.2,57.8 110.5,58.3 106.2,71.2 119.5,77.8 108.8,87.4" fill="#8B5A3C" stroke="#8B5A3C" stroke-width="8" stroke-linejoin="round"/>
+<g fill="none" stroke="#B07A52" stroke-width="3.5" stroke-linecap="round" opacity=".8"><path d="M32 78 Q38 54 58 44"/><path d="M44 92 Q44 76 54 66"/></g>
+<ellipse cx="96" cy="104" rx="30" ry="26" fill="#F6DDB8"/>
+<ellipse cx="118" cy="92" rx="38" ry="34" fill="#F6DDB8" stroke="#C8996A" stroke-width="2.5"/>
+<ellipse cx="146" cy="100" rx="19" ry="14" fill="#F6DDB8" stroke="#C8996A" stroke-width="2.5"/>
+<ellipse cx="118" cy="92" rx="35" ry="31" fill="#F6DDB8"/>
+<circle cx="104" cy="58" r="13" fill="#F6DDB8" stroke="#C8996A" stroke-width="2.5"/><circle cx="104" cy="59" r="7" fill="#FFB3DA"/>
+<circle cx="136" cy="62" r="11" fill="#F6DDB8" stroke="#C8996A" stroke-width="2.5"/><circle cx="136" cy="63" r="5.5" fill="#FFB3DA"/>
+<ellipse cx="102" cy="100" rx="7" ry="4.5" fill="#FF6FB5" opacity="0.75"/><ellipse cx="132" cy="102" rx="6" ry="4" fill="#FF6FB5" opacity="0.75"/>
+<path d="M99.5 87 Q108 73.5 116.5 87" fill="none" stroke="#3B2A20" stroke-width="4.6" stroke-linecap="round"/><path d="M121.5 87 Q130 73.5 138.5 87" fill="none" stroke="#3B2A20" stroke-width="4.6" stroke-linecap="round"/>
+<ellipse cx="160" cy="96" rx="8.5" ry="7" fill="#3B2A20"/><ellipse cx="157.5" cy="93.5" rx="2.6" ry="1.8" fill="#fff" opacity=".8"/>
+<path d="M144 105 Q153 126 165 105 Z" fill="#3B2A20" stroke="#3B2A20" stroke-width="3" stroke-linejoin="round"/><path d="M149 114 Q154 121 160 114 Q154 111 149 114Z" fill="#FF6FB5"/><path d="M26 19 L28.52 25.48 L35 28 L28.52 30.52 L26 37 L23.48 30.52 L17 28 L23.48 25.48Z" fill="#FFC83D" stroke="#FFC83D" stroke-width="2" stroke-linejoin="round"/><path d="M160 23 L161.96 28.04 L167 30 L161.96 31.96 L160 37 L158.04 31.96 L153 30 L158.04 28.04Z" fill="#FF6FB5" stroke="#FF6FB5" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="duck-n" viewBox="0 0 150 160">
+<ellipse cx="75" cy="152" rx="50" ry="6" fill="#2b3a67" opacity=".15"/>
+<path d="M50 148 Q40 156 52 154 L66 152 Q62 146 50 148Z" fill="#FF9F43" stroke="#D9792A" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M100 148 Q110 156 98 154 L84 152 Q88 146 100 148Z" fill="#FF9F43" stroke="#D9792A" stroke-width="2.5" stroke-linejoin="round"/>
+<ellipse cx="30" cy="106" rx="14" ry="24" transform="rotate(14 30 106)" fill="#F5B52A" stroke="#D99E12" stroke-width="2.5"/><ellipse cx="120" cy="106" rx="14" ry="24" transform="rotate(-14 120 106)" fill="#F5B52A" stroke="#D99E12" stroke-width="2.5"/>
+<ellipse cx="75" cy="112" rx="46" ry="40" fill="#FFC83D" stroke="#E0A91C" stroke-width="2.5"/>
+<ellipse cx="75" cy="122" rx="30" ry="26" fill="#FFE08A"/>
+<path d="M64 88 L75 98 L86 88 L98 96 L90 106 L75 100 L60 106 L52 96Z" fill="#2FB5EC" stroke="#1E8FC0" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="75" cy="64" r="37" fill="#FFC83D" stroke="#E0A91C" stroke-width="2.5"/>
+<path d="M66 28 Q62 14 72 12 M76 28 Q78 12 88 14" fill="none" stroke="#E0A91C" stroke-width="4" stroke-linecap="round"/>
+<ellipse cx="44" cy="70" rx="7.5" ry="5" fill="#FF6FB5" opacity="0.6"/><ellipse cx="106" cy="70" rx="7.5" ry="5" fill="#FF6FB5" opacity="0.6"/>
+<circle cx="60" cy="56" r="7.5" fill="#3B2A20"/><circle cx="57.6" cy="53.1" r="2.9" fill="#fff"/><circle cx="62.7" cy="59.0" r="1.3" fill="#fff" opacity=".8"/><circle cx="90" cy="56" r="7.5" fill="#3B2A20"/><circle cx="87.6" cy="53.1" r="2.9" fill="#fff"/><circle cx="92.7" cy="59.0" r="1.3" fill="#fff" opacity=".8"/>
+<ellipse cx="75" cy="72" rx="21" ry="11" fill="#FF9F43" stroke="#D9792A" stroke-width="2.5"/>
+<ellipse cx="75" cy="68" rx="14" ry="5" fill="#FFBE7A" opacity=".8"/>
+<circle cx="68" cy="68" r="1.8" fill="#B8601E"/><circle cx="82" cy="68" r="1.8" fill="#B8601E"/>
+</symbol>
+<symbol id="duck-h" viewBox="0 0 150 160">
+<ellipse cx="75" cy="152" rx="50" ry="6" fill="#2b3a67" opacity=".15"/>
+<path d="M50 148 Q40 156 52 154 L66 152 Q62 146 50 148Z" fill="#FF9F43" stroke="#D9792A" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M100 148 Q110 156 98 154 L84 152 Q88 146 100 148Z" fill="#FF9F43" stroke="#D9792A" stroke-width="2.5" stroke-linejoin="round"/>
+<ellipse cx="26" cy="86" rx="13" ry="24" transform="rotate(-38 26 86)" fill="#F5B52A" stroke="#D99E12" stroke-width="2.5"/><ellipse cx="124" cy="86" rx="13" ry="24" transform="rotate(38 124 86)" fill="#F5B52A" stroke="#D99E12" stroke-width="2.5"/>
+<ellipse cx="75" cy="112" rx="46" ry="40" fill="#FFC83D" stroke="#E0A91C" stroke-width="2.5"/>
+<ellipse cx="75" cy="122" rx="30" ry="26" fill="#FFE08A"/>
+<path d="M64 88 L75 98 L86 88 L98 96 L90 106 L75 100 L60 106 L52 96Z" fill="#2FB5EC" stroke="#1E8FC0" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="75" cy="64" r="37" fill="#FFC83D" stroke="#E0A91C" stroke-width="2.5"/>
+<path d="M66 28 Q62 14 72 12 M76 28 Q78 12 88 14" fill="none" stroke="#E0A91C" stroke-width="4" stroke-linecap="round"/>
+<ellipse cx="44" cy="70" rx="7.5" ry="5" fill="#FF6FB5" opacity="0.8"/><ellipse cx="106" cy="70" rx="7.5" ry="5" fill="#FF6FB5" opacity="0.8"/>
+<path d="M52 59 Q60 46 68 59" fill="none" stroke="#3B2A20" stroke-width="4.6" stroke-linecap="round"/><path d="M82 59 Q90 46 98 59" fill="none" stroke="#3B2A20" stroke-width="4.6" stroke-linecap="round"/>
+<ellipse cx="75" cy="72" rx="21" ry="11" fill="#FF9F43" stroke="#D9792A" stroke-width="2.5"/>
+<ellipse cx="75" cy="68" rx="14" ry="5" fill="#FFBE7A" opacity=".8"/>
+<circle cx="68" cy="68" r="1.8" fill="#B8601E"/><circle cx="82" cy="68" r="1.8" fill="#B8601E"/>
+<path d="M66 80 Q75 96 84 80Z" fill="#7A3B20" stroke="#7A3B20" stroke-width="2.5" stroke-linejoin="round"/><path d="M18 21 L20.52 27.48 L27 30 L20.52 32.52 L18 39 L15.48 32.52 L9 30 L15.48 27.48Z" fill="#FFC83D" stroke="#FFC83D" stroke-width="2" stroke-linejoin="round"/><path d="M134 27 L135.96 32.04 L141 34 L135.96 35.96 L134 41 L132.04 35.96 L127 34 L132.04 32.04Z" fill="#FF6FB5" stroke="#FF6FB5" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="mouse-n" viewBox="0 0 150 160">
+<ellipse cx="75" cy="152" rx="46" ry="6" fill="#2b3a67" opacity=".15"/>
+<path d="M108 136 C132 140 146 124 138 104 C134 94 142 90 144 84" fill="none" stroke="#F3B6D2" stroke-width="7" stroke-linecap="round"/>
+<ellipse cx="58" cy="148" rx="12" ry="7" fill="#FFB3DA" stroke="#E08AB8" stroke-width="2.2"/><ellipse cx="92" cy="148" rx="12" ry="7" fill="#FFB3DA" stroke="#E08AB8" stroke-width="2.2"/>
+<ellipse cx="75" cy="116" rx="36" ry="34" fill="#D9D2E3" stroke="#B3A8C9" stroke-width="2.5"/>
+<ellipse cx="75" cy="124" rx="22" ry="22" fill="#F4EEF8"/>
+<ellipse cx="40" cy="116" rx="8" ry="15" transform="rotate(14 40 116)" fill="#D9D2E3" stroke="#B3A8C9" stroke-width="2.5"/><ellipse cx="110" cy="116" rx="8" ry="15" transform="rotate(-14 110 116)" fill="#D9D2E3" stroke="#B3A8C9" stroke-width="2.5"/>
+<circle cx="42" cy="36" r="21" fill="#D9D2E3" stroke="#B3A8C9" stroke-width="2.5"/><circle cx="42" cy="37" r="12.5" fill="#FFB3DA"/>
+<circle cx="108" cy="36" r="21" fill="#D9D2E3" stroke="#B3A8C9" stroke-width="2.5"/><circle cx="108" cy="37" r="12.5" fill="#FFB3DA"/>
+<circle cx="75" cy="66" r="35" fill="#D9D2E3" stroke="#B3A8C9" stroke-width="2.5"/>
+<ellipse cx="75" cy="76" rx="20" ry="15" fill="#F4EEF8"/>
+<ellipse cx="46" cy="76" rx="7" ry="4.5" fill="#FF6FB5" opacity="0.6"/><ellipse cx="104" cy="76" rx="7" ry="4.5" fill="#FF6FB5" opacity="0.6"/>
+<g stroke="#B3A8C9" stroke-width="2.4" stroke-linecap="round" fill="none"><path d="M54 78 L34 74"/><path d="M54 82 L35 86"/><path d="M96 78 L116 74"/><path d="M96 82 L115 86"/></g>
+<circle cx="61" cy="62" r="7.5" fill="#3B2A20"/><circle cx="58.6" cy="59.1" r="2.9" fill="#fff"/><circle cx="63.7" cy="65.0" r="1.3" fill="#fff" opacity=".8"/><circle cx="89" cy="62" r="7.5" fill="#3B2A20"/><circle cx="86.6" cy="59.1" r="2.9" fill="#fff"/><circle cx="91.7" cy="65.0" r="1.3" fill="#fff" opacity=".8"/>
+<ellipse cx="75" cy="77" rx="6.5" ry="5" fill="#FF6FB5"/><ellipse cx="73" cy="75.4" rx="2" ry="1.4" fill="#fff" opacity=".8"/>
+<path d="M69 88 Q75 93 81 88" fill="none" stroke="#3B2A20" stroke-width="3" stroke-linecap="round"/><rect x="71" y="88" width="8" height="7" rx="2.5" fill="#fff" stroke="#B3A8C9" stroke-width="1.6"/></symbol>
+<symbol id="mouse-h" viewBox="0 0 150 160">
+<ellipse cx="75" cy="152" rx="46" ry="6" fill="#2b3a67" opacity=".15"/>
+<path d="M108 136 C132 140 146 124 138 104 C134 94 142 90 144 84" fill="none" stroke="#F3B6D2" stroke-width="7" stroke-linecap="round"/>
+<ellipse cx="58" cy="148" rx="12" ry="7" fill="#FFB3DA" stroke="#E08AB8" stroke-width="2.2"/><ellipse cx="92" cy="148" rx="12" ry="7" fill="#FFB3DA" stroke="#E08AB8" stroke-width="2.2"/>
+<ellipse cx="75" cy="116" rx="36" ry="34" fill="#D9D2E3" stroke="#B3A8C9" stroke-width="2.5"/>
+<ellipse cx="75" cy="124" rx="22" ry="22" fill="#F4EEF8"/>
+<ellipse cx="36" cy="92" rx="8" ry="15" transform="rotate(-32 36 92)" fill="#D9D2E3" stroke="#B3A8C9" stroke-width="2.5"/><ellipse cx="114" cy="92" rx="8" ry="15" transform="rotate(32 114 92)" fill="#D9D2E3" stroke="#B3A8C9" stroke-width="2.5"/>
+<circle cx="42" cy="36" r="21" fill="#D9D2E3" stroke="#B3A8C9" stroke-width="2.5"/><circle cx="42" cy="37" r="12.5" fill="#FFB3DA"/>
+<circle cx="108" cy="36" r="21" fill="#D9D2E3" stroke="#B3A8C9" stroke-width="2.5"/><circle cx="108" cy="37" r="12.5" fill="#FFB3DA"/>
+<circle cx="75" cy="66" r="35" fill="#D9D2E3" stroke="#B3A8C9" stroke-width="2.5"/>
+<ellipse cx="75" cy="76" rx="20" ry="15" fill="#F4EEF8"/>
+<ellipse cx="46" cy="76" rx="7" ry="4.5" fill="#FF6FB5" opacity="0.85"/><ellipse cx="104" cy="76" rx="7" ry="4.5" fill="#FF6FB5" opacity="0.85"/>
+<g stroke="#B3A8C9" stroke-width="2.4" stroke-linecap="round" fill="none"><path d="M54 78 L34 74"/><path d="M54 82 L35 86"/><path d="M96 78 L116 74"/><path d="M96 82 L115 86"/></g>
+<path d="M53 65 Q61 52 69 65" fill="none" stroke="#3B2A20" stroke-width="4.6" stroke-linecap="round"/><path d="M81 65 Q89 52 97 65" fill="none" stroke="#3B2A20" stroke-width="4.6" stroke-linecap="round"/>
+<ellipse cx="75" cy="77" rx="6.5" ry="5" fill="#FF6FB5"/><ellipse cx="73" cy="75.4" rx="2" ry="1.4" fill="#fff" opacity=".8"/>
+<path d="M64 84 Q75 102 86 84Z" fill="#7A3B20" stroke="#7A3B20" stroke-width="2.5" stroke-linejoin="round"/><path d="M69 92 Q75 98 81 92 Q75 89 69 92Z" fill="#FF6FB5"/><path d="M16 31 L18.52 37.48 L25 40 L18.52 42.52 L16 49 L13.48 42.52 L7 40 L13.48 37.48Z" fill="#FFC83D" stroke="#FFC83D" stroke-width="2" stroke-linejoin="round"/><path d="M136 21 L137.96 26.04 L143 28 L137.96 29.96 L136 35 L134.04 29.96 L129 28 L134.04 26.04Z" fill="#FF6FB5" stroke="#FF6FB5" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="apple" viewBox="0 0 104 104">
+<ellipse cx="52" cy="99" rx="34" ry="4.5" fill="#2b3a67" opacity=".16"/>
+<path d="M52 32 C42 20 14 24 12 54 C10 80 30 98 44 94 C48 93 50 92 52 92 C54 92 56 93 60 94 C74 98 94 80 92 54 C90 24 62 20 52 32Z" fill="#EF5B45" stroke="#C23B2B" stroke-width="3" stroke-linejoin="round"/>
+<path d="M84 52 C86 76 72 92 58 93 C74 96 92 80 90 54 Z" fill="#D9442F" opacity=".55"/>
+<ellipse cx="29" cy="50" rx="6.5" ry="11" transform="rotate(18 29 50)" fill="#fff" opacity=".5"/>
+<path d="M52 32 C52 24 54 18 59 13" fill="none" stroke="#6E432A" stroke-width="5" stroke-linecap="round"/>
+<path d="M58 22 C64 8 82 8 88 16 C82 28 66 28 58 22Z" fill="#46C47E" stroke="#2FA866" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M62 21 C70 17 78 17 84 16" fill="none" stroke="#2FA866" stroke-width="1.8" stroke-linecap="round"/></symbol>
+<symbol id="pebble-a" viewBox="0 0 104 104">
+<ellipse cx="52" cy="95" rx="40" ry="4.5" fill="#2b3a67" opacity=".16"/>
+<path d="M8 66 C6 44 26 30 54 30 C82 30 100 44 96 66 C94 84 74 93 50 93 C24 93 10 84 8 66Z" fill="#A9B7C9" stroke="#7B8BA3" stroke-width="3" stroke-linejoin="round"/>
+<path d="M12 72 C16 86 34 91 52 91 C74 91 92 84 94 68 C86 82 66 86 48 86 C30 86 18 80 12 72Z" fill="#8E9DB5" opacity=".6"/>
+<path d="M24 56 C38 46 60 44 78 50" fill="none" stroke="#E8EEF6" stroke-width="5" stroke-linecap="round" opacity=".75"/>
+<g fill="#7B8BA3" opacity=".75"><circle cx="34" cy="68" r="2.8"/><circle cx="60" cy="72" r="3.2"/><circle cx="78" cy="66" r="2.4"/><circle cx="48" cy="78" r="2.2"/></g></symbol>
+<symbol id="pebble-b" viewBox="0 0 104 104">
+<ellipse cx="52" cy="95" rx="38" ry="4.5" fill="#2b3a67" opacity=".16"/>
+<path d="M12 70 C8 50 22 36 42 32 C66 28 94 40 94 64 C94 84 72 93 48 93 C28 93 14 86 12 70Z" fill="#B3C0D1" stroke="#7B8BA3" stroke-width="3" stroke-linejoin="round"/>
+<path d="M16 76 C22 88 40 91 54 90 C74 89 90 82 92 66 C84 80 66 84 50 84 C34 84 22 82 16 76Z" fill="#8E9DB5" opacity=".6"/>
+<path d="M22 60 C30 46 52 40 70 42" fill="none" stroke="#EEF2F8" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+<g fill="#7B8BA3" opacity=".75"><circle cx="30" cy="72" r="2.6"/><circle cx="74" cy="70" r="3"/><circle cx="82" cy="56" r="2.2"/></g></symbol>
+<symbol id="acorn" viewBox="0 0 104 104">
+<ellipse cx="52" cy="101" rx="26" ry="3.6" fill="#2b3a67" opacity=".16"/>
+<path d="M20 44 H84 C86 68 72 90 52 98 C32 90 18 68 20 44Z" fill="#D9A25F" stroke="#A5703F" stroke-width="3" stroke-linejoin="round"/>
+<path d="M32 52 C32 66 38 80 46 88" fill="none" stroke="#F3CE96" stroke-width="5" stroke-linecap="round"/>
+<path d="M14 44 C12 22 32 10 52 10 C72 10 92 22 90 44Z" fill="#8B5A3C" stroke="#6E432A" stroke-width="3" stroke-linejoin="round"/>
+<g stroke="#6E432A" stroke-width="2.2" opacity=".55" stroke-linecap="round" fill="none"><path d="M26 18 L40 42"/><path d="M40 12 L54 42"/><path d="M58 12 L48 42"/><path d="M74 14 L58 42"/><path d="M84 24 L68 42"/><path d="M20 34 H84"/></g>
+<path d="M24 24 C28 18 36 14 44 13" fill="none" stroke="#B07A52" stroke-width="4.5" stroke-linecap="round"/>
+<rect x="10" y="40" width="84" height="13" rx="6.5" fill="#A8734D" stroke="#6E432A" stroke-width="3"/>
+<path d="M52 10 C52 6 54 3 58 2" fill="none" stroke="#6E432A" stroke-width="5" stroke-linecap="round"/></symbol>
+<symbol id="a-chick" viewBox="0 0 100 100"><ellipse cx="50" cy="95" rx="30" ry="4" fill="#2b3a67" opacity=".15"/>
+<path d="M40 90 L36 97 M40 90 L42 97 M60 90 L58 97 M60 90 L64 97" stroke="#FF9F43" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+<ellipse cx="20" cy="62" rx="9" ry="14" transform="rotate(20 20 62)" fill="#FFD24D" stroke="#E0B93A" stroke-width="2.5"/>
+<ellipse cx="80" cy="62" rx="9" ry="14" transform="rotate(-20 80 62)" fill="#FFD24D" stroke="#E0B93A" stroke-width="2.5"/>
+<circle cx="50" cy="58" r="31" fill="#FFE27A" stroke="#E0B93A" stroke-width="2.5"/>
+<path d="M44 28 Q42 16 50 14 Q52 22 50 28 M52 28 Q58 16 66 20 Q62 26 56 30" fill="#FFE27A" stroke="#E0B93A" stroke-width="2.5" stroke-linejoin="round"/>
+<ellipse cx="34" cy="64" rx="5.5" ry="3.6" fill="#FF6FB5" opacity=".6"/><ellipse cx="66" cy="64" rx="5.5" ry="3.6" fill="#FF6FB5" opacity=".6"/>
+<circle cx="39" cy="52" r="4.4" fill="#3B2A20"/><circle cx="37.7" cy="50.5" r="1.7" fill="#fff"/><circle cx="61" cy="52" r="4.4" fill="#3B2A20"/><circle cx="59.7" cy="50.5" r="1.7" fill="#fff"/>
+<path d="M43 60 Q50 57 57 60 Q55 69 50 70 Q45 69 43 60Z" fill="#FF9F43" stroke="#D9792A" stroke-width="2" stroke-linejoin="round"/></symbol><symbol id="a-lamb" viewBox="0 0 100 100"><ellipse cx="50" cy="95" rx="30" ry="4" fill="#2b3a67" opacity=".15"/>
+<rect x="38" y="82" width="8" height="12" rx="4" fill="#6E432A"/><rect x="54" y="82" width="8" height="12" rx="4" fill="#6E432A"/>
+<g fill="#FFFDF6" stroke="#DDD3C0" stroke-width="2.5">
+<circle cx="26" cy="58" r="17"/><circle cx="74" cy="58" r="17"/><circle cx="32" cy="76" r="15"/><circle cx="68" cy="76" r="15"/><circle cx="50" cy="80" r="14"/><circle cx="36" cy="40" r="15"/><circle cx="64" cy="40" r="15"/><circle cx="50" cy="32" r="16"/></g>
+<g fill="#FFFDF6"><circle cx="26" cy="58" r="15"/><circle cx="74" cy="58" r="15"/><circle cx="36" cy="40" r="13"/><circle cx="64" cy="40" r="13"/><circle cx="50" cy="32" r="14"/><circle cx="50" cy="62" r="24"/></g>
+<ellipse cx="22" cy="54" rx="8" ry="13" transform="rotate(34 22 54)" fill="#6E432A"/><ellipse cx="78" cy="54" rx="8" ry="13" transform="rotate(-34 78 54)" fill="#6E432A"/>
+<ellipse cx="50" cy="62" rx="19" ry="21" fill="#7A4B30" stroke="#6E432A" stroke-width="2"/>
+<circle cx="50" cy="38" r="9" fill="#FFFDF6" stroke="#DDD3C0" stroke-width="2"/>
+<circle cx="41" cy="58" r="5.6" fill="#fff"/><circle cx="59" cy="58" r="5.6" fill="#fff"/>
+<circle cx="41.5" cy="58.5" r="3.4" fill="#3B2A20"/><circle cx="58.5" cy="58.5" r="3.4" fill="#3B2A20"/>
+<ellipse cx="50" cy="70" rx="5.5" ry="4" fill="#FFB3DA"/></symbol><symbol id="a-calf" viewBox="0 0 100 100"><ellipse cx="50" cy="95" rx="30" ry="4" fill="#2b3a67" opacity=".15"/>
+<rect x="34" y="84" width="9" height="11" rx="4" fill="#5A3F32"/><rect x="57" y="84" width="9" height="11" rx="4" fill="#5A3F32"/>
+<ellipse cx="50" cy="82" rx="24" ry="13" fill="#fff" stroke="#D4CABB" stroke-width="2.5"/>
+<path d="M30 80 C32 74 42 74 42 82 C40 90 30 90 30 80Z" fill="#8B5A3C"/>
+<ellipse cx="19" cy="48" rx="13" ry="7.5" transform="rotate(-18 19 48)" fill="#8B5A3C" stroke="#6E432A" stroke-width="2.2"/>
+<ellipse cx="81" cy="48" rx="13" ry="7.5" transform="rotate(18 81 48)" fill="#fff" stroke="#D4CABB" stroke-width="2.2"/>
+<ellipse cx="19" cy="48" rx="6" ry="3.4" transform="rotate(-18 19 48)" fill="#FFB3DA" opacity=".8"/>
+<ellipse cx="81" cy="48" rx="6" ry="3.4" transform="rotate(18 81 48)" fill="#FFB3DA" opacity=".8"/>
+<path d="M36 30 C34 22 38 18 42 22" fill="none" stroke="#E9C98F" stroke-width="5.5" stroke-linecap="round"/>
+<path d="M64 30 C66 22 62 18 58 22" fill="none" stroke="#E9C98F" stroke-width="5.5" stroke-linecap="round"/>
+<ellipse cx="50" cy="52" rx="28" ry="27" fill="#fff" stroke="#D4CABB" stroke-width="2.5"/>
+<path d="M30 36 C34 26 50 24 54 28 C52 38 44 44 36 46 C32 44 30 40 30 36Z" fill="#8B5A3C"/>
+<ellipse cx="50" cy="66" rx="17" ry="12" fill="#FFB3DA" stroke="#E08AB8" stroke-width="2.2"/>
+<ellipse cx="44" cy="66" rx="2.6" ry="3.4" fill="#B5527F"/><ellipse cx="56" cy="66" rx="2.6" ry="3.4" fill="#B5527F"/>
+<circle cx="39" cy="50" r="4.4" fill="#3B2A20"/><circle cx="37.7" cy="48.5" r="1.7" fill="#fff"/><circle cx="61" cy="50" r="4.4" fill="#3B2A20"/><circle cx="59.7" cy="48.5" r="1.7" fill="#fff"/></symbol><symbol id="a-piglet" viewBox="0 0 100 100"><ellipse cx="50" cy="95" rx="30" ry="4" fill="#2b3a67" opacity=".15"/>
+<ellipse cx="40" cy="92" rx="7" ry="4.5" fill="#FF92C8" stroke="#E87AB0" stroke-width="2"/><ellipse cx="60" cy="92" rx="7" ry="4.5" fill="#FF92C8" stroke="#E87AB0" stroke-width="2"/>
+<ellipse cx="50" cy="82" rx="22" ry="13" fill="#FFB3DA" stroke="#E87AB0" stroke-width="2.5"/>
+<path d="M20 38 C14 22 22 16 34 24 C38 30 36 38 30 42Z" fill="#FF92C8" stroke="#E87AB0" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M80 38 C86 22 78 16 66 24 C62 30 64 38 70 42Z" fill="#FF92C8" stroke="#E87AB0" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="50" cy="56" r="30" fill="#FFB3DA" stroke="#E87AB0" stroke-width="2.5"/>
+<ellipse cx="31" cy="68" rx="6" ry="4" fill="#FF6FB5" opacity=".55"/><ellipse cx="69" cy="68" rx="6" ry="4" fill="#FF6FB5" opacity=".55"/>
+<circle cx="38" cy="50" r="4.4" fill="#3B2A20"/><circle cx="36.7" cy="48.5" r="1.7" fill="#fff"/><circle cx="62" cy="50" r="4.4" fill="#3B2A20"/><circle cx="60.7" cy="48.5" r="1.7" fill="#fff"/>
+<ellipse cx="50" cy="66" rx="14" ry="10.5" fill="#FF92C8" stroke="#E87AB0" stroke-width="2.5"/>
+<ellipse cx="45" cy="66" rx="2.6" ry="3.6" fill="#B5527F"/><ellipse cx="55" cy="66" rx="2.6" ry="3.6" fill="#B5527F"/></symbol><symbol id="a-bunny" viewBox="0 0 100 100"><ellipse cx="50" cy="95" rx="30" ry="4" fill="#2b3a67" opacity=".15"/>
+<ellipse cx="38" cy="92" rx="8" ry="4.5" fill="#E9D0AE" stroke="#B89466" stroke-width="2"/><ellipse cx="62" cy="92" rx="8" ry="4.5" fill="#E9D0AE" stroke="#B89466" stroke-width="2"/>
+<ellipse cx="50" cy="82" rx="22" ry="13" fill="#E9D0AE" stroke="#B89466" stroke-width="2.5"/>
+<ellipse cx="35" cy="22" rx="9.5" ry="22" transform="rotate(-8 35 22)" fill="#E9D0AE" stroke="#B89466" stroke-width="2.5"/>
+<ellipse cx="65" cy="22" rx="9.5" ry="22" transform="rotate(8 65 22)" fill="#E9D0AE" stroke="#B89466" stroke-width="2.5"/>
+<ellipse cx="35" cy="24" rx="4.6" ry="15" transform="rotate(-8 35 24)" fill="#FFB3DA"/><ellipse cx="65" cy="24" rx="4.6" ry="15" transform="rotate(8 65 24)" fill="#FFB3DA"/>
+<circle cx="50" cy="60" r="28" fill="#E9D0AE" stroke="#B89466" stroke-width="2.5"/>
+<ellipse cx="50" cy="68" rx="15" ry="11" fill="#FFF3DF"/>
+<ellipse cx="32" cy="68" rx="5.5" ry="3.6" fill="#FF6FB5" opacity=".55"/><ellipse cx="68" cy="68" rx="5.5" ry="3.6" fill="#FF6FB5" opacity=".55"/>
+<circle cx="39" cy="56" r="4.4" fill="#3B2A20"/><circle cx="37.7" cy="54.5" r="1.7" fill="#fff"/><circle cx="61" cy="56" r="4.4" fill="#3B2A20"/><circle cx="59.7" cy="54.5" r="1.7" fill="#fff"/>
+<ellipse cx="50" cy="64" rx="4.6" ry="3.4" fill="#FF6FB5"/>
+<path d="M50 67 V71 M44 73 Q50 77 50 71 Q50 77 56 73" fill="none" stroke="#3B2A20" stroke-width="2.2" stroke-linecap="round"/></symbol><symbol id="a-goat" viewBox="0 0 100 100"><ellipse cx="50" cy="95" rx="30" ry="4" fill="#2b3a67" opacity=".15"/>
+<rect x="36" y="84" width="8" height="11" rx="4" fill="#8B5A3C"/><rect x="56" y="84" width="8" height="11" rx="4" fill="#8B5A3C"/>
+<ellipse cx="50" cy="82" rx="21" ry="13" fill="#F5E6CF" stroke="#CDB58F" stroke-width="2.5"/>
+<path d="M38 30 C32 18 36 10 44 12 C42 18 42 24 44 30Z" fill="#8B5A3C" stroke="#6E432A" stroke-width="2" stroke-linejoin="round"/>
+<path d="M62 30 C68 18 64 10 56 12 C58 18 58 24 56 30Z" fill="#8B5A3C" stroke="#6E432A" stroke-width="2" stroke-linejoin="round"/>
+<ellipse cx="21" cy="52" rx="13" ry="7" transform="rotate(24 21 52)" fill="#C8996A" stroke="#A97A4C" stroke-width="2.2"/>
+<ellipse cx="79" cy="52" rx="13" ry="7" transform="rotate(-24 79 52)" fill="#C8996A" stroke="#A97A4C" stroke-width="2.2"/>
+<ellipse cx="50" cy="52" rx="25" ry="28" fill="#F5E6CF" stroke="#CDB58F" stroke-width="2.5"/>
+<ellipse cx="50" cy="66" rx="14" ry="10" fill="#FFF3DF"/>
+<ellipse cx="44" cy="63" rx="2" ry="2.6" fill="#A97A4C"/><ellipse cx="56" cy="63" rx="2" ry="2.6" fill="#A97A4C"/>
+<path d="M44 70 Q50 74 56 70" fill="none" stroke="#3B2A20" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M45 76 Q50 90 55 76 Q50 80 45 76Z" fill="#C8996A" stroke="#A97A4C" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="39" cy="50" r="4.4" fill="#3B2A20"/><circle cx="37.7" cy="48.5" r="1.7" fill="#fff"/><circle cx="61" cy="50" r="4.4" fill="#3B2A20"/><circle cx="59.7" cy="48.5" r="1.7" fill="#fff"/>
+<ellipse cx="33" cy="60" rx="4.6" ry="3" fill="#FF6FB5" opacity=".5"/><ellipse cx="67" cy="60" rx="4.6" ry="3" fill="#FF6FB5" opacity=".5"/></symbol>
+<symbol id="bell" viewBox="0 0 100 96">
+<path d="M50 14 C30 14 22 32 22 52 C22 66 18 70 12 76 H88 C82 70 78 66 78 52 C78 32 70 14 50 14Z" fill="#FFC83D" stroke="#D99E12" stroke-width="4" stroke-linejoin="round"/>
+<path d="M32 36 C32 28 38 22 44 20" fill="none" stroke="#FFF1B0" stroke-width="5" stroke-linecap="round"/>
+<circle cx="50" cy="12" r="6" fill="#FFC83D" stroke="#D99E12" stroke-width="3.5"/>
+<path d="M12 76 H88" stroke="#D99E12" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="50" cy="84" rx="9" ry="8" fill="#D99E12"/></symbol>
+<symbol id="hazel-sym" viewBox="0 0 240 262">
+  
+  
+  <defs>
+    <radialGradient id="g-head" cx="40%" cy="28%" r="80%">
+      <stop offset="0" stop-color="#A8734D"/><stop offset=".6" stop-color="#8B5A3C"/><stop offset="1" stop-color="#72452C"/>
+    </radialGradient>
+    <radialGradient id="g-body" cx="40%" cy="20%" r="85%">
+      <stop offset="0" stop-color="#9A6644"/><stop offset="1" stop-color="#6E432A"/>
+    </radialGradient>
+    <radialGradient id="g-belly" cx="50%" cy="25%" r="75%">
+      <stop offset="0" stop-color="#F5E2C2"/><stop offset="1" stop-color="#E2BF92"/>
+    </radialGradient>
+    <radialGradient id="g-iris" cx="50%" cy="38%" r="62%">
+      <stop offset="0" stop-color="#FFD766"/><stop offset="1" stop-color="#E8902A"/>
+    </radialGradient>
+    <linearGradient id="g-gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4D677"/><stop offset="1" stop-color="#B8862A"/>
+    </linearGradient>
+  </defs>
+
+  <ellipse id="shadow" cx="120" cy="254" rx="62" ry="7" fill="#3B2A20" opacity=".12"/>
+
+  <g id="hazel" class="part" style="transform-origin:120px 252px">
+    <g id="body-group" class="part" style="transform-origin:120px 252px">
+      <g id="wing-left" class="part" style="transform-origin:68px 178px">
+        <path d="M70 172 C46 176 34 204 42 230 C47 225 50 230 54 224 C58 228 62 222 64 216 C70 204 74 190 74 178 Z" fill="#6B4129"/>
+        <path d="M50 206 q8 3 15 0 M48 218 q7 3 13 0" fill="none" stroke="#5A3520" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <g id="wing-right" class="part" style="transform-origin:172px 178px">
+        <path d="M170 172 C194 176 206 204 198 230 C193 225 190 230 186 224 C182 228 178 222 176 216 C170 204 166 190 166 178 Z" fill="#6B4129"/>
+        <path d="M190 206 q-8 3 -15 0 M192 218 q-7 3 -13 0" fill="none" stroke="#5A3520" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <ellipse id="body" cx="120" cy="204" rx="60" ry="48" fill="url(#g-body)"/>
+      <ellipse id="belly" cx="120" cy="212" rx="40" ry="34" fill="url(#g-belly)"/>
+      <g id="belly-feathers" fill="none" stroke="#C99C68" stroke-width="2.6" stroke-linecap="round">
+        <path d="M95 210 q5 6 10 0 M110 210 q5 6 10 0 M125 210 q5 6 10 0"/>
+        <path d="M102 224 q5 6 10 0 M117 224 q5 6 10 0 M132 224 q5 6 10 0" opacity=".85"/>
+      </g>
+      <g id="foot-left" class="part" style="transform-origin:100px 248px" fill="#E8973A">
+        <ellipse cx="91" cy="249" rx="6" ry="7"/><ellipse cx="100" cy="252" rx="6" ry="7"/><ellipse cx="109" cy="249" rx="6" ry="7"/>
+      </g>
+      <g id="foot-right" class="part" style="transform-origin:140px 248px" fill="#E8973A">
+        <ellipse cx="131" cy="249" rx="6" ry="7"/><ellipse cx="140" cy="252" rx="6" ry="7"/><ellipse cx="149" cy="249" rx="6" ry="7"/>
+      </g>
+    </g>
+
+    <g id="head" class="part" style="transform-origin:120px 168px">
+      <g id="tuft-left" class="part" style="transform-origin:58px 54px">
+        <path d="M34 78 C24 52 26 26 40 16 C52 26 66 38 80 50 Z" fill="#6E432A"/>
+        <path d="M40 22 C44 36 50 46 60 54" fill="none" stroke="#8B5A3C" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <g id="tuft-right" class="part" style="transform-origin:182px 54px">
+        <path d="M206 78 C216 52 214 26 200 16 C188 26 174 38 160 50 Z" fill="#6E432A"/>
+        <path d="M200 22 C196 36 190 46 180 54" fill="none" stroke="#8B5A3C" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <path id="head-shape" d="M120 36 C152 28 198 34 212 80 C224 120 210 164 168 174 C144 180 96 180 72 174 C30 164 16 120 28 80 C42 34 88 28 120 36 Z" fill="url(#g-head)"/>
+      <g id="cowlick" class="part" style="transform-origin:122px 38px" fill="#6E432A">
+        <path d="M116 40 C108 28 110 16 120 12 C118 22 122 30 126 38 Z"/>
+        <path d="M124 38 C128 26 138 20 146 22 C138 26 134 32 132 42 Z"/>
+      </g>
+      <g id="head-feathers" fill="none" stroke="#6E432A" stroke-width="2.6" stroke-linecap="round" opacity=".6">
+        <path d="M106 50 l4 4 l4 -4"/><path d="M126 50 l4 4 l4 -4"/>
+      </g>
+      <g id="face">
+        <g fill="#C8996A"><circle cx="88" cy="104" r="44"/><circle cx="152" cy="104" r="44"/><path d="M96 136 L144 136 L120 160 Z"/></g>
+        <g fill="#F2DFC2"><circle cx="88" cy="104" r="40"/><circle cx="152" cy="104" r="40"/><path d="M100 134 L140 134 L120 154 Z"/></g>
+      </g>
+      <g id="cheeks" fill="#F29C8C" opacity=".5">
+        <ellipse cx="60" cy="136" rx="12" ry="7.5"/><ellipse cx="180" cy="136" rx="12" ry="7.5"/>
+      </g>
+      <g id="eye-left" class="part" style="transform-origin:88px 104px">
+        <circle cx="88" cy="104" r="28" fill="#FFFFFF"/>
+        <g class="look">
+          <circle cx="88" cy="106" r="19" fill="url(#g-iris)" stroke="#C97A1E" stroke-width="1.5"/>
+          <circle class="pupil" cx="88" cy="107" r="11" fill="#2B1D14"/>
+          <circle cx="94" cy="99" r="5.5" fill="#FFFFFF"/><circle cx="82" cy="114" r="2.6" fill="#FFFFFF"/>
+        </g>
+      </g>
+      <g id="eye-right" class="part" style="transform-origin:152px 104px">
+        <circle cx="152" cy="104" r="28" fill="#FFFFFF"/>
+        <g class="look">
+          <circle cx="152" cy="106" r="19" fill="url(#g-iris)" stroke="#C97A1E" stroke-width="1.5"/>
+          <circle class="pupil" cx="152" cy="107" r="11" fill="#2B1D14"/>
+          <circle cx="158" cy="99" r="5.5" fill="#FFFFFF"/><circle cx="146" cy="114" r="2.6" fill="#FFFFFF"/>
+        </g>
+      </g>
+      <g id="eyes-happy" opacity="0" fill="none" stroke="#2B1D14" stroke-width="5" stroke-linecap="round">
+        <path d="M72 108 Q88 92 104 108"/><path d="M136 108 Q152 92 168 108"/>
+      </g>
+      <path id="brow-left" class="part" style="transform-origin:86px 60px" d="M66 64 Q84 52 106 60" fill="none" stroke="#5A3520" stroke-width="6" stroke-linecap="round"/>
+      <path id="brow-right" class="part" style="transform-origin:154px 60px" d="M134 60 Q156 52 174 64" fill="none" stroke="#5A3520" stroke-width="6" stroke-linecap="round"/>
+      <g id="beak">
+        <path id="beak-lower" class="part" style="transform-origin:120px 138px" d="M113 138 Q120 152 127 138 Q120 143 113 138 Z" fill="#C9742A"/>
+        <path id="beak-upper" d="M109 130 Q120 122 131 130 Q127 146 120 151 Q113 146 109 130 Z" fill="#E8973A"/>
+        <path d="M113 131 Q120 127 126 131" fill="none" stroke="#F7C077" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <g id="glasses" class="part" style="transform-origin:120px 104px">
+        <g fill="#FFFFFF" fill-opacity=".16" stroke="url(#g-gold)" stroke-width="4.5">
+          <circle cx="88" cy="104" r="33"/><circle cx="152" cy="104" r="33"/>
+        </g>
+        <path d="M114 94 Q120 86 126 94" fill="none" stroke="url(#g-gold)" stroke-width="4.5" stroke-linecap="round"/>
+        <g fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity=".75">
+          <path d="M66 94 A24 24 0 0 1 79 81"/><path d="M130 94 A24 24 0 0 1 143 81"/>
+        </g>
+        <g fill="#D9A93F"><circle cx="55" cy="106" r="3.8"/><circle cx="185" cy="106" r="3.8"/></g>
+        <g id="charm" class="part" style="transform-origin:185px 108px">
+          <path d="M185 110 L185 156" fill="none" stroke="#D4A43C" stroke-width="4" stroke-linecap="round" stroke-dasharray="0.1 6.2"/>
+          <circle cx="185" cy="160" r="3" fill="none" stroke="#C99A35" stroke-width="2"/>
+          <path d="M185.0,163.0 L187.7,169.3 L194.5,169.9 L189.4,174.4 L190.9,181.1 L185.0,177.6 L179.1,181.1 L180.6,174.4 L175.5,169.9 L182.3,169.3 Z" fill="url(#g-gold)" stroke="#B8862A" stroke-width="1.6" stroke-linejoin="round"/>
+          <circle cx="182.5" cy="170" r="1.6" fill="#FFF3C4"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</symbol>
+</defs></svg><main>
+<h1>Hedgehog Picnic: art direction preview</h1>
+<p>Static prototype for approval. Nothing here is the final game. It shows the cast, the counting objects, the four level layouts, the counting moment, the How many? step, the Done bell and the Parade reward, so we can agree on the art before any development.
+Gentle motion only (bobbing, hop, twinkle), all transform and opacity, with a reduced-motion version. It follows the v3 style guide: cream and teal, Fredoka numbers, rounded shapes, soft tinted shadows, no red in feedback. This page uses a rounded system font where the real game self-hosts Fredoka, so numeral widths are close but not exact.</p>
+
+<h2>1. The cast: hedgehog, duck, mouse</h2>
+<p>Hedgehog is the host and asks for apples. Duck asks for pebbles. Mouse asks for acorns. Each has a neutral pose (waiting, gentle bob) and a happy pose (closed smiling eyes, open mouth, arms or wings up) that plays when a round is solved. Same chibi proportions as Hazel: big head, big eyes, round cheeks, soft outlines in a darker shade of the body colour.</p>
+<div class="row"><figure class="cast"><svg viewBox="0 0 180 150" width="234" height="195" role="img" aria-label="Hedgehog (main host), neutral"><use href="#hog-n" width="180" height="150"/></svg><figcaption><b>Hedgehog (main host)</b><br>neutral, asks for apples</figcaption></figure><figure class="cast"><svg viewBox="0 0 180 150" width="234" height="195" role="img" aria-label="Hedgehog (main host), happy"><use href="#hog-h" width="180" height="150"/></svg><figcaption><b>Hedgehog (main host)</b><br>happy, cheers on a solved round</figcaption></figure><figure class="cast"><svg viewBox="0 0 150 160" width="195" height="208" role="img" aria-label="Duck, neutral"><use href="#duck-n" width="150" height="160"/></svg><figcaption><b>Duck</b><br>neutral, asks for pebbles</figcaption></figure><figure class="cast"><svg viewBox="0 0 150 160" width="195" height="208" role="img" aria-label="Duck, happy"><use href="#duck-h" width="150" height="160"/></svg><figcaption><b>Duck</b><br>happy, cheers on a solved round</figcaption></figure><figure class="cast"><svg viewBox="0 0 150 160" width="195" height="208" role="img" aria-label="Mouse, neutral"><use href="#mouse-n" width="150" height="160"/></svg><figcaption><b>Mouse</b><br>neutral, asks for acorns</figcaption></figure><figure class="cast"><svg viewBox="0 0 150 160" width="195" height="208" role="img" aria-label="Mouse, happy"><use href="#mouse-h" width="150" height="160"/></svg><figcaption><b>Mouse</b><br>happy, cheers on a solved round</figcaption></figure></div>
+
+<h2>2. The countable objects</h2>
+<p>Drawn at 104 scene px, which is 65 px on a 667 x 375 phone, just above the 64 px hit target. The three silhouettes differ on purpose: the apple is round with a leaf, the pebble is flat and wide, the acorn is tall and pointed. The silhouette and greyscale versions are there to prove they still read for a child who cannot tell the colours apart.</p>
+<div class="row"><figure class="cast objcard"><div class="trio"><div><svg viewBox="0 0 104 104" width="104" height="104" class="box"><use href="#apple" width="104" height="104"/></svg><small>colour, 104 px</small></div><div><svg viewBox="0 0 104 104" width="104" height="104" class="box sil"><use href="#apple" width="104" height="104"/></svg><small>silhouette</small></div><div><svg viewBox="0 0 104 104" width="104" height="104" class="box gray"><use href="#apple" width="104" height="104"/></svg><small>greyscale</small></div></div><figcaption><b>Apple</b>: round, red, stem and leaf</figcaption></figure><figure class="cast objcard"><div class="trio"><div><svg viewBox="0 0 104 104" width="104" height="104" class="box"><use href="#pebble-a" width="104" height="104"/></svg><small>colour, 104 px</small></div><div><svg viewBox="0 0 104 104" width="104" height="104" class="box sil"><use href="#pebble-a" width="104" height="104"/></svg><small>silhouette</small></div><div><svg viewBox="0 0 104 104" width="104" height="104" class="box gray"><use href="#pebble-a" width="104" height="104"/></svg><small>greyscale</small></div></div><figcaption><b>Pebble</b>: flat, wide, grey blue, speckled</figcaption></figure><figure class="cast objcard"><div class="trio"><div><svg viewBox="0 0 104 104" width="104" height="104" class="box"><use href="#acorn" width="104" height="104"/></svg><small>colour, 104 px</small></div><div><svg viewBox="0 0 104 104" width="104" height="104" class="box sil"><use href="#acorn" width="104" height="104"/></svg><small>silhouette</small></div><div><svg viewBox="0 0 104 104" width="104" height="104" class="box gray"><use href="#acorn" width="104" height="104"/></svg><small>greyscale</small></div></div><figcaption><b>Acorn</b>: tall, pointed, cap on top</figcaption></figure></div>
+
+<h2>3. Level layouts</h2>
+<h3>Level 1: one neat row of 5 (hedgehog and apples)</h3>
+<p>Count phase, three apples tapped. The order bubble has a picture and two short words, "Count the apples". The gingham picnic blanket is the table: pale so the objects pop. Hazel sits on a stump in the corner as the hint helper (tap her for a hint). The bottom shelf shows the parade so far.</p>
+<svg viewBox="0 0 960 600" class="scene" role="img" aria-label="Level 1: the hedgehog asks the child to count five apples in a neat row. Three have been tapped."><defs>
+<linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="-20" x2="0" y2="200"><stop offset="0" stop-color="#BFE9FA"/><stop offset="1" stop-color="#FFF7E8"/></linearGradient>
+<linearGradient id="grass" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="620"><stop offset="0" stop-color="#9CEBC1"/><stop offset="1" stop-color="#5CCB93"/></linearGradient>
+<linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="520"><stop offset="0" stop-color="#D9AA77"/><stop offset="1" stop-color="#B98254"/></linearGradient>
+<linearGradient id="path" gradientUnits="userSpaceOnUse" x1="0" y1="400" x2="0" y2="600"><stop offset="0" stop-color="#F7E6C2"/><stop offset="1" stop-color="#EBCF9B"/></linearGradient>
+<pattern id="gingham" patternUnits="userSpaceOnUse" width="48" height="48" x="0" y="0">
+<rect width="48" height="48" fill="#FFFFFF"/><rect width="24" height="48" fill="#BFE6E1" opacity=".8"/><rect width="48" height="24" fill="#BFE6E1" opacity=".8"/></pattern>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter>
+</defs><rect x="-60" y="-40" width="1080" height="700" fill="url(#sky)"/>
+<circle cx="730" cy="86" r="30" fill="#FFC83D" opacity=".9"/><circle cx="730" cy="86" r="42" fill="#FFC83D" opacity=".18"/>
+<g fill="#fff" opacity=".9"><ellipse cx="520" cy="84" rx="46" ry="14"/><ellipse cx="550" cy="73" rx="28" ry="16"/><ellipse cx="900" cy="124" rx="40" ry="11"/></g>
+<path d="M-60 150 C80 106 200 110 330 138 C470 160 600 116 740 126 C860 136 940 112 1020 128 V660 H-60Z" fill="#BDEFD3"/>
+<path d="M-60 184 C100 150 300 160 480 174 C700 192 840 160 1020 170 V660 H-60Z" fill="url(#grass)"/>
+<g fill="#7FD9A8"><circle cx="40" cy="138" r="26"/><circle cx="76" cy="150" r="20"/><circle cx="920" cy="140" r="28"/><circle cx="890" cy="152" r="18"/></g><g filter="url(#soft)"><path d="M352 168 L902 168 L944 470 L312 470Z" fill="url(#gingham)" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round"/></g><path d="M352 168 L902 168 L944 470 L312 470Z" fill="none" stroke="#9FD6D0" stroke-width="3" stroke-linejoin="round"/><ellipse class="" cx="372" cy="356" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="490" cy="356" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="608" cy="356" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><g><use href="#apple" x="320.0" y="260.0" width="104" height="104"/></g><g><use href="#apple" x="438.0" y="260.0" width="104" height="104"/></g><ellipse cx="608" cy="360" rx="30" ry="6" fill="#2b3a67" opacity=".22"/><g transform="translate(0 -16)"><g class="hop"><use href="#apple" x="556.0" y="260.0" width="104" height="104"/></g></g><g><use href="#apple" x="674.0" y="260.0" width="104" height="104"/></g><g><use href="#apple" x="792.0" y="260.0" width="104" height="104"/></g><g class="pop" filter="url(#soft)"><circle cx="608" cy="296" r="42" fill="#FFC83D" stroke="#fff" stroke-width="6"/><text x="608" y="317" text-anchor="middle" class="fred" font-size="60" font-weight="700" fill="#3B2A20">3</text></g><g filter="url(#soft)"><rect x="40" y="92" width="268" height="132" rx="32" fill="#fff"/><path d="M114 222 l10 32 l22 -32Z" fill="#fff"/></g><g class="fred" font-weight="600" fill="#3B2A20"><text x="174" y="134" text-anchor="middle" font-size="24">Count the</text><use href="#apple" x="60" y="144" width="64" height="64"/><text x="132" y="190" font-size="34" font-weight="700" fill="#0F857D">apples</text></g><g class="bob" style="animation-delay:0s"><use href="#hog-n" x="28" y="256" width="176" height="147"/></g><g filter="url(#soft)"><rect x="794" y="127.68333333333334" width="74" height="22" rx="11" fill="#C8996A"/><rect x="794" y="127.68333333333334" width="74" height="9" rx="4.5" fill="#E6C9A0"/></g><use href="#hazel-sym" x="800" y="68" width="62" height="68"/><g filter="url(#soft)"><rect x="30" y="500" width="900" height="84" rx="26" fill="#FFF1D6" stroke="#E6BE8D" stroke-width="3"/></g><text x="58" y="550" class="fred" font-size="20" font-weight="600" fill="#0F857D">My parade</text><g class="march" style="animation-delay:0.0s"><use href="#a-chick" x="220" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:0.35s"><use href="#a-lamb" x="304" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:0.7s"><use href="#a-calf" x="388" y="508" width="68" height="68"/></g><g class="fred">
+<g><rect x="24" y="22" width="124" height="56" rx="28" fill="#0A625C"/><rect x="24" y="16" width="124" height="56" rx="28" fill="#0F857D"/><text x="86" y="52" text-anchor="middle" fill="#fff" font-size="24" font-weight="600">&#8249; Back</text></g>
+<circle cx="425" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="447" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="469" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="491" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="513" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="535" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/>
+<g><circle cx="900" cy="46" r="30" fill="#fff" filter="url(#soft)"/><path d="M886 40 h8 l11 -8 v30 l-11 -8 h-8z" fill="#0F857D"/><path d="M912 38 q7 9 0 18" stroke="#0F857D" stroke-width="3.6" fill="none" stroke-linecap="round"/></g></g></svg>
+<h3>Level 2: two neat rows, 5 + 5 (duck and pebbles)</h3>
+<p>Rows are 112 scene px apart and objects are 118 px apart across, so the badge and rings never reach a neighbour. Seven pebbles are counted, the badge sits on number 7.</p>
+<svg viewBox="0 0 960 600" class="scene" role="img" aria-label="Level 2: the duck asks for pebbles, two neat rows of five. Seven have been tapped."><defs>
+<linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="-20" x2="0" y2="200"><stop offset="0" stop-color="#BFE9FA"/><stop offset="1" stop-color="#FFF7E8"/></linearGradient>
+<linearGradient id="grass" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="620"><stop offset="0" stop-color="#9CEBC1"/><stop offset="1" stop-color="#5CCB93"/></linearGradient>
+<linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="520"><stop offset="0" stop-color="#D9AA77"/><stop offset="1" stop-color="#B98254"/></linearGradient>
+<linearGradient id="path" gradientUnits="userSpaceOnUse" x1="0" y1="400" x2="0" y2="600"><stop offset="0" stop-color="#F7E6C2"/><stop offset="1" stop-color="#EBCF9B"/></linearGradient>
+<pattern id="gingham" patternUnits="userSpaceOnUse" width="48" height="48" x="0" y="0">
+<rect width="48" height="48" fill="#FFFFFF"/><rect width="24" height="48" fill="#BFE6E1" opacity=".8"/><rect width="48" height="24" fill="#BFE6E1" opacity=".8"/></pattern>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter>
+</defs><rect x="-60" y="-40" width="1080" height="700" fill="url(#sky)"/>
+<circle cx="730" cy="86" r="30" fill="#FFC83D" opacity=".9"/><circle cx="730" cy="86" r="42" fill="#FFC83D" opacity=".18"/>
+<g fill="#fff" opacity=".9"><ellipse cx="520" cy="84" rx="46" ry="14"/><ellipse cx="550" cy="73" rx="28" ry="16"/><ellipse cx="900" cy="124" rx="40" ry="11"/></g>
+<path d="M-60 150 C80 106 200 110 330 138 C470 160 600 116 740 126 C860 136 940 112 1020 128 V660 H-60Z" fill="#BDEFD3"/>
+<path d="M-60 184 C100 150 300 160 480 174 C700 192 840 160 1020 170 V660 H-60Z" fill="url(#grass)"/>
+<g fill="#7FD9A8"><circle cx="40" cy="138" r="26"/><circle cx="76" cy="150" r="20"/><circle cx="920" cy="140" r="28"/><circle cx="890" cy="152" r="18"/></g><g filter="url(#soft)"><path d="M352 160 L902 160 L944 450 L312 450Z" fill="url(#gingham)" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round"/></g><path d="M352 160 L902 160 L944 450 L312 450Z" fill="none" stroke="#9FD6D0" stroke-width="3" stroke-linejoin="round"/><ellipse class="" cx="372" cy="290" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="490" cy="290" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="608" cy="290" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="726" cy="290" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="844" cy="290" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="372" cy="402" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="490" cy="402" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><g><use href="#pebble-a" x="320.0" y="194.0" width="104" height="104"/></g><g><use href="#pebble-b" x="438.0" y="194.0" width="104" height="104"/></g><g><use href="#pebble-a" x="556.0" y="194.0" width="104" height="104"/></g><g><use href="#pebble-b" x="674.0" y="194.0" width="104" height="104"/></g><g><use href="#pebble-a" x="792.0" y="194.0" width="104" height="104"/></g><g><use href="#pebble-b" x="320.0" y="306.0" width="104" height="104"/></g><ellipse cx="490" cy="406" rx="30" ry="6" fill="#2b3a67" opacity=".22"/><g transform="translate(0 -16)"><g class="hop"><use href="#pebble-a" x="438.0" y="306.0" width="104" height="104"/></g></g><g><use href="#pebble-b" x="556.0" y="306.0" width="104" height="104"/></g><g><use href="#pebble-a" x="674.0" y="306.0" width="104" height="104"/></g><g><use href="#pebble-b" x="792.0" y="306.0" width="104" height="104"/></g><g class="pop" filter="url(#soft)"><circle cx="490" cy="342" r="42" fill="#FFC83D" stroke="#fff" stroke-width="6"/><text x="490" y="363" text-anchor="middle" class="fred" font-size="60" font-weight="700" fill="#3B2A20">7</text></g><g filter="url(#soft)"><rect x="40" y="92" width="268" height="132" rx="32" fill="#fff"/><path d="M114 222 l10 32 l22 -32Z" fill="#fff"/></g><g class="fred" font-weight="600" fill="#3B2A20"><text x="174" y="134" text-anchor="middle" font-size="24">Count the</text><use href="#pebble-a" x="60" y="144" width="64" height="64"/><text x="132" y="190" font-size="34" font-weight="700" fill="#0F857D">pebbles</text></g><g class="bob" style="animation-delay:0s"><use href="#duck-n" x="36" y="262" width="160" height="171"/></g><g filter="url(#soft)"><rect x="794" y="127.68333333333334" width="74" height="22" rx="11" fill="#C8996A"/><rect x="794" y="127.68333333333334" width="74" height="9" rx="4.5" fill="#E6C9A0"/></g><use href="#hazel-sym" x="800" y="68" width="62" height="68"/><g filter="url(#soft)"><rect x="30" y="500" width="900" height="84" rx="26" fill="#FFF1D6" stroke="#E6BE8D" stroke-width="3"/></g><text x="58" y="550" class="fred" font-size="20" font-weight="600" fill="#0F857D">My parade</text><g class="march" style="animation-delay:0.0s"><use href="#a-chick" x="220" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:0.35s"><use href="#a-lamb" x="304" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:0.7s"><use href="#a-calf" x="388" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:1.0499999999999998s"><use href="#a-piglet" x="472" y="508" width="68" height="68"/></g><g class="fred">
+<g><rect x="24" y="22" width="124" height="56" rx="28" fill="#0A625C"/><rect x="24" y="16" width="124" height="56" rx="28" fill="#0F857D"/><text x="86" y="52" text-anchor="middle" fill="#fff" font-size="24" font-weight="600">&#8249; Back</text></g>
+<circle cx="425" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="447" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="469" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="491" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="513" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="535" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/>
+<g><circle cx="900" cy="46" r="30" fill="#fff" filter="url(#soft)"/><path d="M886 40 h8 l11 -8 v30 l-11 -8 h-8z" fill="#0F857D"/><path d="M912 38 q7 9 0 18" stroke="#0F857D" stroke-width="3.6" fill="none" stroke-linecap="round"/></g></g></svg>
+<h3>Level 3: a scatter of 8 (mouse and acorns)</h3>
+<p>Eight acorns thrown loosely across the blanket with slight tilts. It is a scatter, not a heap: every centre is at least 130 scene px from every other, and objects are 104 px, so nothing touches or hides another. Skipping one is easy, which is the point. A Done bell (104 px) waits beside the mouse.</p>
+<svg viewBox="0 0 960 600" class="scene" role="img" aria-label="Level 3: the mouse asks for acorns scattered on the blanket with a Done bell."><defs>
+<linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="-20" x2="0" y2="200"><stop offset="0" stop-color="#BFE9FA"/><stop offset="1" stop-color="#FFF7E8"/></linearGradient>
+<linearGradient id="grass" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="620"><stop offset="0" stop-color="#9CEBC1"/><stop offset="1" stop-color="#5CCB93"/></linearGradient>
+<linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="520"><stop offset="0" stop-color="#D9AA77"/><stop offset="1" stop-color="#B98254"/></linearGradient>
+<linearGradient id="path" gradientUnits="userSpaceOnUse" x1="0" y1="400" x2="0" y2="600"><stop offset="0" stop-color="#F7E6C2"/><stop offset="1" stop-color="#EBCF9B"/></linearGradient>
+<pattern id="gingham" patternUnits="userSpaceOnUse" width="48" height="48" x="0" y="0">
+<rect width="48" height="48" fill="#FFFFFF"/><rect width="24" height="48" fill="#BFE6E1" opacity=".8"/><rect width="48" height="24" fill="#BFE6E1" opacity=".8"/></pattern>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter>
+</defs><rect x="-60" y="-40" width="1080" height="700" fill="url(#sky)"/>
+<circle cx="730" cy="86" r="30" fill="#FFC83D" opacity=".9"/><circle cx="730" cy="86" r="42" fill="#FFC83D" opacity=".18"/>
+<g fill="#fff" opacity=".9"><ellipse cx="520" cy="84" rx="46" ry="14"/><ellipse cx="550" cy="73" rx="28" ry="16"/><ellipse cx="900" cy="124" rx="40" ry="11"/></g>
+<path d="M-60 150 C80 106 200 110 330 138 C470 160 600 116 740 126 C860 136 940 112 1020 128 V660 H-60Z" fill="#BDEFD3"/>
+<path d="M-60 184 C100 150 300 160 480 174 C700 192 840 160 1020 170 V660 H-60Z" fill="url(#grass)"/>
+<g fill="#7FD9A8"><circle cx="40" cy="138" r="26"/><circle cx="76" cy="150" r="20"/><circle cx="920" cy="140" r="28"/><circle cx="890" cy="152" r="18"/></g><g filter="url(#soft)"><path d="M352 160 L902 160 L944 450 L312 450Z" fill="url(#gingham)" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round"/></g><path d="M352 160 L902 160 L944 450 L312 450Z" fill="none" stroke="#9FD6D0" stroke-width="3" stroke-linejoin="round"/><g transform="rotate(-6 392 238)"><use href="#acorn" x="340.0" y="186.0" width="104" height="104"/></g><g transform="rotate(4 524 212)"><use href="#acorn" x="472.0" y="160.0" width="104" height="104"/></g><g transform="rotate(-3 664 240)"><use href="#acorn" x="612.0" y="188.0" width="104" height="104"/></g><g transform="rotate(8 806 214)"><use href="#acorn" x="754.0" y="162.0" width="104" height="104"/></g><g transform="rotate(5 452 350)"><use href="#acorn" x="400.0" y="298.0" width="104" height="104"/></g><g transform="rotate(-8 596 352)"><use href="#acorn" x="544.0" y="300.0" width="104" height="104"/></g><g transform="rotate(3 740 364)"><use href="#acorn" x="688.0" y="312.0" width="104" height="104"/></g><g transform="rotate(-5 868 330)"><use href="#acorn" x="816.0" y="278.0" width="104" height="104"/></g><g filter="url(#soft)"><rect x="40" y="92" width="268" height="132" rx="32" fill="#fff"/><path d="M114 222 l10 32 l22 -32Z" fill="#fff"/></g><g class="fred" font-weight="600" fill="#3B2A20"><text x="174" y="134" text-anchor="middle" font-size="24">Count the</text><use href="#acorn" x="60" y="144" width="64" height="64"/><text x="132" y="190" font-size="34" font-weight="700" fill="#0F857D">acorns</text></g><g class="bob" style="animation-delay:0s"><use href="#mouse-n" x="36" y="262" width="160" height="171"/></g><g filter="url(#soft)"><circle cx="262" cy="432" r="52" fill="#D99E12"/><circle cx="262" cy="424" r="52" fill="#FFF7E8" stroke="#FFC83D" stroke-width="6"/></g><g class=""><use href="#bell" x="228" y="390" width="68" height="65"/></g><g filter="url(#soft)"><rect x="794" y="127.68333333333334" width="74" height="22" rx="11" fill="#C8996A"/><rect x="794" y="127.68333333333334" width="74" height="9" rx="4.5" fill="#E6C9A0"/></g><use href="#hazel-sym" x="800" y="68" width="62" height="68"/><g filter="url(#soft)"><rect x="30" y="500" width="900" height="84" rx="26" fill="#FFF1D6" stroke="#E6BE8D" stroke-width="3"/></g><text x="58" y="550" class="fred" font-size="20" font-weight="600" fill="#0F857D">My parade</text><g class="march" style="animation-delay:0.0s"><use href="#a-chick" x="220" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:0.35s"><use href="#a-lamb" x="304" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:0.7s"><use href="#a-calf" x="388" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:1.0499999999999998s"><use href="#a-piglet" x="472" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:1.4s"><use href="#a-bunny" x="556" y="508" width="68" height="68"/></g><g class="fred">
+<g><rect x="24" y="22" width="124" height="56" rx="28" fill="#0A625C"/><rect x="24" y="16" width="124" height="56" rx="28" fill="#0F857D"/><text x="86" y="52" text-anchor="middle" fill="#fff" font-size="24" font-weight="600">&#8249; Back</text></g>
+<circle cx="425" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="447" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="469" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="491" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="513" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="535" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/>
+<g><circle cx="900" cy="46" r="30" fill="#fff" filter="url(#soft)"/><path d="M886 40 h8 l11 -8 v30 l-11 -8 h-8z" fill="#0F857D"/><path d="M912 38 q7 9 0 18" stroke="#0F857D" stroke-width="3.6" fill="none" stroke-linecap="round"/></g></g></svg>
+
+<h2>4. The counting moment</h2>
+<p>One badge for the whole round, always on top, never blocking a tap. It is <b>84 scene px</b> across with a <b>60 px</b> numeral (52 px and 38 px on a phone), sun yellow with a white rim. It sits centred on the object that was just tapped. A tapped object hops, then keeps a warm ring under it. Counting is not right or wrong, so there is never a tick.</p>
+<div class="row states"><figure class="cast statecard"><svg viewBox="0 0 220 190" width="220" height="190" class="stage sc" role="img" aria-label="1. Uncounted"><defs><filter id="softc" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter></defs><rect width="220" height="190" fill="url(#gingham)"/><use href="#apple" x="58" y="58" width="104" height="104"/></svg><figcaption><b>1. Uncounted</b><br>Plain object. Idle. Nothing moves. 104 scene px, 65 px on a phone.</figcaption></figure><figure class="cast statecard"><svg viewBox="0 0 220 190" width="220" height="190" class="stage sc" role="img" aria-label="2. Just tapped"><defs><filter id="softc" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter></defs><rect width="220" height="190" fill="url(#gingham)"/><ellipse class="" cx="110" cy="154" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse cx="110" cy="158" rx="30" ry="6" fill="#2b3a67" opacity=".22"/><g transform="translate(0 -16)"><g class="hop"><use href="#apple" x="58" y="58" width="104" height="104"/></g></g><g class="pop" filter="url(#softc)"><circle cx="110" cy="94" r="42" fill="#FFC83D" stroke="#fff" stroke-width="6"/><text x="110" y="115" text-anchor="middle" class="fred" font-size="60" font-weight="700" fill="#3B2A20">4</text></g></svg><figcaption><b>2. Just tapped</b><br>Hops, ring appears, the one 84 px badge sits ON the object with a 60 px numeral. Note plays, voice says the number.</figcaption></figure><figure class="cast statecard"><svg viewBox="0 0 220 190" width="220" height="190" class="stage sc" role="img" aria-label="3. Counted"><defs><filter id="softc" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter></defs><rect width="220" height="190" fill="url(#gingham)"/><ellipse class="" cx="110" cy="154" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><use href="#apple" x="58" y="58" width="104" height="104"/></svg><figcaption><b>3. Counted</b><br>Badge has moved on. A warm ring stays under the object. No tick (a tick would mean "right").</figcaption></figure><figure class="cast statecard"><svg viewBox="0 0 220 190" width="220" height="190" class="stage sc" role="img" aria-label="4. Tapped again"><defs><filter id="softc" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter></defs><rect width="220" height="190" fill="url(#gingham)"/><ellipse class="pulse" cx="110" cy="154" rx="56" ry="15" fill="none" stroke="#F5A623" stroke-width="5"/><ellipse class="" cx="110" cy="154" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><use href="#apple" x="58" y="58" width="104" height="104"/></svg><figcaption><b>4. Tapped again</b><br>Soft click, the ring pulses once. No number, no badge, no error. The count does not change.</figcaption></figure></div>
+<p class="note">Muted players still get everything: the badge pop is the visual twin of the count note and the spoken number, and the ring is the visual twin of "that one is done".</p>
+
+<h2>5. The "How many?" step</h2>
+<p>When the last object is counted, the badge fades, the friend asks, and three big choices bounce into the shelf slot where the parade was. Each choice is 132 x 104 scene px (82 x 65 on a phone) with a 76 px numeral. The friend waits with a slow bob.</p>
+<svg viewBox="0 0 960 600" class="scene" role="img" aria-label="How many step: three big number choices, the hedgehog waits"><defs>
+<linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="-20" x2="0" y2="200"><stop offset="0" stop-color="#BFE9FA"/><stop offset="1" stop-color="#FFF7E8"/></linearGradient>
+<linearGradient id="grass" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="620"><stop offset="0" stop-color="#9CEBC1"/><stop offset="1" stop-color="#5CCB93"/></linearGradient>
+<linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="520"><stop offset="0" stop-color="#D9AA77"/><stop offset="1" stop-color="#B98254"/></linearGradient>
+<linearGradient id="path" gradientUnits="userSpaceOnUse" x1="0" y1="400" x2="0" y2="600"><stop offset="0" stop-color="#F7E6C2"/><stop offset="1" stop-color="#EBCF9B"/></linearGradient>
+<pattern id="gingham" patternUnits="userSpaceOnUse" width="48" height="48" x="0" y="0">
+<rect width="48" height="48" fill="#FFFFFF"/><rect width="24" height="48" fill="#BFE6E1" opacity=".8"/><rect width="48" height="24" fill="#BFE6E1" opacity=".8"/></pattern>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter>
+</defs><rect x="-60" y="-40" width="1080" height="700" fill="url(#sky)"/>
+<circle cx="730" cy="86" r="30" fill="#FFC83D" opacity=".9"/><circle cx="730" cy="86" r="42" fill="#FFC83D" opacity=".18"/>
+<g fill="#fff" opacity=".9"><ellipse cx="520" cy="84" rx="46" ry="14"/><ellipse cx="550" cy="73" rx="28" ry="16"/><ellipse cx="900" cy="124" rx="40" ry="11"/></g>
+<path d="M-60 150 C80 106 200 110 330 138 C470 160 600 116 740 126 C860 136 940 112 1020 128 V660 H-60Z" fill="#BDEFD3"/>
+<path d="M-60 184 C100 150 300 160 480 174 C700 192 840 160 1020 170 V660 H-60Z" fill="url(#grass)"/>
+<g fill="#7FD9A8"><circle cx="40" cy="138" r="26"/><circle cx="76" cy="150" r="20"/><circle cx="920" cy="140" r="28"/><circle cx="890" cy="152" r="18"/></g><g filter="url(#soft)"><path d="M352 150 L902 150 L944 440 L312 440Z" fill="url(#gingham)" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round"/></g><path d="M352 150 L902 150 L944 440 L312 440Z" fill="none" stroke="#9FD6D0" stroke-width="3" stroke-linejoin="round"/><ellipse class="" cx="372" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="490" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="608" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="726" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="844" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><g><use href="#apple" x="320.0" y="238.0" width="104" height="104"/></g><g><use href="#apple" x="438.0" y="238.0" width="104" height="104"/></g><g><use href="#apple" x="556.0" y="238.0" width="104" height="104"/></g><g><use href="#apple" x="674.0" y="238.0" width="104" height="104"/></g><g><use href="#apple" x="792.0" y="238.0" width="104" height="104"/></g><g filter="url(#soft)"><rect x="40" y="92" width="268" height="132" rx="32" fill="#fff"/><path d="M114 222 l10 32 l22 -32Z" fill="#fff"/></g><g class="fred" font-weight="600" fill="#3B2A20"><text x="174" y="134" text-anchor="middle" font-size="24">How many</text><use href="#apple" x="52" y="142" width="64" height="64"/><text x="128" y="188" font-size="34" font-weight="700" fill="#0F857D">apples?</text></g><g class="bob" style="animation-delay:0s"><use href="#hog-n" x="28" y="256" width="176" height="147"/></g><g filter="url(#soft)"><rect x="794" y="127.68333333333334" width="74" height="22" rx="11" fill="#C8996A"/><rect x="794" y="127.68333333333334" width="74" height="9" rx="4.5" fill="#E6C9A0"/></g><use href="#hazel-sym" x="800" y="68" width="62" height="68"/><g class="fred"><rect x="408" y="476" width="132" height="104" rx="24" fill="#E6BE8D"/><rect x="408" y="468" width="132" height="104" rx="24" fill="#fff" stroke="#E6BE8D" stroke-width="4"/><text x="474" y="544" text-anchor="middle" font-size="76" font-weight="700" fill="#3B2A20">4</text></g><g class="fred"><rect x="562" y="476" width="132" height="104" rx="24" fill="#E6BE8D"/><rect x="562" y="468" width="132" height="104" rx="24" fill="#fff" stroke="#E6BE8D" stroke-width="4"/><text x="628" y="544" text-anchor="middle" font-size="76" font-weight="700" fill="#3B2A20">5</text></g><g class="fred"><rect x="716" y="476" width="132" height="104" rx="24" fill="#E6BE8D"/><rect x="716" y="468" width="132" height="104" rx="24" fill="#fff" stroke="#E6BE8D" stroke-width="4"/><text x="782" y="544" text-anchor="middle" font-size="76" font-weight="700" fill="#3B2A20">6</text></g><g class="fred">
+<g><rect x="24" y="22" width="124" height="56" rx="28" fill="#0A625C"/><rect x="24" y="16" width="124" height="56" rx="28" fill="#0F857D"/><text x="86" y="52" text-anchor="middle" fill="#fff" font-size="24" font-weight="600">&#8249; Back</text></g>
+<circle cx="425" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="447" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="469" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="491" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="513" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="535" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/>
+<g><circle cx="900" cy="46" r="30" fill="#fff" filter="url(#soft)"/><path d="M886 40 h8 l11 -8 v30 l-11 -8 h-8z" fill="#0F857D"/><path d="M912 38 q7 9 0 18" stroke="#0F857D" stroke-width="3.6" fill="none" stroke-linecap="round"/></g></g></svg>
+<p>After a first wrong choice that choice dims (it stays visible, not tappable). No red, no X, no buzzer. The friend tilts their head, and the apples light up one after another, each lifting a little, in the order the child counted. This is a silent count-along. Here the third apple is mid-light.</p>
+<svg viewBox="0 0 960 600" class="scene" role="img" aria-label="How many step: one choice dimmed, the apples light one by one"><defs>
+<linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="-20" x2="0" y2="200"><stop offset="0" stop-color="#BFE9FA"/><stop offset="1" stop-color="#FFF7E8"/></linearGradient>
+<linearGradient id="grass" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="620"><stop offset="0" stop-color="#9CEBC1"/><stop offset="1" stop-color="#5CCB93"/></linearGradient>
+<linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="520"><stop offset="0" stop-color="#D9AA77"/><stop offset="1" stop-color="#B98254"/></linearGradient>
+<linearGradient id="path" gradientUnits="userSpaceOnUse" x1="0" y1="400" x2="0" y2="600"><stop offset="0" stop-color="#F7E6C2"/><stop offset="1" stop-color="#EBCF9B"/></linearGradient>
+<pattern id="gingham" patternUnits="userSpaceOnUse" width="48" height="48" x="0" y="0">
+<rect width="48" height="48" fill="#FFFFFF"/><rect width="24" height="48" fill="#BFE6E1" opacity=".8"/><rect width="48" height="24" fill="#BFE6E1" opacity=".8"/></pattern>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter>
+</defs><rect x="-60" y="-40" width="1080" height="700" fill="url(#sky)"/>
+<circle cx="730" cy="86" r="30" fill="#FFC83D" opacity=".9"/><circle cx="730" cy="86" r="42" fill="#FFC83D" opacity=".18"/>
+<g fill="#fff" opacity=".9"><ellipse cx="520" cy="84" rx="46" ry="14"/><ellipse cx="550" cy="73" rx="28" ry="16"/><ellipse cx="900" cy="124" rx="40" ry="11"/></g>
+<path d="M-60 150 C80 106 200 110 330 138 C470 160 600 116 740 126 C860 136 940 112 1020 128 V660 H-60Z" fill="#BDEFD3"/>
+<path d="M-60 184 C100 150 300 160 480 174 C700 192 840 160 1020 170 V660 H-60Z" fill="url(#grass)"/>
+<g fill="#7FD9A8"><circle cx="40" cy="138" r="26"/><circle cx="76" cy="150" r="20"/><circle cx="920" cy="140" r="28"/><circle cx="890" cy="152" r="18"/></g><g filter="url(#soft)"><path d="M352 150 L902 150 L944 440 L312 440Z" fill="url(#gingham)" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round"/></g><path d="M352 150 L902 150 L944 440 L312 440Z" fill="none" stroke="#9FD6D0" stroke-width="3" stroke-linejoin="round"/><ellipse class="" cx="372" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="490" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><circle class="glow" cx="608" cy="284" r="72" fill="#FFE27A" opacity=".6"/><ellipse class="" cx="608" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="726" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="844" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><g><use href="#apple" x="320.0" y="238.0" width="104" height="104"/></g><g><use href="#apple" x="438.0" y="238.0" width="104" height="104"/></g><ellipse cx="608" cy="338" rx="30" ry="6" fill="#2b3a67" opacity=".22"/><g transform="translate(0 -14)"><g class="lit"><use href="#apple" x="556.0" y="238.0" width="104" height="104"/></g></g><g><use href="#apple" x="674.0" y="238.0" width="104" height="104"/></g><g><use href="#apple" x="792.0" y="238.0" width="104" height="104"/></g><g filter="url(#soft)"><rect x="40" y="92" width="268" height="104" rx="32" fill="#fff"/><path d="M114 194 l10 32 l22 -32Z" fill="#fff"/></g><g class="fred" text-anchor="middle" font-weight="600" fill="#3B2A20"><text x="174" y="152" font-size="30" font-weight="700" fill="#0F857D">Count with me!</text></g><g class="tilt" style="animation-delay:0s"><use href="#hog-n" x="28" y="256" width="176" height="147"/></g><g filter="url(#soft)"><rect x="794" y="127.68333333333334" width="74" height="22" rx="11" fill="#C8996A"/><rect x="794" y="127.68333333333334" width="74" height="9" rx="4.5" fill="#E6C9A0"/></g><use href="#hazel-sym" x="800" y="68" width="62" height="68"/><g class="fred"><rect x="408" y="476" width="132" height="104" rx="24" fill="#E4DAC5"/><rect x="408" y="468" width="132" height="104" rx="24" fill="#F1EADC" stroke="#E4DAC5" stroke-width="4"/><text x="474" y="544" text-anchor="middle" font-size="76" font-weight="700" fill="#BDB19D">4</text></g><g class="fred"><rect x="562" y="476" width="132" height="104" rx="24" fill="#E6BE8D"/><rect x="562" y="468" width="132" height="104" rx="24" fill="#fff" stroke="#E6BE8D" stroke-width="4"/><text x="628" y="544" text-anchor="middle" font-size="76" font-weight="700" fill="#3B2A20">5</text></g><g class="fred"><rect x="716" y="476" width="132" height="104" rx="24" fill="#E6BE8D"/><rect x="716" y="468" width="132" height="104" rx="24" fill="#fff" stroke="#E6BE8D" stroke-width="4"/><text x="782" y="544" text-anchor="middle" font-size="76" font-weight="700" fill="#3B2A20">6</text></g><g class="fred">
+<g><rect x="24" y="22" width="124" height="56" rx="28" fill="#0A625C"/><rect x="24" y="16" width="124" height="56" rx="28" fill="#0F857D"/><text x="86" y="52" text-anchor="middle" fill="#fff" font-size="24" font-weight="600">&#8249; Back</text></g>
+<circle cx="425" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="447" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="469" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="491" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="513" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="535" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/>
+<g><circle cx="900" cy="46" r="30" fill="#fff" filter="url(#soft)"/><path d="M886 40 h8 l11 -8 v30 l-11 -8 h-8z" fill="#0F857D"/><path d="M912 38 q7 9 0 18" stroke="#0F857D" stroke-width="3.6" fill="none" stroke-linecap="round"/></g></g></svg>
+
+<h2>6. Level 3 Done bell and "find the rest"</h2>
+<p>Level 3 has no automatic finish: the child rings the bell when they think they have counted everything. If objects are left, the uncounted ones twinkle (soft yellow glow plus sparkles, opacity only), the bell gives a little wobble and the mouse asks "Did we count them all?". Here six acorns are counted and two still twinkle.</p>
+<svg viewBox="0 0 960 600" class="scene" role="img" aria-label="Done bell: six acorns are counted, two still twinkle, the bell wobbles."><defs>
+<linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="-20" x2="0" y2="200"><stop offset="0" stop-color="#BFE9FA"/><stop offset="1" stop-color="#FFF7E8"/></linearGradient>
+<linearGradient id="grass" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="620"><stop offset="0" stop-color="#9CEBC1"/><stop offset="1" stop-color="#5CCB93"/></linearGradient>
+<linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="520"><stop offset="0" stop-color="#D9AA77"/><stop offset="1" stop-color="#B98254"/></linearGradient>
+<linearGradient id="path" gradientUnits="userSpaceOnUse" x1="0" y1="400" x2="0" y2="600"><stop offset="0" stop-color="#F7E6C2"/><stop offset="1" stop-color="#EBCF9B"/></linearGradient>
+<pattern id="gingham" patternUnits="userSpaceOnUse" width="48" height="48" x="0" y="0">
+<rect width="48" height="48" fill="#FFFFFF"/><rect width="24" height="48" fill="#BFE6E1" opacity=".8"/><rect width="48" height="24" fill="#BFE6E1" opacity=".8"/></pattern>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter>
+</defs><rect x="-60" y="-40" width="1080" height="700" fill="url(#sky)"/>
+<circle cx="730" cy="86" r="30" fill="#FFC83D" opacity=".9"/><circle cx="730" cy="86" r="42" fill="#FFC83D" opacity=".18"/>
+<g fill="#fff" opacity=".9"><ellipse cx="520" cy="84" rx="46" ry="14"/><ellipse cx="550" cy="73" rx="28" ry="16"/><ellipse cx="900" cy="124" rx="40" ry="11"/></g>
+<path d="M-60 150 C80 106 200 110 330 138 C470 160 600 116 740 126 C860 136 940 112 1020 128 V660 H-60Z" fill="#BDEFD3"/>
+<path d="M-60 184 C100 150 300 160 480 174 C700 192 840 160 1020 170 V660 H-60Z" fill="url(#grass)"/>
+<g fill="#7FD9A8"><circle cx="40" cy="138" r="26"/><circle cx="76" cy="150" r="20"/><circle cx="920" cy="140" r="28"/><circle cx="890" cy="152" r="18"/></g><g filter="url(#soft)"><path d="M352 160 L902 160 L944 450 L312 450Z" fill="url(#gingham)" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round"/></g><path d="M352 160 L902 160 L944 450 L312 450Z" fill="none" stroke="#9FD6D0" stroke-width="3" stroke-linejoin="round"/><ellipse class="" cx="392" cy="282" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="524" cy="256" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="664" cy="284" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><circle class="glow" cx="806" cy="214" r="70" fill="#FFE27A" opacity=".55"/><ellipse class="" cx="452" cy="394" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><circle class="glow" cx="596" cy="352" r="70" fill="#FFE27A" opacity=".55"/><ellipse class="" cx="740" cy="408" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="868" cy="374" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><g transform="rotate(-6 392 238)"><use href="#acorn" x="340.0" y="186.0" width="104" height="104"/></g><g transform="rotate(4 524 212)"><use href="#acorn" x="472.0" y="160.0" width="104" height="104"/></g><g transform="rotate(-3 664 240)"><use href="#acorn" x="612.0" y="188.0" width="104" height="104"/></g><g transform="rotate(8 806 214)"><use href="#acorn" x="754.0" y="162.0" width="104" height="104"/></g><g class="twinkle"><path d="M856 157 L859.08 164.92 L867 168 L859.08 171.08 L856 179 L852.92 171.08 L845 168 L852.92 164.92Z" fill="#FFC83D" stroke="#FFC83D" stroke-width="2" stroke-linejoin="round"/><path d="M752 172 L754.24 177.76 L760 180 L754.24 182.24 L752 188 L749.76 182.24 L744 180 L749.76 177.76Z" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></g><g transform="rotate(5 452 350)"><use href="#acorn" x="400.0" y="298.0" width="104" height="104"/></g><g transform="rotate(-8 596 352)"><use href="#acorn" x="544.0" y="300.0" width="104" height="104"/></g><g class="twinkle"><path d="M646 295 L649.08 302.92 L657 306 L649.08 309.08 L646 317 L642.92 309.08 L635 306 L642.92 302.92Z" fill="#FFC83D" stroke="#FFC83D" stroke-width="2" stroke-linejoin="round"/><path d="M542 310 L544.24 315.76 L550 318 L544.24 320.24 L542 326 L539.76 320.24 L534 318 L539.76 315.76Z" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></g><g transform="rotate(3 740 364)"><use href="#acorn" x="688.0" y="312.0" width="104" height="104"/></g><g transform="rotate(-5 868 330)"><use href="#acorn" x="816.0" y="278.0" width="104" height="104"/></g><g filter="url(#soft)"><rect x="40" y="92" width="268" height="104" rx="32" fill="#fff"/><path d="M114 194 l10 32 l22 -32Z" fill="#fff"/></g><g class="fred" text-anchor="middle" font-weight="600" fill="#3B2A20"><text x="174" y="136" font-size="26">Did we count</text><text x="174" y="170" font-size="26">them all?</text></g><g class="bob" style="animation-delay:0s"><use href="#mouse-n" x="44" y="270" width="150" height="160"/></g><g filter="url(#soft)"><circle cx="262" cy="432" r="52" fill="#D99E12"/><circle cx="262" cy="424" r="52" fill="#FFF7E8" stroke="#FFC83D" stroke-width="6"/></g><g class="wob"><use href="#bell" x="228" y="390" width="68" height="65"/></g><g filter="url(#soft)"><rect x="794" y="127.68333333333334" width="74" height="22" rx="11" fill="#C8996A"/><rect x="794" y="127.68333333333334" width="74" height="9" rx="4.5" fill="#E6C9A0"/></g><use href="#hazel-sym" x="800" y="68" width="62" height="68"/><g filter="url(#soft)"><rect x="30" y="500" width="900" height="84" rx="26" fill="#FFF1D6" stroke="#E6BE8D" stroke-width="3"/></g><text x="58" y="550" class="fred" font-size="20" font-weight="600" fill="#0F857D">My parade</text><g class="march" style="animation-delay:0.0s"><use href="#a-chick" x="220" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:0.35s"><use href="#a-lamb" x="304" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:0.7s"><use href="#a-calf" x="388" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:1.0499999999999998s"><use href="#a-piglet" x="472" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:1.4s"><use href="#a-bunny" x="556" y="508" width="68" height="68"/></g><g class="fred">
+<g><rect x="24" y="22" width="124" height="56" rx="28" fill="#0A625C"/><rect x="24" y="16" width="124" height="56" rx="28" fill="#0F857D"/><text x="86" y="52" text-anchor="middle" fill="#fff" font-size="24" font-weight="600">&#8249; Back</text></g>
+<circle cx="425" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="447" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="469" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="491" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="513" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="535" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/>
+<g><circle cx="900" cy="46" r="30" fill="#fff" filter="url(#soft)"/><path d="M886 40 h8 l11 -8 v30 l-11 -8 h-8z" fill="#0F857D"/><path d="M912 38 q7 9 0 18" stroke="#0F857D" stroke-width="3.6" fill="none" stroke-linecap="round"/></g></g></svg>
+
+<h2>7. Level 4: "give me N"</h2>
+<p>Uses the existing drag-and-drop fill mechanic. The bubble shows the number and a picture, "Give me 6". The crate holds the apples (each 104 px, big enough to grab), the basket on the right shows a count badge, one apple is lifting mid-drag, and the Done bell (104 px) appears after the first apple goes in. The numeral stays on screen because it is the request, not the answer.</p>
+<svg viewBox="0 0 960 600" class="scene" role="img" aria-label="Level 4: give me six apples. Drag apples from the crate into the basket, then ring the Done bell."><defs>
+<linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="-20" x2="0" y2="200"><stop offset="0" stop-color="#BFE9FA"/><stop offset="1" stop-color="#FFF7E8"/></linearGradient>
+<linearGradient id="grass" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="620"><stop offset="0" stop-color="#9CEBC1"/><stop offset="1" stop-color="#5CCB93"/></linearGradient>
+<linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="520"><stop offset="0" stop-color="#D9AA77"/><stop offset="1" stop-color="#B98254"/></linearGradient>
+<linearGradient id="path" gradientUnits="userSpaceOnUse" x1="0" y1="400" x2="0" y2="600"><stop offset="0" stop-color="#F7E6C2"/><stop offset="1" stop-color="#EBCF9B"/></linearGradient>
+<pattern id="gingham" patternUnits="userSpaceOnUse" width="48" height="48" x="0" y="0">
+<rect width="48" height="48" fill="#FFFFFF"/><rect width="24" height="48" fill="#BFE6E1" opacity=".8"/><rect width="48" height="24" fill="#BFE6E1" opacity=".8"/></pattern>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter>
+</defs><rect x="-60" y="-40" width="1080" height="700" fill="url(#sky)"/>
+<circle cx="730" cy="86" r="30" fill="#FFC83D" opacity=".9"/><circle cx="730" cy="86" r="42" fill="#FFC83D" opacity=".18"/>
+<g fill="#fff" opacity=".9"><ellipse cx="520" cy="84" rx="46" ry="14"/><ellipse cx="550" cy="73" rx="28" ry="16"/><ellipse cx="900" cy="124" rx="40" ry="11"/></g>
+<path d="M-60 150 C80 106 200 110 330 138 C470 160 600 116 740 126 C860 136 940 112 1020 128 V660 H-60Z" fill="#BDEFD3"/>
+<path d="M-60 184 C100 150 300 160 480 174 C700 192 840 160 1020 170 V660 H-60Z" fill="url(#grass)"/>
+<g fill="#7FD9A8"><circle cx="40" cy="138" r="26"/><circle cx="76" cy="150" r="20"/><circle cx="920" cy="140" r="28"/><circle cx="890" cy="152" r="18"/></g><g filter="url(#soft)"><path d="M352 150 L902 150 L944 470 L312 470Z" fill="url(#gingham)" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round"/></g><path d="M352 150 L902 150 L944 470 L312 470Z" fill="none" stroke="#9FD6D0" stroke-width="3" stroke-linejoin="round"/><rect x="322" y="330" width="344" height="60" rx="10" fill="#9A6A42"/>
+<use href="#apple" x="372" y="252" width="104" height="104" transform="rotate(-5 424 304)"/><use href="#apple" x="506" y="250" width="104" height="104" transform="rotate(4 558 302)"/><use href="#apple" x="330" y="282" width="104" height="104" transform="rotate(-3 382 334)"/><use href="#apple" x="440" y="288" width="104" height="104" transform="rotate(3 492 340)"/><use href="#apple" x="550" y="282" width="104" height="104" transform="rotate(-2 602 334)"/>
+<g filter="url(#soft)"><rect x="318" y="372" width="352" height="96" rx="14" fill="url(#wood)" stroke="#A5703F" stroke-width="3"/>
+<g stroke="#A5703F" stroke-width="2.5" opacity=".45"><path d="M330 408 H658"/><path d="M330 440 H658"/></g>
+<rect x="312" y="360" width="364" height="26" rx="13" fill="#E6BE8D" stroke="#A5703F" stroke-width="3"/></g><g><use href="#apple" x="724" y="300" width="78" height="78" transform="rotate(-8 763 339)"/><use href="#apple" x="772" y="292" width="78" height="78" transform="rotate(8 811 331)"/><use href="#apple" x="746" y="262" width="78" height="78" transform="rotate(2 785 301)"/><use href="#apple" x="792" y="256" width="78" height="78" transform="rotate(-10 831 295)"/>
+<path d="M708 362 H900 L880 440 C876 452 868 456 856 456 H752 C740 456 732 452 728 440Z" fill="#D9A25F" stroke="#A5703F" stroke-width="3.5" stroke-linejoin="round"/>
+<g stroke="#A5703F" stroke-width="3" opacity=".55" stroke-linecap="round"><path d="M718 386 H890"/><path d="M724 412 H884"/><path d="M766 366 V454"/><path d="M804 366 V456"/><path d="M842 366 V454"/></g>
+<rect x="700" y="352" width="208" height="20" rx="10" fill="#E9B979" stroke="#A5703F" stroke-width="3.5"/></g><g class="pop" filter="url(#soft)"><circle cx="884" cy="352" r="42" fill="#FFC83D" stroke="#fff" stroke-width="6"/><text x="884" y="373" text-anchor="middle" class="fred" font-size="60" font-weight="700" fill="#3B2A20">4</text></g><g class="lift"><ellipse cx="696" cy="300" rx="30" ry="7" fill="#2b3a67" opacity=".22"/><use href="#apple" x="644" y="172" width="104" height="104" transform="rotate(-8 696 224)"/></g><g filter="url(#soft)"><rect x="40" y="92" width="268" height="132" rx="32" fill="#fff"/><path d="M114 222 l10 32 l22 -32Z" fill="#fff"/></g><g class="fred" font-weight="600" fill="#3B2A20"><text x="174" y="134" text-anchor="middle" font-size="24">Give me</text><text x="124" y="198" text-anchor="middle" font-size="66" font-weight="700" fill="#0F857D">6</text><use href="#apple" x="150" y="140" width="68" height="68"/></g><g class="bob" style="animation-delay:0s"><use href="#hog-n" x="28" y="256" width="176" height="147"/></g><g filter="url(#soft)"><circle cx="262" cy="432" r="52" fill="#D99E12"/><circle cx="262" cy="424" r="52" fill="#FFF7E8" stroke="#FFC83D" stroke-width="6"/></g><g class=""><use href="#bell" x="228" y="390" width="68" height="65"/></g><g filter="url(#soft)"><rect x="794" y="127.68333333333334" width="74" height="22" rx="11" fill="#C8996A"/><rect x="794" y="127.68333333333334" width="74" height="9" rx="4.5" fill="#E6C9A0"/></g><use href="#hazel-sym" x="800" y="68" width="62" height="68"/><g filter="url(#soft)"><rect x="30" y="500" width="900" height="84" rx="26" fill="#FFF1D6" stroke="#E6BE8D" stroke-width="3"/></g><text x="58" y="550" class="fred" font-size="20" font-weight="600" fill="#0F857D">My parade</text><g class="march" style="animation-delay:0.0s"><use href="#a-chick" x="220" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:0.35s"><use href="#a-lamb" x="304" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:0.7s"><use href="#a-calf" x="388" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:1.0499999999999998s"><use href="#a-piglet" x="472" y="508" width="68" height="68"/></g><g class="fred">
+<g><rect x="24" y="22" width="124" height="56" rx="28" fill="#0A625C"/><rect x="24" y="16" width="124" height="56" rx="28" fill="#0F857D"/><text x="86" y="52" text-anchor="middle" fill="#fff" font-size="24" font-weight="600">&#8249; Back</text></g>
+<circle cx="425" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="447" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="469" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="491" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="513" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="535" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/>
+<g><circle cx="900" cy="46" r="30" fill="#fff" filter="url(#soft)"/><path d="M886 40 h8 l11 -8 v30 l-11 -8 h-8z" fill="#0F857D"/><path d="M912 38 q7 9 0 18" stroke="#0F857D" stroke-width="3.6" fill="none" stroke-linecap="round"/></g></g></svg>
+
+<h2>8. Reward: Parade of animals</h2>
+<p>Six baby farm animals, one new animal joins the parade per solved round, in a fixed order that repeats. Hedgehog, duck and mouse are never in the parade: they are the hosts, the animals are the reward. The six, in cycle order:</p>
+<div class="row"><figure class="cast"><svg viewBox="0 0 100 100" width="120" height="120" role="img" aria-label="Chick"><use href="#a-chick" width="100" height="100"/></svg><figcaption><b>1. Chick</b></figcaption></figure><figure class="cast"><svg viewBox="0 0 100 100" width="120" height="120" role="img" aria-label="Lamb"><use href="#a-lamb" width="100" height="100"/></svg><figcaption><b>2. Lamb</b></figcaption></figure><figure class="cast"><svg viewBox="0 0 100 100" width="120" height="120" role="img" aria-label="Calf"><use href="#a-calf" width="100" height="100"/></svg><figcaption><b>3. Calf</b></figcaption></figure><figure class="cast"><svg viewBox="0 0 100 100" width="120" height="120" role="img" aria-label="Piglet"><use href="#a-piglet" width="100" height="100"/></svg><figcaption><b>4. Piglet</b></figcaption></figure><figure class="cast"><svg viewBox="0 0 100 100" width="120" height="120" role="img" aria-label="Bunny"><use href="#a-bunny" width="100" height="100"/></svg><figcaption><b>5. Bunny</b></figcaption></figure><figure class="cast"><svg viewBox="0 0 100 100" width="120" height="120" role="img" aria-label="Kid goat"><use href="#a-goat" width="100" height="100"/></svg><figcaption><b>6. Kid goat</b></figcaption></figure></div>
+<h3>A parade of 4 and the fifth arriving (the shelf strip)</h3>
+<p>This is how the parade looks on the shelf during play, and the arrival of the next animal (bunny) at the right end.</p>
+<svg viewBox="0 0 900 130" class="scene wide" role="img" aria-label="Parade strip with four animals and a fifth arriving"><defs></defs><rect width="900" height="130" rx="26" fill="#FFF1D6" stroke="#E6BE8D" stroke-width="3"/><g class="march" style="animation-delay:0.0s"><use href="#a-chick" x="30" y="30" width="86" height="86"/></g><g class="march" style="animation-delay:0.35s"><use href="#a-lamb" x="130" y="30" width="86" height="86"/></g><g class="march" style="animation-delay:0.7s"><use href="#a-calf" x="230" y="30" width="86" height="86"/></g><g class="march" style="animation-delay:1.0499999999999998s"><use href="#a-piglet" x="330" y="30" width="86" height="86"/></g><g class="arrive2"><use href="#a-bunny" x="460" y="26" width="92" height="92"/></g><g class="twinkle"><path d="M580 28 L583.36 36.64 L592 40 L583.36 43.36 L580 52 L576.64 43.36 L568 40 L576.64 36.64Z" fill="#FFC83D" stroke="#FFC83D" stroke-width="2" stroke-linejoin="round"/><path d="M448 21 L450.52 27.48 L457 30 L450.52 32.52 L448 39 L445.48 32.52 L439 30 L445.48 27.48Z" fill="#FF6FB5" stroke="#FF6FB5" stroke-width="2" stroke-linejoin="round"/></g><path d="M660 104 Q610 70 575 100" fill="none" stroke="#C8996A" stroke-width="5" stroke-dasharray="1 12" stroke-linecap="round"/><text x="880" y="72" text-anchor="end" class="fred" font-size="24" font-weight="600" fill="#0F857D">the next friend hops in</text></svg>
+<h3>The parade on the end screen</h3>
+<p>Four animals are already marching along the path, the bunny hops in, bunting and sparkles celebrate and the hedgehog cheers from the grass.</p>
+<svg viewBox="0 0 960 600" class="scene" role="img" aria-label="Parade: four baby animals march along the path and a fifth, the bunny, hops in. The hedgehog cheers from the grass."><defs>
+<linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="-20" x2="0" y2="200"><stop offset="0" stop-color="#BFE9FA"/><stop offset="1" stop-color="#FFF7E8"/></linearGradient>
+<linearGradient id="grass" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="620"><stop offset="0" stop-color="#9CEBC1"/><stop offset="1" stop-color="#5CCB93"/></linearGradient>
+<linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="520"><stop offset="0" stop-color="#D9AA77"/><stop offset="1" stop-color="#B98254"/></linearGradient>
+<linearGradient id="path" gradientUnits="userSpaceOnUse" x1="0" y1="400" x2="0" y2="600"><stop offset="0" stop-color="#F7E6C2"/><stop offset="1" stop-color="#EBCF9B"/></linearGradient>
+<pattern id="gingham" patternUnits="userSpaceOnUse" width="48" height="48" x="0" y="0">
+<rect width="48" height="48" fill="#FFFFFF"/><rect width="24" height="48" fill="#BFE6E1" opacity=".8"/><rect width="48" height="24" fill="#BFE6E1" opacity=".8"/></pattern>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter>
+</defs><rect x="-60" y="-40" width="1080" height="700" fill="url(#sky)"/>
+<circle cx="730" cy="86" r="30" fill="#FFC83D" opacity=".9"/><circle cx="730" cy="86" r="42" fill="#FFC83D" opacity=".18"/>
+<g fill="#fff" opacity=".9"><ellipse cx="520" cy="84" rx="46" ry="14"/><ellipse cx="550" cy="73" rx="28" ry="16"/><ellipse cx="900" cy="124" rx="40" ry="11"/></g>
+<path d="M-60 170 C80 126 200 130 330 158 C470 180 600 136 740 146 C860 156 940 132 1020 148 V660 H-60Z" fill="#BDEFD3"/>
+<path d="M-60 204 C100 170 300 180 480 194 C700 212 840 180 1020 190 V660 H-60Z" fill="url(#grass)"/>
+<g fill="#7FD9A8"><circle cx="40" cy="158" r="26"/><circle cx="76" cy="170" r="20"/><circle cx="920" cy="160" r="28"/><circle cx="890" cy="172" r="18"/></g><path d="M-60 430 C120 400 360 410 560 428 C760 446 880 424 1020 410 V560 C860 580 700 572 520 574 C320 576 140 586 -60 570Z" fill="url(#path)"/><path d="M-20 548 C160 536 360 540 520 546 C700 552 860 544 980 538" fill="none" stroke="#E2C58E" stroke-width="4" stroke-dasharray="2 20" stroke-linecap="round"/><g opacity=".95"><rect x="40" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="92" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="144" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="196" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="248" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="300" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="352" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="404" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="456" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="508" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="560" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="612" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="664" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="716" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="768" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="820" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="872" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="924" y="250" width="30" height="86" rx="10" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="20" y="272" width="930" height="12" rx="6" fill="#fff" stroke="#E6D9C0" stroke-width="3"/><rect x="20" y="304" width="930" height="12" rx="6" fill="#fff" stroke="#E6D9C0" stroke-width="3"/></g><path d="M20 112 Q480 168 940 112" fill="none" stroke="#C8996A" stroke-width="4" stroke-linecap="round"/><path d="M40 118 L78 118 L59 156Z" fill="#0F857D" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M104 121 L142 121 L123 159Z" fill="#FFC83D" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M168 124 L206 124 L187 162Z" fill="#FF6FB5" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M232 126 L270 126 L251 164Z" fill="#2FB5EC" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M296 128 L334 128 L315 166Z" fill="#0F857D" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M360 129 L398 129 L379 167Z" fill="#FFC83D" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M424 130 L462 130 L443 168Z" fill="#FF6FB5" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M488 130 L526 130 L507 168Z" fill="#2FB5EC" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M552 129 L590 129 L571 167Z" fill="#0F857D" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M616 128 L654 128 L635 166Z" fill="#FFC83D" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M680 126 L718 126 L699 164Z" fill="#FF6FB5" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M744 124 L782 124 L763 162Z" fill="#2FB5EC" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M808 121 L846 121 L827 159Z" fill="#0F857D" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M872 118 L910 118 L891 156Z" fill="#FFC83D" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><g filter="url(#soft)"><rect x="40" y="186" width="200" height="106" rx="32" fill="#fff"/><path d="M92 290 l10 32 l22 -32Z" fill="#fff"/></g><g class="fred" font-weight="700" fill="#0F857D"><text x="96" y="262" text-anchor="middle" font-size="72">5</text></g><use href="#apple" x="132" y="214" width="64" height="64"/><g class="hop2" style="animation-delay:0s"><use href="#hog-h" x="24" y="330" width="160" height="133"/></g><g class="march" style="animation-delay:0.0s"><use href="#a-chick" x="215" y="372" width="146" height="146"/></g><g class="march" style="animation-delay:0.3s"><use href="#a-lamb" x="365" y="372" width="146" height="146"/></g><g class="march" style="animation-delay:0.6s"><use href="#a-calf" x="515" y="372" width="146" height="146"/></g><g class="march" style="animation-delay:0.8999999999999999s"><use href="#a-piglet" x="665" y="372" width="146" height="146"/></g><g class="arrive"><use href="#a-bunny" x="800" y="340" width="146" height="146"/></g><g fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 14" opacity=".9"><path d="M958 300 Q900 250 860 334"/></g><g class="twinkle"><path d="M786 336 L789.92 346.08 L800 350 L789.92 353.92 L786 364 L782.08 353.92 L772 350 L782.08 346.08Z" fill="#FFC83D" stroke="#FFC83D" stroke-width="2" stroke-linejoin="round"/><path d="M930 326 L933.36 334.64 L942 338 L933.36 341.36 L930 350 L926.64 341.36 L918 338 L926.64 334.64Z" fill="#FF6FB5" stroke="#FF6FB5" stroke-width="2" stroke-linejoin="round"/><path d="M850 312 L852.8 319.2 L860 322 L852.8 324.8 L850 332 L847.2 324.8 L840 322 L847.2 319.2Z" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M790 411 L792.52 417.48 L799 420 L792.52 422.52 L790 429 L787.48 422.52 L781 420 L787.48 417.48Z" fill="#2FB5EC" stroke="#2FB5EC" stroke-width="2" stroke-linejoin="round"/></g><g filter="url(#soft)"><rect x="20" y="326" width="0" height="0"/></g><g filter="url(#soft)"><rect x="794" y="127.68333333333334" width="74" height="22" rx="11" fill="#C8996A"/><rect x="794" y="127.68333333333334" width="74" height="9" rx="4.5" fill="#E6C9A0"/></g><use href="#hazel-sym" x="800" y="68" width="62" height="68"/><g class="fred">
+<g><rect x="24" y="22" width="124" height="56" rx="28" fill="#0A625C"/><rect x="24" y="16" width="124" height="56" rx="28" fill="#0F857D"/><text x="86" y="52" text-anchor="middle" fill="#fff" font-size="24" font-weight="600">&#8249; Back</text></g>
+<circle cx="425" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="447" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="469" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="491" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="513" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="535" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/>
+<g><circle cx="900" cy="46" r="30" fill="#fff" filter="url(#soft)"/><path d="M886 40 h8 l11 -8 v30 l-11 -8 h-8z" fill="#0F857D"/><path d="M912 38 q7 9 0 18" stroke="#0F857D" stroke-width="3.6" fill="none" stroke-linecap="round"/></g></g></svg>
+
+<h2>9. Phone size check (667 x 375)</h2>
+<p>A 667 x 375 landscape phone shows the 960 x 600 scene at 0.625 scale (600 x 375, with dark bars at the sides). The dashed pink square is a real 64 px square for comparison. Real pixel sizes on this phone:</p>
+<div class="tablewrap"><table><tr><th>Element</th><th>Scene px</th><th>Phone px</th></tr>
+<tr><td>Counting object (hit target)</td><td>104 x 104</td><td>65 x 65</td></tr>
+<tr><td>Number badge</td><td>84 across</td><td>52.5</td></tr>
+<tr><td>Badge numeral</td><td>60</td><td>37.5</td></tr>
+<tr><td>How many? choice</td><td>132 x 104</td><td>82.5 x 65</td></tr>
+<tr><td>Choice numeral</td><td>76</td><td>47.5</td></tr>
+<tr><td>Done bell</td><td>104 across</td><td>65</td></tr>
+<tr><td>Spacing between neat-row centres</td><td>118 across, 112 down</td><td>74 across, 70 down</td></tr>
+<tr><td>Scatter, closest centres</td><td>130</td><td>81</td></tr>
+<tr><td>Parade animal on the shelf</td><td>68</td><td>42.5</td></tr>
+<tr><td>Back button</td><td>124 x 56</td><td>77.5 x 35</td></tr>
+<tr><td>Audio toggle</td><td>60 across</td><td>37.5</td></tr></table></div>
+<p class="note">The Back button and audio toggle are only 35 and 37.5 px tall on this phone. The game targets are fine, but these two should get an invisible hit area padded out to at least 48 px when built (see the decisions below).</p>
+<h3>Level 3 scatter on a phone</h3>
+<div class="phonewrap"><div class="phone" style="width:667px;height:375px"><div class="phone-in"><svg viewBox="0 0 960 600" class="scene" role="img" aria-label="Level 3: the mouse asks for acorns scattered on the blanket with a Done bell."><defs>
+<linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="-20" x2="0" y2="200"><stop offset="0" stop-color="#BFE9FA"/><stop offset="1" stop-color="#FFF7E8"/></linearGradient>
+<linearGradient id="grass" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="620"><stop offset="0" stop-color="#9CEBC1"/><stop offset="1" stop-color="#5CCB93"/></linearGradient>
+<linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="520"><stop offset="0" stop-color="#D9AA77"/><stop offset="1" stop-color="#B98254"/></linearGradient>
+<linearGradient id="path" gradientUnits="userSpaceOnUse" x1="0" y1="400" x2="0" y2="600"><stop offset="0" stop-color="#F7E6C2"/><stop offset="1" stop-color="#EBCF9B"/></linearGradient>
+<pattern id="gingham" patternUnits="userSpaceOnUse" width="48" height="48" x="0" y="0">
+<rect width="48" height="48" fill="#FFFFFF"/><rect width="24" height="48" fill="#BFE6E1" opacity=".8"/><rect width="48" height="24" fill="#BFE6E1" opacity=".8"/></pattern>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter>
+</defs><rect x="-60" y="-40" width="1080" height="700" fill="url(#sky)"/>
+<circle cx="730" cy="86" r="30" fill="#FFC83D" opacity=".9"/><circle cx="730" cy="86" r="42" fill="#FFC83D" opacity=".18"/>
+<g fill="#fff" opacity=".9"><ellipse cx="520" cy="84" rx="46" ry="14"/><ellipse cx="550" cy="73" rx="28" ry="16"/><ellipse cx="900" cy="124" rx="40" ry="11"/></g>
+<path d="M-60 150 C80 106 200 110 330 138 C470 160 600 116 740 126 C860 136 940 112 1020 128 V660 H-60Z" fill="#BDEFD3"/>
+<path d="M-60 184 C100 150 300 160 480 174 C700 192 840 160 1020 170 V660 H-60Z" fill="url(#grass)"/>
+<g fill="#7FD9A8"><circle cx="40" cy="138" r="26"/><circle cx="76" cy="150" r="20"/><circle cx="920" cy="140" r="28"/><circle cx="890" cy="152" r="18"/></g><g filter="url(#soft)"><path d="M352 160 L902 160 L944 450 L312 450Z" fill="url(#gingham)" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round"/></g><path d="M352 160 L902 160 L944 450 L312 450Z" fill="none" stroke="#9FD6D0" stroke-width="3" stroke-linejoin="round"/><g transform="rotate(-6 392 238)"><use href="#acorn" x="340.0" y="186.0" width="104" height="104"/></g><g transform="rotate(4 524 212)"><use href="#acorn" x="472.0" y="160.0" width="104" height="104"/></g><g transform="rotate(-3 664 240)"><use href="#acorn" x="612.0" y="188.0" width="104" height="104"/></g><g transform="rotate(8 806 214)"><use href="#acorn" x="754.0" y="162.0" width="104" height="104"/></g><g transform="rotate(5 452 350)"><use href="#acorn" x="400.0" y="298.0" width="104" height="104"/></g><g transform="rotate(-8 596 352)"><use href="#acorn" x="544.0" y="300.0" width="104" height="104"/></g><g transform="rotate(3 740 364)"><use href="#acorn" x="688.0" y="312.0" width="104" height="104"/></g><g transform="rotate(-5 868 330)"><use href="#acorn" x="816.0" y="278.0" width="104" height="104"/></g><g filter="url(#soft)"><rect x="40" y="92" width="268" height="132" rx="32" fill="#fff"/><path d="M114 222 l10 32 l22 -32Z" fill="#fff"/></g><g class="fred" font-weight="600" fill="#3B2A20"><text x="174" y="134" text-anchor="middle" font-size="24">Count the</text><use href="#acorn" x="60" y="144" width="64" height="64"/><text x="132" y="190" font-size="34" font-weight="700" fill="#0F857D">acorns</text></g><g class="bob" style="animation-delay:0s"><use href="#mouse-n" x="36" y="262" width="160" height="171"/></g><g filter="url(#soft)"><circle cx="262" cy="432" r="52" fill="#D99E12"/><circle cx="262" cy="424" r="52" fill="#FFF7E8" stroke="#FFC83D" stroke-width="6"/></g><g class=""><use href="#bell" x="228" y="390" width="68" height="65"/></g><g filter="url(#soft)"><rect x="794" y="127.68333333333334" width="74" height="22" rx="11" fill="#C8996A"/><rect x="794" y="127.68333333333334" width="74" height="9" rx="4.5" fill="#E6C9A0"/></g><use href="#hazel-sym" x="800" y="68" width="62" height="68"/><g filter="url(#soft)"><rect x="30" y="500" width="900" height="84" rx="26" fill="#FFF1D6" stroke="#E6BE8D" stroke-width="3"/></g><text x="58" y="550" class="fred" font-size="20" font-weight="600" fill="#0F857D">My parade</text><g class="march" style="animation-delay:0.0s"><use href="#a-chick" x="220" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:0.35s"><use href="#a-lamb" x="304" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:0.7s"><use href="#a-calf" x="388" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:1.0499999999999998s"><use href="#a-piglet" x="472" y="508" width="68" height="68"/></g><g class="march" style="animation-delay:1.4s"><use href="#a-bunny" x="556" y="508" width="68" height="68"/></g><g class="fred">
+<g><rect x="24" y="22" width="124" height="56" rx="28" fill="#0A625C"/><rect x="24" y="16" width="124" height="56" rx="28" fill="#0F857D"/><text x="86" y="52" text-anchor="middle" fill="#fff" font-size="24" font-weight="600">&#8249; Back</text></g>
+<circle cx="425" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="447" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="469" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="491" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="513" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="535" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/>
+<g><circle cx="900" cy="46" r="30" fill="#fff" filter="url(#soft)"/><path d="M886 40 h8 l11 -8 v30 l-11 -8 h-8z" fill="#0F857D"/><path d="M912 38 q7 9 0 18" stroke="#0F857D" stroke-width="3.6" fill="none" stroke-linecap="round"/></g></g></svg></div><div class="ref64" style="left:246.5px;top:116.8px" aria-hidden="true"><span>64 px</span></div></div><p class="cap">Count phase, level 3. The pink square is a real 64 px. The acorn hit area (65 px) is a touch bigger than it; the drawn acorn inside it is about 52 px, so spacing, not art size, keeps taps apart.</p></div>
+<h3>How many? on a phone</h3>
+<div class="phonewrap"><div class="phone" style="width:667px;height:375px"><div class="phone-in"><svg viewBox="0 0 960 600" class="scene" role="img" aria-label="How many step: three big number choices, the hedgehog waits"><defs>
+<linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="-20" x2="0" y2="200"><stop offset="0" stop-color="#BFE9FA"/><stop offset="1" stop-color="#FFF7E8"/></linearGradient>
+<linearGradient id="grass" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="620"><stop offset="0" stop-color="#9CEBC1"/><stop offset="1" stop-color="#5CCB93"/></linearGradient>
+<linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="520"><stop offset="0" stop-color="#D9AA77"/><stop offset="1" stop-color="#B98254"/></linearGradient>
+<linearGradient id="path" gradientUnits="userSpaceOnUse" x1="0" y1="400" x2="0" y2="600"><stop offset="0" stop-color="#F7E6C2"/><stop offset="1" stop-color="#EBCF9B"/></linearGradient>
+<pattern id="gingham" patternUnits="userSpaceOnUse" width="48" height="48" x="0" y="0">
+<rect width="48" height="48" fill="#FFFFFF"/><rect width="24" height="48" fill="#BFE6E1" opacity=".8"/><rect width="48" height="24" fill="#BFE6E1" opacity=".8"/></pattern>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter>
+</defs><rect x="-60" y="-40" width="1080" height="700" fill="url(#sky)"/>
+<circle cx="730" cy="86" r="30" fill="#FFC83D" opacity=".9"/><circle cx="730" cy="86" r="42" fill="#FFC83D" opacity=".18"/>
+<g fill="#fff" opacity=".9"><ellipse cx="520" cy="84" rx="46" ry="14"/><ellipse cx="550" cy="73" rx="28" ry="16"/><ellipse cx="900" cy="124" rx="40" ry="11"/></g>
+<path d="M-60 150 C80 106 200 110 330 138 C470 160 600 116 740 126 C860 136 940 112 1020 128 V660 H-60Z" fill="#BDEFD3"/>
+<path d="M-60 184 C100 150 300 160 480 174 C700 192 840 160 1020 170 V660 H-60Z" fill="url(#grass)"/>
+<g fill="#7FD9A8"><circle cx="40" cy="138" r="26"/><circle cx="76" cy="150" r="20"/><circle cx="920" cy="140" r="28"/><circle cx="890" cy="152" r="18"/></g><g filter="url(#soft)"><path d="M352 150 L902 150 L944 440 L312 440Z" fill="url(#gingham)" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round"/></g><path d="M352 150 L902 150 L944 440 L312 440Z" fill="none" stroke="#9FD6D0" stroke-width="3" stroke-linejoin="round"/><ellipse class="" cx="372" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="490" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="608" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="726" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><ellipse class="" cx="844" cy="334" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/><g><use href="#apple" x="320.0" y="238.0" width="104" height="104"/></g><g><use href="#apple" x="438.0" y="238.0" width="104" height="104"/></g><g><use href="#apple" x="556.0" y="238.0" width="104" height="104"/></g><g><use href="#apple" x="674.0" y="238.0" width="104" height="104"/></g><g><use href="#apple" x="792.0" y="238.0" width="104" height="104"/></g><g filter="url(#soft)"><rect x="40" y="92" width="268" height="132" rx="32" fill="#fff"/><path d="M114 222 l10 32 l22 -32Z" fill="#fff"/></g><g class="fred" font-weight="600" fill="#3B2A20"><text x="174" y="134" text-anchor="middle" font-size="24">How many</text><use href="#apple" x="52" y="142" width="64" height="64"/><text x="128" y="188" font-size="34" font-weight="700" fill="#0F857D">apples?</text></g><g class="bob" style="animation-delay:0s"><use href="#hog-n" x="28" y="256" width="176" height="147"/></g><g filter="url(#soft)"><rect x="794" y="127.68333333333334" width="74" height="22" rx="11" fill="#C8996A"/><rect x="794" y="127.68333333333334" width="74" height="9" rx="4.5" fill="#E6C9A0"/></g><use href="#hazel-sym" x="800" y="68" width="62" height="68"/><g class="fred"><rect x="408" y="476" width="132" height="104" rx="24" fill="#E6BE8D"/><rect x="408" y="468" width="132" height="104" rx="24" fill="#fff" stroke="#E6BE8D" stroke-width="4"/><text x="474" y="544" text-anchor="middle" font-size="76" font-weight="700" fill="#3B2A20">4</text></g><g class="fred"><rect x="562" y="476" width="132" height="104" rx="24" fill="#E6BE8D"/><rect x="562" y="468" width="132" height="104" rx="24" fill="#fff" stroke="#E6BE8D" stroke-width="4"/><text x="628" y="544" text-anchor="middle" font-size="76" font-weight="700" fill="#3B2A20">5</text></g><g class="fred"><rect x="716" y="476" width="132" height="104" rx="24" fill="#E6BE8D"/><rect x="716" y="468" width="132" height="104" rx="24" fill="#fff" stroke="#E6BE8D" stroke-width="4"/><text x="782" y="544" text-anchor="middle" font-size="76" font-weight="700" fill="#3B2A20">6</text></g><g class="fred">
+<g><rect x="24" y="22" width="124" height="56" rx="28" fill="#0A625C"/><rect x="24" y="16" width="124" height="56" rx="28" fill="#0F857D"/><text x="86" y="52" text-anchor="middle" fill="#fff" font-size="24" font-weight="600">&#8249; Back</text></g>
+<circle cx="425" cy="42" r="6.5" fill="#2FCB86" stroke="#0F857D" stroke-width="2.2" opacity="1"/><circle cx="447" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="469" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="491" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="513" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/><circle cx="535" cy="42" r="6.5" fill="#fff" stroke="#0F857D" stroke-width="2.2" opacity="0.85"/>
+<g><circle cx="900" cy="46" r="30" fill="#fff" filter="url(#soft)"/><path d="M886 40 h8 l11 -8 v30 l-11 -8 h-8z" fill="#0F857D"/><path d="M912 38 q7 9 0 18" stroke="#0F857D" stroke-width="3.6" fill="none" stroke-linecap="round"/></g></g></svg></div><div class="ref64" style="left:394px;top:293px" aria-hidden="true"><span>64 px</span></div></div><p class="cap">The three choices are 82 x 65 px each, all bigger than the pink 64 px square.</p></div>
+
+<h2>10. Reduced motion and muted play</h2>
+<p><b>Reduced motion.</b> Every motion on this page is transform or opacity only. When the device asks for reduced motion, the hop, bob, bell wobble, parade march and sparkle pulse stop. The state still shows: a counted object gets its ring instantly, the badge simply fades in (no spring), a twinkle is a steady soft glow, the animal appears in the parade with a fade. Try it:</p>
+<div class="demo" id="demo"><svg viewBox="0 0 240 200" width="240" height="200" role="img" aria-label="Tap the apple to see the hop and badge">
+<defs><filter id="softd" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3a67" flood-opacity=".18"/></filter></defs>
+<rect width="240" height="200" fill="url(#gingham)"/>
+<ellipse class="demoring" cx="120" cy="152" rx="56" ry="15" fill="#FFE7A3" fill-opacity=".6" stroke="#F5A623" stroke-width="6"/>
+<g class="demoapple"><use href="#apple" x="68" y="48" width="104" height="104"/></g>
+<g class="demobadge" filter="url(#softd)"><circle cx="120" cy="92" r="42" fill="#FFC83D" stroke="#fff" stroke-width="6"/><text x="120" y="113" text-anchor="middle" class="fred" font-size="60" font-weight="700" fill="#3B2A20">1</text></g>
+</svg>
+<div class="democtl"><button id="tapbtn" type="button">Tap the apple</button>
+<label><input type="checkbox" id="rmtoggle"> Pretend reduced motion</label>
+<p class="small" id="demotxt">Normal: the apple hops, the badge pops in with a spring.</p></div></div>
+<h3>Every sound has a visual twin</h3>
+<div class="tablewrap"><table><tr><th>Sound</th><th>Visual twin (shows even when muted)</th></tr>
+<tr><td>Count note and spoken number on a tap</td><td>Badge with the number on the object, ring under it</td></tr>
+<tr><td>Soft click on a re-tap</td><td>Ring pulses once</td></tr>
+<tr><td>Spoken "Count the apples"</td><td>Bubble with the picture and the two words</td></tr>
+<tr><td>Spoken "How many?"</td><td>Three big number choices appear</td></tr>
+<tr><td>Count-along notes after a wrong choice</td><td>Apples lift and light one after another, wrong choice dims</td></tr>
+<tr><td>Done bell sound</td><td>Bell wobble, uncounted objects twinkle</td></tr>
+<tr><td>Parade fanfare</td><td>New animal hops in with sparkles</td></tr></table></div>
+
+<h2>11. Decisions for the owner</h2>
+<div class="decide"><ul>
+<li><b>Palette.</b> The page uses the v3 tokens. Two additions to approve: a soft warm grey-lilac for the mouse (#D9D2E3), and a pale teal gingham for the blanket (#BFE6E1 on white). Apples are red (#EF5B45). The style guide bans red in feedback, not in objects, and the ladybug already set that precedent. Say if you want green apples instead.</li>
+<li><b>Cast likeness.</b> Hedgehog has a cream face and a layered brown spiky back. Duck is sun yellow with a sky blue bow (so it never looks like the chick). Mouse is lilac grey with big pink ears. All three share Hazel's chibi look. Hedgehog brown is close to Hazel's brown, so Hazel stays on her stump in the corner as a different shape.</li>
+<li><b>Parade species.</b> Chick, lamb, calf, piglet, bunny, kid goat. Each has a different silhouette: round ball, cloud wool, horns and spots, floppy pink ears, tall ears, small horns and beard. The chick is the only one close to the duck, which is why the duck wears a bow. Swap the chick for a foal if you see them as the same.</li>
+<li><b>Front view.</b> All animals face the viewer (like Hazel) so they march in place with a bob. A side view would need new art per animal.</li>
+<li><b>Crate stock.</b> The level 4 crate shows only five apples. The real stock depends on the fill mechanic. If it is bigger than what fits, the crate needs a heaped look or the apples need to refill.</li>
+<li><b>Words in bubbles.</b> "Count the apples", "How many apples?", "Count with me!", "Did we count them all?" and "Give me 6". All short, all spoken as well.</li>
+<li><b>Small buttons.</b> Back and audio need a padded hit area (about 48 px) when built.</li>
+</ul></div>
+</main><script>
+(function(){
+  var d=document.getElementById('demo'),b=document.getElementById('tapbtn'),c=document.getElementById('rmtoggle'),t=document.getElementById('demotxt');
+  function say(){t.textContent=d.classList.contains('rm')?'Reduced motion: no hop. The badge just fades in and the ring appears. Same information.':'Normal: the apple hops, the badge pops in with a spring.';}
+  b.addEventListener('click',function(){d.classList.remove('go');void d.offsetWidth;d.classList.add('go');});
+  c.addEventListener('change',function(){d.classList.toggle('rm',c.checked);d.classList.remove('go');say();});
+})();
+</script></body></html>
