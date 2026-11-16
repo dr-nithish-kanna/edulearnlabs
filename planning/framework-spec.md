@@ -360,3 +360,26 @@ The website lists pinned game versions in `content/games.json` and copies those 
    subscription. This updates the locked line in CLAUDE.md ("Settings and pricing sit behind a simple parent gate").
 4. **One shared mascot** across all games. Outfits unlock through mastery and carry across games. The mascot is
    designed in the style guide step. The mascot reacts and celebrates, and never guilts a child into staying.
+
+## 10. Addendum 2026-11-16: bracelets (Bead Parlor, `pattern-repeat-k`), website side
+Marked addendum, appended by the website agent. It adds to sections 4 and 6 and rewrites nothing. Decisions:
+`planning/pattern-repeat-decisions-log.md`. The kit (Opus pass) may append its own notes below.
+
+- **`HostInit.bracelets`** (optional): `{ bracelets: string[][] }`, the child's newest 64 bracelets as bead id arrays (left to
+  right), oldest first. Sent only when the catalog `reward` is `"bracelet"`. No profile id, no timestamps, no session ids. Absent
+  when the stored shelf has a newer schema the website cannot read. Protocol stays 1.
+- **`BraceletReward`** in `GameCompleted.session.rewards`: `{ id: string, kind: "bracelet", beads: string[], at: string }`. `id` is
+  the session id plus the question index (the dedupe key). `beads` is 1 to 7 bead ids left to right, each matching
+  `^[a-z][a-z0-9-]{0,15}$` (short lowercase slugs). `at` is a UTC ISO time. A reward that breaks any of these is dropped whole.
+  Repeats of the same bead sequence are normal (a pattern repeats), so the website dedupes by `id` only and never by `beads`.
+  At most one stored bracelet per question in a session.
+- **Store:** `bracelets[profile][game]`: `{ "v": 1, "bracelets": [{ "id": "s_x81ka2-0", "beads": ["red", "blue", "red", "blue"],
+  "at": "2026-11-16T10:00:00Z", "session": "s_x81ka2" }], "folded": 0 }`. Same rules as `quilts` and `parades`: own `v`, a newer
+  `v` is kept as is and never written to, facts only, oldest first in the order saved on the device, deduped by reward `id`, cap
+  200 per child per game with the oldest folded into `folded`. Stores saved before bracelets load with `bracelets: {}` and keep
+  top-level `schema: 1`. Deleting a profile deletes its bracelets. Stored sessions never keep `rewards`.
+- **Mistake kinds** in a stored session's `mistakes` (`PatternMistake`): `unit-order` (a bead of the pattern, put in the wrong
+  spot) and `outside-unit` (a bead that is not in the pattern). The Grown-ups page shows a parent tip for them on
+  `logic-memory.patterns.*` skills once a kind shows up 3 times in the last 5 sessions.
+- **Catalog:** id `pattern-repeat-k`, reward `bracelet`, skill `logic-memory.patterns.repeat` ("Color and shape patterns",
+  `topDifficulty` 5), page `/logic-games/pattern-repeat-for-kindergarten/`.
