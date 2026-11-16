@@ -198,3 +198,9 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
 - Smoke test: page checks plus a play round trip against the labelled STAND-IN frame; one `SKIPPED` line for the real game frame.
 - Next: sync the game after the kit update (`npm run sync-game -- ../count-objects-prek`), then `npm run build && npm run test:e2e` and look for
   `[real game frame]` lines for Hedgehog Picnic and no Hedgehog `SKIPPED` line. Open: "My parade" parent page, real-device touch and speech check.
+- 2026-11-16 (later): kit v0.6.1 final at `256bea19a544ef019b27e3290e011aeb28725e47` (happy pose, several pictures per kind, level 4 bubble clear of Back). The pond e2e
+  "regression" turned out to be flaky tests (random "send 1" orders and an extra digit key that picked a choice), fixed in the kit tests; the kit code did not change. Lesson: 3 runs
+  proved nothing, 8 per version showed v0.6.0 failing as often (4 of 8) as v0.6.1 (3 of 8). Game `count-objects-prek` upgraded and synced at game commit `a7c04f6`
+  (smoke test 178 ok on the throttled profile). Website `npm run build && npm run test:e2e`: PASS, 158 ok, 18 `[real game frame]` lines. Not merged to `main`, not deployed, no tag.
+  Open: owner reviews and approves the PR into `main` (deploy), kit tags v0.2.0 to v0.6.1, poster crops the left edge on desktop (cosmetic), "My parade" parent page,
+  real-device touch and speech check, other fill checks still use fixed sleeps.
