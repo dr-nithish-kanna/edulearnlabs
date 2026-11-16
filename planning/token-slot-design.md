@@ -34,7 +34,7 @@ Files read for this design: main repo `CLAUDE.md`, `planning/game-playbook.md`, 
    | | (a) generalize `slot-build` to tokens | (b) thin runner `pattern-fill` reusing `slot.ts` |
    |---|---|---|
    | Shared code touched | `SlotSpec.word` becomes a token list, `classify`, `letterPitch`, the tray planner and the 563 line screen all get a token path | `slot.ts` and `slot-build.ts`: zero lines. New files only, plus additive types and two lines in `session.ts` |
-   | Letter Workshop | Its code path changes; its bundle grows; only tests prove it still behaves | Byte-identical code path (the word page bundle does not change by one byte) |
+   | Letter Workshop | Its code path changes; its bundle grows; only tests prove it still behaves | Its slot code is byte-identical; the page grows by 4 bytes (the shared `session.ts` branch) |
    | Reuse | One reducer, one screen | One reducer (the exact `reduceSlot`), a second screen file |
    | Size for a bead game | about the word page | about the word page (similar screen) |
    | Risk if a bead rule needs to differ later | Every bead rule is a branch inside Letter Workshop's code | The bead screen and planner change alone |
@@ -310,4 +310,35 @@ Not edited directly (the main repo is being committed by another agent). Propose
 
 ## 12. Implementation notes (kit v0.7.0, 2026-11-16)
 
-Filled in after the build; see below.
+Built on the kit branch `claude/upbeat-davinci-c55nml` in small commits (logic, screen and checks, docs). Nothing from
+sections 1 to 11 was cut. `git diff 256bea1` touches no existing test, no golden file, and not `src/slot.ts`,
+`src/mechanics/slot-build.ts` or `src/styles/slot.css`.
+
+**Deviations from the brief, said loudly**
+1. **Mechanic id is `pattern-fill`, not `slot-build`.** The website catalog entry for `pattern-repeat-k` should say
+   `"mechanic": "pattern-fill"` (descriptive only there; nothing breaks if it says slot-build). game.json must say
+   `pattern-fill`, or the slot-build validator rejects it.
+2. **Copy mode speaks `strings.copy` ("Make this one!"), not "What comes next?"**, because nothing "comes next" when
+   copying. Still a prompt only, never a color. A game that wants one line everywhere sets `"copy": "What comes next?"`
+   (the card title uses the same string).
+3. **Notes come from a game-level `beads` list** (new optional field, default the six kit beads), not from each
+   level's list. The brief asked for "stable per id" and "order of ids in the bead list decides the note"; a per-level
+   order would give one bead two notes. Bead Parlor can leave `beads` out if it uses exactly the six kit ids.
+4. **The board shows no count.** The website sends only the newest 64, so a count would stop at 64 and be wrong.
+5. **No spider in copy mode** (the card takes her place, as in the approved art preview, scene 2).
+6. **The copy card's aria label is only its title.** The example is the answer, so its bead names are not put in the
+   DOM (the brief's rule). A screen reader child therefore cannot read the example; acceptable for level 1 only.
+7. **Level 4 "look-alike shape" trap is not built.** Shapes belong to the skin, so the kit cannot know which look
+   alike. Spares are planned by pattern membership (`outside-unit`, then `unit-order`, then decoy copies).
+8. **Middle mode needs at least 2 gaps** (the last position plus a real middle gap); the validator says so.
+9. **The brief counted 266 existing unit tests; the branch had 274** (v0.6.1 added 8). All 274 pass unchanged.
+
+**Other notes**
+- Keyboard: Tab, Enter or Space to pick and place, Escape to drop the pick, digits 1 to 8 place that tray bead on
+  the cursor gap. A digit for a used bead wobbles it and costs nothing.
+- `HostInit.bracelets` entries that are not lists of strings are dropped silently (never shown, never an error).
+- The reward copies the bead list, so the fact never changes after it is made (unit tested).
+- A kit bead symbol list is built by a function, not a module constant: a top-level call would have stayed in every
+  game's bundle (it cost quiz games 0.43 KB until fixed).
+
+**Checks.** See the kit README, section v0.7.0, for the final numbers.
