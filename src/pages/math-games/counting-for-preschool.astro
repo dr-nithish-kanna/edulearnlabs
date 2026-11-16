@@ -1,0 +1,98 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import GamePlayer from '../../components/GamePlayer.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import games from '../../data/games.json';
+import skills from '../../data/skills.json';
+import { url } from '../../config';
+
+const game = games.find(g => g.id === 'count-objects-prek')!;
+const skill = skills[game.skill as keyof typeof skills];
+const page = new URL(url('math-games/counting-for-preschool/'), Astro.site).href;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org', '@type': 'LearningResource', name: `${game.keywordTitle}: ${game.title}`,
+    url: page, description: game.summary, isAccessibleForFree: true, inLanguage: 'en',
+    learningResourceType: 'Educational game', educationalLevel: 'Preschool', typicalAgeRange: '3-5',
+    teaches: 'Counting objects up to 10', timeRequired: 'PT3M', image: new URL(url(game.poster), Astro.site).href,
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: new URL(url(), Astro.site).href },
+      { '@type': 'ListItem', position: 2, name: 'Math games', item: new URL(url('math-games/'), Astro.site).href },
+      { '@type': 'ListItem', position: 3, name: game.keywordTitle, item: page },
+    ],
+  },
+];
+---
+<Base
+  title="Counting Games for Preschool: Free Count to 10 Game for Ages 3 to 5 | EduLearnLabs"
+  description="A free counting game for ages 3 to 5. Kids tap apples, pebbles and acorns one by one, say how many and grow a parade of baby animals. Gentle hints, no ads, no login."
+  path="math-games/counting-for-preschool/" nav="math" image={game.poster} jsonLd={jsonLd}>
+
+  <Breadcrumbs back={{ name: 'Math games', path: 'math-games/' }}
+    items={[{ name: 'Home', path: '' }, { name: 'Math games', path: 'math-games/' }, { name: game.keywordTitle, path: 'math-games/counting-for-preschool/' }]} />
+
+  <h1>Counting Games for Preschool</h1>
+  <p class="lead" style="font-size:20px;max-width:44em">Play <strong>{game.title}</strong>: tap each apple once to count it
+    for a hungry hedgehog, then say how many. Six small rounds, about 3 minutes, free.</p>
+
+  <GamePlayer game={game} topDifficulty={skill.topDifficulty}
+    posterAlt={`${game.title} game screen: apples on a picnic blanket, a hedgehog, a number badge, a Done bell, Hazel the owl and a row of baby animals`} />
+
+  <section class="prose">
+    <h2>What is Hedgehog Picnic?</h2>
+    <p>Hedgehog Picnic is a gentle counting game set on a picnic blanket in a sunny meadow. Three friends come along:
+      a hedgehog who wants apples, a duck who collects pebbles and a mouse who loves acorns. Your child taps each
+      object once. It lights up, a ring stays under it, and a big number shows the count so far. Then the friend asks
+      "How many?" and your child picks the number. Every solved round brings a new baby animal to your child's parade.</p>
+
+    <h2>What kids learn</h2>
+    <p>The game practices counting a group of objects and knowing that the last number said tells how many there are.
+      Children also practice touching each object once, keeping track of what is counted, and making a group of a given size. The rounds grow in four small steps:</p>
+    <ul>
+      <li>2 to 5 objects in one neat row</li>
+      <li>5 to 10 objects in tidy rows of five</li>
+      <li>4 to 10 objects in a loose pile, where your child rings the Done bell when every object is counted</li>
+      <li>"Give me four apples!": your child moves that many apples into a basket, from 3 up to 10, then taps Done</li>
+    </ul>
+
+    <h2>Who it is for</h2>
+    <p>Children in preschool and Pre-K, usually ages 3 to 5, who are starting to count things they can see. There is
+      nothing to read: a short voice line says what to do, and the numbers are spoken as your child taps. It works best
+      on a tablet, a computer or a phone held sideways.</p>
+
+    <h2>How to play</h2>
+    <ol>
+      <li>Press Play, then tap the big button to start.</li>
+      <li>Tap each object once. A ring shows it has been counted, and tapping it again does not add to the count.</li>
+      <li>When the friend asks "How many?", tap the number. You can also press a number key on a keyboard.</li>
+      <li>Not sure? After a first wrong choice the objects light up one by one so your child can count along. After a
+        second, a voice counts with them out loud. Your child still picks the number.</li>
+      <li>Solve the round and a baby animal joins the parade.</li>
+    </ol>
+
+    <h2>Your parade</h2>
+    <p>Every solved round adds a baby animal to your child's parade: a chick, a lamb, a calf, a piglet, a bunny or a
+      little goat, always in that order. The parade is kept on this device only. There is no score, no timer, no red
+      mark and no failure screen, and nothing is ever taken away.</p>
+
+    <h2>Why it helps</h2>
+    <p>Young children often know the counting words before they can use them to count things. Touching each object once,
+      hearing each number and then saying how many links the words to real amounts. The game starts with small, neat rows,
+      steps up after two rounds solved on the first try and steps back after two rounds in a row that needed the counting out loud, so each
+      round stays within reach. It is one small part of learning to count, best next to counting real things at home.</p>
+
+    <h2>Tips for parents</h2>
+    <ul>
+      <li>Play the first round together. Point at each apple as your child taps and say the numbers out loud.</li>
+      <li>Skipping an object or counting one twice is normal at this age. Count again slowly, side by side.</li>
+      <li>Count real things too: spoons at dinner, stairs, socks in the wash.</li>
+    </ul>
+    <p class="note">More to play: see all <a href={url('math-games/')}>free math games</a>, find matching pairs in <a href={url('logic-games/memory-match-for-preschool/')}>Memory
+      Games for Preschool and Kindergarten</a>, or, for older children, try <a href={url('math-games/addition-for-grade-1/')}>Addition for Grade 1</a>.</p>
+  </section>
+
+  <AdSlot id="game-bottom" />
+</Base>

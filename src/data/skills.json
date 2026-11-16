@@ -35,5 +35,14 @@
       "k"
     ],
     "topDifficulty": 5
+  },
+  "math.counting.count-objects": {
+    "name": "Counting objects",
+    "parentLabel": "Counting objects up to 10 and saying how many",
+    "subject": "math",
+    "grade": [
+      "prek"
+    ],
+    "topDifficulty": 4
   }
 }

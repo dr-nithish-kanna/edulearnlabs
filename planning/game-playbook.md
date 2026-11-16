@@ -161,3 +161,46 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
   frame, progress tests 59 of 59, `planBoard` never relaxed for any picture on any level.
 - Open: owner reviews design defaults (title, `upAfterCorrect` 1, level 5 colour variants), real-device touch check, "My quilt" parent
   page, pair-match card art has the matched pair staying on the board (the preview showed matched cards collected top left).
+
+## 12. Update 2026-11-15: game 5 planning started, Count objects (Hedgehog Picnic)
+
+- Owner chose MVP number 1 (Count objects 1 to 10, Pre-K). Picks: hedgehog cast, parade of animals reward, new `tap-count` kit mechanic.
+  Draft design with defaults: `planning/count-objects-design.md`. Nothing built. Needs an Opus design pass (`planning/tap-count-design.md`) first.
+- Reminder: check `git branch -r` in every repo first. The kit checkout on the session branch is stale (v0.1.0).
+- 2026-11-15 (later): Opus design pass done (`planning/tap-count-design.md`, found 4 flaws in the first plan). Owner took all recommendations
+  (section 13 "LOCKED"). Next: static art preview in `brand/count-objects/`, owner approves, then kit v0.6.0 `tap-count` (build from the real
+  kit branch `ccr-4d0bb17c-4dbh4d` at 24257a2, not the stale checkout).
+- 2026-11-15 (later): art preview built in `brand/count-objects/` (index.html, build.py, shots/). Awaiting owner approval of look, cast and parade species. The four nits (bunny ear clip, grid-like scatter, yellow chick next to the yellow duck, owl perch touching the blanket) were fixed the same day and re-checked in screenshots.
+- 2026-11-15 (later): art preview approved. Kit v0.6.0 `tap-count` built by an Opus agent and verified: kit branch `claude/amazing-albattani-g2r7l1`,
+  commit `ea8ed668983dc67bf7366ed54ba0146e9b4c77a7` (untagged, pin by full SHA; owner makes tags v0.2.0 to v0.6.0). Verified here: 266 of 266 unit tests,
+  typecheck clean, tap browser suite 124 ok. Tap page built alone: entry JS 17.9 KB, Before Play 57.8 KB, lazy fill-order chunk 7.6 KB, all in budget.
+  Deviations (Done bell position, friend-only bubbles, extra idle nudges, validator stock rule, placeholder playground art) are listed in the kit README.
+  Still to do: update `planning/framework-spec.md` for tap-count, create the game repo (`count-objects-prek`, owner decides), game scenes and art from
+  `brand/count-objects/`, website parade store and page, real-device touch and speech check. Lesson: a wait loop that greps for "Error" matches "GameError"; grep the real final line.
+- 2026-11-16: game 5 built. Game repo `dr-nithish-kanna/count-objects-prek` (created by the owner, empty private repo), branch `claude/amazing-albattani-g2r7l1`,
+  head `54a2fb55d55370b1741aa2421b263b5798521d0b`, pinned to kit v0.6.0 `ea8ed668983dc67bf7366ed54ba0146e9b4c77a7`. Game id `count-objects-prek`, title Hedgehog Picnic,
+  skill `math.counting.count-objects`, page to build `/math-games/counting-for-preschool/`. Not merged, not deployed, no tag.
+  Verified here: typecheck clean, build in budget (Before Play 61.4 KB, entry JS 21.4 KB, lazy fill chunk 7.6 KB), smoke test on the throttled profile 166 ok, 0 FAIL, screenshots opened.
+  Kit gaps found by the game agent (go to an Opus kit release, v0.6.1): the friend never swaps to its happy pose, one picture per object kind so the second pebble drawing is unused,
+  at 667x375 the level 4 "Give me N" bubble touches the Back button corner. Still to do: website side (progress store for the parade, game page, catalog, home card, privacy text),
+  `framework-spec.md` update for tap-count, sync (`npm run sync-game -- ../count-objects-prek`), real-device touch and speech check, owner makes kit tags v0.2.0 to v0.6.0.
+
+## 13. Update 2026-11-16 (later): website support for Hedgehog Picnic (game 5)
+
+- Same recipe as Quilt Picnic (section 10). Game id `count-objects-prek`, kit v0.6.0 mechanic `tap-count` (plus fill on level 4),
+  reward type parade. Decisions: `planning/count-objects-decisions-log.md`.
+- Progress store: `parades[profile][game]` (own `v`, newer-schema guard, facts only, deduped by reward id, 200 cap that folds the oldest
+  into a count), `HostInit.parade = { animals }` (newest 64, oldest first), `kind: "animal"` rewards stored by `addSession`. Counting tips
+  for `skipped`, `off-by-one` and `off-by-two` on `math.counting.*` skills. Protocol stays 1.
+- Pages: `/math-games/counting-for-preschool/` (keyword title "Counting Games for Preschool", ages 3 to 5), link from the `/math-games/`
+  Pre-K section, catalog entry (source commit PENDING and poster `play/count-objects-prek/poster.webp` until the sync), skill
+  "Counting objects" (`topDifficulty` 4), home card from the data, privacy text names the parade. Sitemap is generated.
+- Smoke test: page checks plus a play round trip against the labelled STAND-IN frame; one `SKIPPED` line for the real game frame.
+- Next: sync the game after the kit update (`npm run sync-game -- ../count-objects-prek`), then `npm run build && npm run test:e2e` and look for
+  `[real game frame]` lines for Hedgehog Picnic and no Hedgehog `SKIPPED` line. Open: "My parade" parent page, real-device touch and speech check.
+- 2026-11-16 (later): kit v0.6.1 final at `256bea19a544ef019b27e3290e011aeb28725e47` (happy pose, several pictures per kind, level 4 bubble clear of Back). The pond e2e
+  "regression" turned out to be flaky tests (random "send 1" orders and an extra digit key that picked a choice), fixed in the kit tests; the kit code did not change. Lesson: 3 runs
+  proved nothing, 8 per version showed v0.6.0 failing as often (4 of 8) as v0.6.1 (3 of 8). Game `count-objects-prek` upgraded and synced at game commit `a7c04f6`
+  (smoke test 178 ok on the throttled profile). Website `npm run build && npm run test:e2e`: PASS, 158 ok, 18 `[real game frame]` lines. Not merged to `main`, not deployed, no tag.
+  Open: owner reviews and approves the PR into `main` (deploy), kit tags v0.2.0 to v0.6.1, poster crops the left edge on desktop (cosmetic), "My parade" parent page,
+  real-device touch and speech check, other fill checks still use fixed sleeps.

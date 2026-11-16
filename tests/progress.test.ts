@@ -2,9 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   addSession, bestStars, createProfile, deleteProfile, emptyStore, ensureProfile, GARDEN_MAX_ITEMS, GARDEN_SPECIES,
-  clearAll, gardenView, hostInitFor, KEY, load, mastery, MAX_PROFILES, mistakeTip, parseStore, practiceItems, quiltView, QUILT_MAX_PATCHES,
-  QUILT_VIEW_PATCHES, save, speciesFor, startLevel, update, wallView, WALL_MAX_WORDS, type PatchReward, type Reward, type SessionRecord,
-  type Store, type WordReward,
+  clearAll, gardenView, hostInitFor, KEY, load, mastery, MAX_PROFILES, mistakeTip, PARADE_MAX_ANIMALS, PARADE_VIEW_ANIMALS, paradeView,
+  parseStore, practiceItems, quiltView, QUILT_MAX_PATCHES, QUILT_VIEW_PATCHES, save, speciesFor, startLevel, update, wallView,
+  WALL_MAX_WORDS, type AnimalReward, type PatchReward, type Reward, type SessionRecord, type Store, type WordReward,
 } from '../src/scripts/progress.ts';
 
 let n = 0;
@@ -780,4 +780,257 @@ test('the most frequent letter mistake wins; unknown kinds never produce a tip o
   addSession(s2, q.id, spelled(['w-cat'], { mistakes: { 'future-kind': 9 } as any }));
   assert.equal(mistakeTip(s2, q.id, WSKILL), null);
   assert.equal(mistakeTip(s2, q.id, 'math.addition.within-20'), null, 'math tips stay per skill');
+});
+
+// ---------- Parade (planning/tap-count-design.md, section 7; count-objects-design.md, section 6) ----------
+
+const C = 'count-objects-prek';
+const CSKILL = 'math.counting.count-objects';
+/** Hedgehog Picnic's cycle (game.json `reward.animals`). */
+const ANIMALS = ['chick', 'lamb', 'calf', 'piglet', 'bunny', 'goat'];
+/** A tap-count session: one animal reward per solved round, the animal cycling through ANIMALS from `from`. */
+const counted = (count: number, o: Partial<SessionRecord> & { from?: number } = {}): SessionRecord => {
+  const { from = 0, ...rest } = o;
+  const r = rec({ game: C, skill: CSKILL, questions: Math.max(count, rest.questions ?? count), levelEnd: 2, maxDifficulty: 2, hints: 0, ...rest });
+  r.rewards = Array.from({ length: count }, (_, i): AnimalReward => ({
+    id: `${r.id}-${i}`, kind: 'animal', animal: ANIMALS[(from + i) % ANIMALS.length], at: `2026-11-16T10:00:0${i % 10}Z`,
+  }));
+  return r;
+};
+const parade = (s: Store, p: string) => s.parades[p][C];
+
+test('animal rewards move from the session into the parade, stripped from the stored session', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  assert.ok(addSession(s, p.id, counted(3, { hints: 2, mistakes: { skipped: 1, 'off-by-one': 1 } })));
+  assert.equal(parade(s, p.id).v, 1);
+  assert.deepEqual(parade(s, p.id).animals.map(x => x.animal), ['chick', 'lamb', 'calf']);
+  assert.deepEqual(parade(s, p.id).animals[0], { id: `${s.sessions[0].id}-0`, animal: 'chick', at: '2026-11-16T10:00:00Z', session: s.sessions[0].id });
+  assert.equal('rewards' in s.sessions[0], false);
+  assert.equal(s.sessions[0].seeds, undefined, 'animals are not garden seeds');
+  assert.equal(s.sessions[0].hints, 2);
+  assert.deepEqual(s.sessions[0].mistakes, { skipped: 1, 'off-by-one': 1 }, 'counting mistakes are kept as facts');
+  assert.equal(s.gardens[p.id], undefined, 'a parade game makes no garden');
+  assert.equal(s.walls[p.id], undefined, 'a parade game makes no word wall');
+  assert.equal(s.quilts[p.id], undefined, 'a parade game makes no quilt');
+});
+
+test('parade keeps repeats of an animal and dedupes by reward id only', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const r = counted(6); // the whole cycle once
+  addSession(s, p.id, r);
+  addSession(s, p.id, counted(3, { from: 6 })); // chick, lamb, calf again
+  assert.deepEqual(paradeView(s, p.id, C), { animals: [...ANIMALS, 'chick', 'lamb', 'calf'] });
+  assert.equal(addSession(s, p.id, r), false, 'the same session twice is not saved again');
+  const replay = counted(2); replay.rewards = r.rewards!.slice(0, 2);
+  addSession(s, p.id, replay);
+  assert.equal(parade(s, p.id).animals.length, 9, 'union by id');
+  const same = counted(3); same.rewards![1].id = same.rewards![0].id;
+  addSession(s, p.id, same);
+  assert.equal(parade(s, p.id).animals.length, 11, 'two new ids added, the repeated id once');
+});
+
+test('parade order is the order animals were earned on this device, not the reward clock', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  addSession(s, p.id, counted(1));
+  const late = counted(1, { from: 1 });
+  late.rewards![0].at = '2020-01-01T00:00:00Z';
+  addSession(s, p.id, late);
+  assert.deepEqual(paradeView(s, p.id, C), { animals: ['chick', 'lamb'] });
+});
+
+test('parade view: slugs only, oldest first; empty for a child with no parade; newest 64 at most', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  assert.deepEqual(paradeView(s, p.id, C), { animals: [] });
+  addSession(s, p.id, counted(2));
+  const v = paradeView(s, p.id, C)!;
+  assert.deepEqual(v, { animals: ['chick', 'lamb'] });
+  assert.doesNotMatch(JSON.stringify(v), /p_|2026|s_/, 'no profile id, no timestamps, no session ids');
+  const t = emptyStore(); const q = ensureProfile(t);
+  for (let k = 0; k < 14; k++) addSession(t, q.id, counted(6, { from: k * 6 + k }));
+  const big = paradeView(t, q.id, C)!.animals;
+  assert.equal(big.length, PARADE_VIEW_ANIMALS);
+  assert.equal(parade(t, q.id).animals.length, 84, 'all 84 are stored');
+  assert.equal(big.at(-1), parade(t, q.id).animals.at(-1)!.animal, 'the newest is last');
+  assert.equal(big[0], parade(t, q.id).animals[84 - 64].animal, 'the view is the newest 64');
+});
+
+test('invalid animal rewards are dropped; unknown kinds are ignored; never more animals than questions', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const r = counted(1);
+  r.rewards!.push(
+    r.rewards![0],
+    { id: 'a', kind: 'animal', animal: '<img src=x>', at: 'x' } as any,
+    { id: 'b', kind: 'animal', animal: '', at: 'x' } as any,
+    { id: 'c', kind: 'animal', animal: 'a' + 'x'.repeat(40), at: 'x' } as any,
+    { id: 'd', kind: 'animal', animal: 'lamb' } as any, // no time
+    { id: '', kind: 'animal', animal: 'lamb', at: 'x' } as any,
+    { id: 'e', kind: 'pet', animal: 'lamb', at: 'x' } as any,
+    { id: 'f', kind: 'animal', animal: 42, at: 'x' } as any,
+    { id: 'g', kind: 'animal', animal: 'Lamb', at: 'x' } as any, // slugs are lower case
+    { id: 'h', kind: 'animal', animal: 'kid goat', at: 'x' } as any, // no spaces
+    { id: 'i', kind: 'animal', animal: 'lamb', at: 'x'.repeat(41) } as any, // time too long
+    'lamb' as any, null as any,
+  );
+  addSession(s, p.id, r);
+  assert.deepEqual(paradeView(s, p.id, C), { animals: ['chick'] });
+  addSession(s, p.id, counted(5, { questions: 2 }));
+  assert.deepEqual(paradeView(s, p.id, C), { animals: ['chick', 'chick', 'lamb'] }, 'two rounds, two animals');
+  const notList = rec({ game: C, skill: CSKILL }) as any; notList.rewards = { id: 'x', kind: 'animal' };
+  assert.ok(addSession(s, p.id, notList), 'a broken rewards field never blocks saving the session');
+});
+
+test('parade is capped: the oldest fold into a count, the newest stay, the cycle can continue', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const total = PARADE_MAX_ANIMALS + 16;
+  for (let k = 0; k < total; k += 6) addSession(s, p.id, counted(6, { from: k }));
+  const stored = Math.ceil(total / 6) * 6;
+  const pr = parade(s, p.id);
+  assert.equal(pr.animals.length, PARADE_MAX_ANIMALS);
+  assert.equal(pr.folded, stored - PARADE_MAX_ANIMALS, 'the total stays exact: kept plus folded');
+  assert.equal(pr.animals.at(-1)!.animal, ANIMALS[(stored - 1) % ANIMALS.length], 'the newest animal is still the last');
+  assert.equal(paradeView(s, p.id, C)!.animals.length, PARADE_VIEW_ANIMALS);
+  assert.deepEqual(parseStore(JSON.stringify(s)).parades[p.id][C], pr, 'survives a load and save');
+});
+
+test('parades are per child and per game; deleting a child deletes their parade', () => {
+  const s = emptyStore(); const p = ensureProfile(s); const q = createProfile(s)!;
+  addSession(s, p.id, counted(1));
+  addSession(s, q.id, counted(2, { from: 1 }));
+  addSession(s, q.id, counted(1, { from: 2, game: 'count-to-20-k' }));
+  assert.deepEqual(paradeView(s, q.id, C), { animals: ['lamb', 'calf'] });
+  assert.deepEqual(paradeView(s, q.id, 'count-to-20-k'), { animals: ['calf'] });
+  assert.deepEqual(paradeView(s, p.id, C), { animals: ['chick'] });
+  deleteProfile(s, p.id);
+  assert.equal(s.parades[p.id], undefined);
+  assert.deepEqual(paradeView(s, q.id, C), { animals: ['lamb', 'calf'] });
+});
+
+test('a parade with a newer sub-schema is kept untouched, never written to and not shown', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const future = { v: 2, herd: [{ any: 'thing' }] };
+  (s.parades as any)[p.id] = { [C]: future };
+  addSession(s, p.id, counted(2, { hints: 1 }));
+  assert.deepEqual(s.parades[p.id][C], future);
+  assert.equal(paradeView(s, p.id, C), undefined);
+  assert.equal(s.sessions.length, 1, 'the session itself is still saved');
+  assert.equal(s.sessions[0].hints, 1, 'and keeps its facts');
+  assert.deepEqual(parseStore(JSON.stringify(s)).parades[p.id][C], future, 'survives a load and save');
+  assert.equal(hostInitFor(s, s.profiles[p.id], C, 'parade').parade, undefined, 'HostInit sends no parade it cannot read');
+  assert.equal('parade' in hostInitFor(s, s.profiles[p.id], C, 'parade'), false);
+});
+
+test('a store written before parades existed loads, gets an empty parades field and keeps schema 1', () => {
+  const doc = {
+    schema: 1, profiles: { p_a: { id: 'p_a', avatar: 'fox', color: 'orange', createdAt: 'x' } }, activeProfile: 'p_a',
+    sessions: [{ ...rec(), profile: 'p_a' }], gardens: {}, walls: {},
+    quilts: { p_a: { [Q]: { v: 1, patches: [{ id: 'r1', patch: 'dots-blue', at: 'x', session: 's' }] } } },
+  };
+  const { data } = fakeStorage({ [KEY]: JSON.stringify(doc) });
+  const s = load();
+  assert.deepEqual(s.parades, {});
+  assert.equal(s.readOnly, undefined);
+  update(st => addSession(st, 'p_a', counted(2)));
+  const saved = JSON.parse(data.get(KEY)!);
+  assert.equal(saved.schema, 1, 'top-level schema stays 1');
+  assert.deepEqual(saved.parades.p_a[C].animals.map((x: any) => x.animal), ['chick', 'lamb']);
+  assert.deepEqual(saved.quilts, doc.quilts, 'quilts untouched');
+  for (const bad of ['x', 7, [], null]) assert.deepEqual(parseStore(JSON.stringify({ ...doc, parades: bad })).parades, {});
+});
+
+test('a newer top-level schema stays read-only for parade games too', () => {
+  const newer = JSON.stringify({ schema: 2, anything: true });
+  const { data, writes } = fakeStorage({ [KEY]: newer });
+  const s = load();
+  assert.equal(s.readOnly, true);
+  const p = ensureProfile(s);
+  addSession(s, p.id, counted(3));
+  save(s);
+  assert.equal(data.get(KEY), newer, 'the newer document is never overwritten');
+  assert.equal(writes.length, 0);
+  assert.deepEqual(paradeView(s, p.id, C), { animals: ['chick', 'lamb', 'calf'] }, 'this visit still works in memory');
+  clearAll();
+});
+
+test('corrupt parade data never crashes saving or HostInit', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  (s.parades as any)[p.id] = 'broken';
+  assert.ok(addSession(s, p.id, counted(1)));
+  assert.deepEqual(paradeView(s, p.id, C), { animals: ['chick'] });
+  (s.parades as any)[p.id][C].animals.push(null, { animal: 7 }, { animal: '<b>' });
+  assert.deepEqual(paradeView(s, p.id, C), { animals: ['chick'] }, 'junk entries are not shown');
+  addSession(s, p.id, counted(1, { from: 1 }));
+  assert.deepEqual(paradeView(s, p.id, C), { animals: ['chick', 'lamb'] });
+  for (const bad of ['x', 3, null, { animals: 'nope' }]) {
+    (s.parades as any)[p.id][C] = bad; // no `v`: corrupt, not newer, so a fresh parade replaces it
+    assert.ok(addSession(s, p.id, counted(1, { from: 2 })));
+    assert.deepEqual(paradeView(s, p.id, C), { animals: ['calf'] }, JSON.stringify(bad));
+  }
+});
+
+test('gardens, walls, quilts and parades side by side: each game feeds only its own reward', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  addSession(s, p.id, played(2));
+  addSession(s, p.id, spelled(['w-cat']));
+  addSession(s, p.id, stitched(2));
+  addSession(s, p.id, counted(3));
+  const mixed = rec({ game: C, skill: CSKILL, questions: 4 });
+  mixed.rewards = [
+    { id: mixed.id + '-0', kind: 'animal', animal: 'goat', at: 'x' },
+    { id: mixed.id + '-1', kind: 'patch', patch: 'dots-blue', at: 'x' },
+  ] as any;
+  addSession(s, p.id, mixed);
+  const back = parseStore(JSON.stringify(s));
+  assert.deepEqual(paradeView(back, p.id, C), { animals: ['chick', 'lamb', 'calf', 'goat'] });
+  assert.deepEqual(quiltView(back, p.id, Q), { patches: ['gingham-red', 'dots-blue'] }, 'the memory game keeps its own quilt');
+  assert.deepEqual(quiltView(back, p.id, C), { patches: ['dots-blue'] }, 'a patch reward inside a parade record goes to that game\'s quilt');
+  assert.deepEqual(wallView(back, p.id, W), { words: ['w-cat'] });
+  assert.equal(gardenView(back, p.id, G)!.total, 2);
+  for (const other of [G, W, Q]) assert.equal(back.parades[p.id][other], undefined, `${other} has no parade`);
+  deleteProfile(back, p.id);
+  assert.deepEqual([back.parades, back.quilts, back.walls, back.gardens, back.sessions], [{}, {}, {}, {}, []]);
+});
+
+test('old tab saved animal rewards inside a session: next load moves them into the parade', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const r = counted(3);
+  s.sessions.push({ ...r, profile: p.id } as any);
+  const back = parseStore(JSON.stringify(s));
+  assert.deepEqual(paradeView(back, p.id, C), { animals: ['chick', 'lamb', 'calf'] });
+  assert.equal('rewards' in back.sessions[0], false);
+  assert.equal(parseStore(JSON.stringify(back)).parades[p.id][C].animals.length, 3, 'idempotent');
+});
+
+test('HostInit: parade games get a parade, nobody else does; never a profile id', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  addSession(s, p.id, played(2));
+  addSession(s, p.id, stitched(2));
+  addSession(s, p.id, counted(6, { levelEnd: 3, missed: ['n-7'] }));
+  const init = hostInitFor(s, p, C, 'parade');
+  assert.deepEqual(Object.keys(init).sort(), ['avatar', 'color', 'parade', 'practiceItems', 'settings', 'startLevel']);
+  assert.deepEqual(init.parade, { animals: ANIMALS });
+  assert.equal(init.startLevel, 2);
+  assert.deepEqual(init.practiceItems, ['n-7']);
+  assert.equal(hostInitFor(emptyStore(), p, C, 'parade').parade!.animals.length, 0, 'a new child gets an empty parade');
+  assert.equal(hostInitFor(s, p, C, 'quilt').parade, undefined, 'the catalog reward decides, not the game id');
+  for (const other of [hostInitFor(s, p, G, 'garden'), hostInitFor(s, p, W, 'wall'), hostInitFor(s, p, Q, 'quilt'), hostInitFor(s, p, 'subtraction-grade-1', 'lights')])
+    assert.equal('parade' in other, false);
+  assert.doesNotMatch(JSON.stringify(init), /p_/);
+});
+
+test('counting mistake tips: skipped and one away get counting words, only once they repeat', () => {
+  const tips: Record<string, RegExp> = { skipped: /counted|count them all/, 'off-by-one': /skipped or counted twice/, 'off-by-two': /two away/ };
+  for (const [kind, re] of Object.entries(tips)) {
+    const s = emptyStore(); const p = ensureProfile(s);
+    addSession(s, p.id, counted(6, { mistakes: { [kind]: 2 } as any }));
+    assert.equal(mistakeTip(s, p.id, CSKILL), null, `${kind}: not yet`);
+    addSession(s, p.id, counted(6, { mistakes: { [kind]: 1 } as any }));
+    const tip = mistakeTip(s, p.id, CSKILL)!;
+    assert.match(tip, re, kind);
+    assert.ok(tip.length < 170, `${kind}: short`);
+    assert.doesNotMatch(tip, /\u2014|\u2013|wrong|bad|fail|careless|lazy|should have/i, `${kind}: friendly, no blame, no dashes`);
+  }
+  const s = emptyStore(); const p = ensureProfile(s);
+  addSession(s, p.id, played(2, { mistakes: { 'off-by-one': 4 } }));
+  assert.match(mistakeTip(s, p.id, 'math.addition.within-20')!, /fingers or dots/, 'addition keeps its own one-away tip');
+  assert.equal(mistakeTip(s, p.id, CSKILL), null, 'tips stay per skill');
 });
