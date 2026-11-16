@@ -383,3 +383,17 @@ Marked addendum, appended by the website agent. It adds to sections 4 and 6 and 
   `logic-memory.patterns.*` skills once a kind shows up 3 times in the last 5 sessions.
 - **Catalog:** id `pattern-repeat-k`, reward `bracelet`, skill `logic-memory.patterns.repeat` ("Color and shape patterns",
   `topDifficulty` 5), page `/logic-games/pattern-repeat-for-kindergarten/`.
+
+## 11. Addendum 2026-11-16: `pattern-fill` mechanic (kit v0.7.0, first game Bead Parlor)
+
+Full design: `planning/token-slot-design.md`. Summary of what a game.json and the message contract carry:
+- `mechanic: "pattern-fill"`. Game-level `beads` (2 to 8 bead ids, order fixes each bead's pentatonic note; default red, blue, yellow,
+  green, purple, orange). A bead symbol in the skin is `bead-<id>`; without a skin the kit draws plain shapes (circle, square,
+  triangle, star, diamond, heart): every default bead has its own color AND shape.
+- Level `pattern` block: `mode` (`copy`, `end` default, `middle`), `beads` (unit letters A, B, C, D map to bead ids, also the spare
+  pool), `gaps` (count or `[min, max]`, default 1), `spares` (0 to 3, default 1). Items have no prompt or answer:
+  `{ "id", "pattern": { "unit": "AB", "length": 6, "beads"?, "gaps"? } }`. Strings 2 to 7 beads (copy 2 to 6), tray at most 8,
+  an item id means one pattern in every level.
+- Reward `{ "type": "bracelet" }`: one bracelet per finished string, kept by the website (section 10 above).
+- Mistake kinds `unit-order` and `outside-unit`, each at most once per string. Hints as slot-build (Look, Gap, Beads).
+- Implementation: a thin runner over the unchanged slot-build reducer (bead ids mapped to letters), so Letter Workshop is untouched.
