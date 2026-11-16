@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  addSession, bestStars, createProfile, deleteProfile, emptyStore, ensureProfile, GARDEN_MAX_ITEMS, GARDEN_SPECIES,
+  addSession, bestStars, braceletView, BRACELETS_MAX, BRACELETS_VIEW, type BraceletReward, createProfile, deleteProfile, emptyStore, ensureProfile, GARDEN_MAX_ITEMS, GARDEN_SPECIES,
   clearAll, gardenView, hostInitFor, KEY, load, mastery, MAX_PROFILES, mistakeTip, PARADE_MAX_ANIMALS, PARADE_VIEW_ANIMALS, paradeView,
   parseStore, practiceItems, quiltView, QUILT_MAX_PATCHES, QUILT_VIEW_PATCHES, save, speciesFor, startLevel, update, wallView,
   WALL_MAX_WORDS, type AnimalReward, type PatchReward, type Reward, type SessionRecord, type Store, type WordReward,
@@ -1033,4 +1033,256 @@ test('counting mistake tips: skipped and one away get counting words, only once 
   addSession(s, p.id, played(2, { mistakes: { 'off-by-one': 4 } }));
   assert.match(mistakeTip(s, p.id, 'math.addition.within-20')!, /fingers or dots/, 'addition keeps its own one-away tip');
   assert.equal(mistakeTip(s, p.id, CSKILL), null, 'tips stay per skill');
+});
+
+// ---------- Bracelets (planning/pattern-repeat-design.md, section 7) ----------
+
+const B = 'pattern-repeat-k';
+const BSKILL = 'logic-memory.patterns.repeat';
+/** A bead-pattern session: one bracelet reward per finished string. `from` shifts which pattern each string gets. */
+const PATTERNS = [['red', 'blue', 'red', 'blue'], ['red', 'red', 'blue', 'red', 'red', 'blue'], ['yellow', 'blue', 'red', 'yellow', 'blue', 'red', 'yellow']];
+const strung = (count: number, o: Partial<SessionRecord> & { from?: number } = {}): SessionRecord => {
+  const { from = 0, ...rest } = o;
+  const r = rec({ game: B, skill: BSKILL, questions: Math.max(count, rest.questions ?? count), levelEnd: 2, maxDifficulty: 2, hints: 0, ...rest });
+  r.rewards = Array.from({ length: count }, (_, i): BraceletReward => ({
+    id: `${r.id}-${i}`, kind: 'bracelet', beads: [...PATTERNS[(from + i) % PATTERNS.length]], at: `2026-11-16T10:00:0${i % 10}Z`,
+  }));
+  return r;
+};
+const shelf = (s: Store, p: string) => s.bracelets[p][B];
+
+test('bracelet rewards move from the session into the shelf, stripped from the stored session', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  assert.ok(addSession(s, p.id, strung(3, { hints: 2, mistakes: { 'unit-order': 1, 'outside-unit': 2 } })));
+  assert.equal(shelf(s, p.id).v, 1);
+  assert.deepEqual(shelf(s, p.id).bracelets.map(x => x.beads), PATTERNS);
+  assert.deepEqual(shelf(s, p.id).bracelets[0], { id: `${s.sessions[0].id}-0`, beads: PATTERNS[0], at: '2026-11-16T10:00:00Z', session: s.sessions[0].id });
+  assert.equal('rewards' in s.sessions[0], false);
+  assert.equal(s.sessions[0].seeds, undefined, 'bracelets are not garden seeds');
+  assert.equal(s.sessions[0].hints, 2);
+  assert.deepEqual(s.sessions[0].mistakes, { 'unit-order': 1, 'outside-unit': 2 }, 'pattern mistakes are kept as facts');
+  for (const other of ['gardens', 'walls', 'quilts', 'parades'] as const) assert.equal(s[other][p.id], undefined, `no ${other}`);
+});
+
+test('bracelets keep repeats of a bead sequence and dedupe by reward id only', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const r = strung(2);
+  addSession(s, p.id, r);
+  addSession(s, p.id, strung(2)); // the same two bead sequences again, new ids
+  assert.equal(shelf(s, p.id).bracelets.length, 4, 'a repeated sequence is a new bracelet');
+  assert.equal(addSession(s, p.id, r), false, 'the same session twice is not saved again');
+  const replay = strung(2); replay.rewards = [...r.rewards!];
+  addSession(s, p.id, replay);
+  assert.equal(shelf(s, p.id).bracelets.length, 4, 'union by id');
+  const same = strung(3); same.rewards![1].id = same.rewards![0].id;
+  addSession(s, p.id, same);
+  assert.equal(shelf(s, p.id).bracelets.length, 6, 'two new ids added, the repeated id once');
+});
+
+test('bracelet order is the order of saving, not the reward clock', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  addSession(s, p.id, strung(1));
+  const late = strung(1, { from: 1 });
+  late.rewards![0].at = '2020-01-01T00:00:00Z';
+  addSession(s, p.id, late);
+  assert.deepEqual(braceletView(s, p.id, B), { bracelets: [PATTERNS[0], PATTERNS[1]] });
+});
+
+test('bracelet view: bead ids only, oldest first, newest 64 at most, a copy not a reference', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  assert.deepEqual(braceletView(s, p.id, B), { bracelets: [] });
+  addSession(s, p.id, strung(2));
+  const v = braceletView(s, p.id, B)!;
+  assert.deepEqual(v, { bracelets: [PATTERNS[0], PATTERNS[1]] });
+  assert.doesNotMatch(JSON.stringify(v), /p_|2026|s_/, 'no profile id, no timestamps, no session ids');
+  v.bracelets[0].push('x');
+  assert.deepEqual(shelf(s, p.id).bracelets[0].beads, PATTERNS[0], 'changing the view never changes the store');
+  const t = emptyStore(); const q = ensureProfile(t);
+  for (let k = 0; k < 14; k++) addSession(t, q.id, strung(6, { from: k }));
+  const big = braceletView(t, q.id, B)!.bracelets;
+  assert.equal(big.length, BRACELETS_VIEW);
+  assert.equal(shelf(t, q.id).bracelets.length, 84);
+  assert.deepEqual(big.at(-1), shelf(t, q.id).bracelets.at(-1)!.beads, 'the newest is last');
+  assert.deepEqual(big[0], shelf(t, q.id).bracelets[84 - 64].beads, 'the view is the newest 64');
+});
+
+test('invalid bracelet rewards are dropped; never more bracelets than questions', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const r = strung(1);
+  const ok = (beads: any, id = 'x') => ({ id, kind: 'bracelet', beads, at: 'x' });
+  r.rewards!.push(
+    r.rewards![0],
+    ok([]) as any, ok(Array(8).fill('red'), 'a') as any, ok(['<img>'], 'b') as any, ok(['Red'], 'c') as any, ok(['red', 7], 'd') as any,
+    ok('red', 'e') as any, ok(undefined, 'f') as any, ok(['a'.repeat(17)], 'g') as any, ok(['red blue'], 'h') as any,
+    { id: 'i', kind: 'bracelet', beads: ['red'] } as any, // no time
+    { id: '', kind: 'bracelet', beads: ['red'], at: 'x' } as any,
+    { id: 'j', kind: 'charm', beads: ['red'], at: 'x' } as any,
+    { id: 'k', kind: 'bracelet', beads: ['red'], at: 'x'.repeat(41) } as any,
+    'red' as any, null as any,
+  );
+  addSession(s, p.id, r);
+  assert.deepEqual(braceletView(s, p.id, B), { bracelets: [PATTERNS[0]] });
+  addSession(s, p.id, strung(5, { questions: 2 }));
+  assert.equal(shelf(s, p.id).bracelets.length, 3, 'two questions, two bracelets');
+  const seven = strung(1); seven.rewards![0].beads = Array(7).fill('red'); const one = strung(1); one.rewards![0].beads = ['blue'];
+  addSession(s, p.id, seven); addSession(s, p.id, one);
+  assert.equal(shelf(s, p.id).bracelets.length, 5, '1 and 7 beads are allowed');
+  const notList = rec({ game: B, skill: BSKILL }) as any; notList.rewards = { id: 'x', kind: 'bracelet' };
+  assert.ok(addSession(s, p.id, notList), 'a broken rewards field never blocks saving the session');
+});
+
+test('bracelets are capped: the oldest fold into a count, the newest stay', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const total = BRACELETS_MAX + 16;
+  for (let k = 0; k < total; k += 8) addSession(s, p.id, strung(8, { from: k }));
+  const stored = Math.ceil(total / 8) * 8;
+  const sh = shelf(s, p.id);
+  assert.equal(sh.bracelets.length, BRACELETS_MAX);
+  assert.equal(sh.folded, stored - BRACELETS_MAX, 'the total stays exact: kept plus folded');
+  assert.deepEqual(sh.bracelets.at(-1)!.beads, PATTERNS[(stored - 1) % PATTERNS.length], 'the newest is still last');
+  assert.equal(braceletView(s, p.id, B)!.bracelets.length, BRACELETS_VIEW);
+  assert.deepEqual(parseStore(JSON.stringify(s)).bracelets[p.id][B], sh, 'survives a load and save');
+});
+
+test('bracelets are per child and per game; deleting a child deletes their bracelets', () => {
+  const s = emptyStore(); const p = ensureProfile(s); const q = createProfile(s)!;
+  addSession(s, p.id, strung(1));
+  addSession(s, q.id, strung(2, { from: 1 }));
+  addSession(s, q.id, strung(1, { from: 2, game: 'pattern-repeat-g1' }));
+  assert.deepEqual(braceletView(s, q.id, B), { bracelets: [PATTERNS[1], PATTERNS[2]] });
+  assert.deepEqual(braceletView(s, q.id, 'pattern-repeat-g1'), { bracelets: [PATTERNS[2]] });
+  assert.deepEqual(braceletView(s, p.id, B), { bracelets: [PATTERNS[0]] });
+  deleteProfile(s, p.id);
+  assert.equal(s.bracelets[p.id], undefined);
+  assert.deepEqual(braceletView(s, q.id, B), { bracelets: [PATTERNS[1], PATTERNS[2]] });
+});
+
+test('a bracelet shelf with a newer sub-schema is kept untouched, never written to and not shown', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  const future = { v: 2, shelf: [{ any: 'thing' }] };
+  (s.bracelets as any)[p.id] = { [B]: future };
+  addSession(s, p.id, strung(2, { hints: 1 }));
+  assert.deepEqual(s.bracelets[p.id][B], future);
+  assert.equal(braceletView(s, p.id, B), undefined);
+  assert.equal(s.sessions.length, 1, 'the session itself is still saved');
+  assert.equal(s.sessions[0].hints, 1);
+  assert.deepEqual(parseStore(JSON.stringify(s)).bracelets[p.id][B], future, 'survives a load and save');
+  assert.equal('bracelets' in hostInitFor(s, s.profiles[p.id], B, 'bracelet'), false, 'HostInit sends no shelf it cannot read');
+});
+
+test('a store written before bracelets existed loads, gets an empty bracelets field and keeps schema 1', () => {
+  const doc = {
+    schema: 1, profiles: { p_a: { id: 'p_a', avatar: 'fox', color: 'orange', createdAt: 'x' } }, activeProfile: 'p_a',
+    sessions: [{ ...rec(), profile: 'p_a' }], gardens: {}, walls: {}, quilts: {}, parades: { p_a: { [C]: { v: 1, animals: [] } } },
+  };
+  const { data } = fakeStorage({ [KEY]: JSON.stringify(doc) });
+  const s = load();
+  assert.deepEqual(s.bracelets, {});
+  assert.equal(s.readOnly, undefined);
+  update(st => addSession(st, 'p_a', strung(2)));
+  const saved = JSON.parse(data.get(KEY)!);
+  assert.equal(saved.schema, 1, 'top-level schema stays 1');
+  assert.deepEqual(saved.bracelets.p_a[B].bracelets.map((x: any) => x.beads), [PATTERNS[0], PATTERNS[1]]);
+  assert.deepEqual(saved.parades, doc.parades, 'parades untouched');
+  for (const bad of ['x', 7, [], null]) assert.deepEqual(parseStore(JSON.stringify({ ...doc, bracelets: bad })).bracelets, {});
+});
+
+test('a newer top-level schema stays read-only for bracelet games too', () => {
+  const newer = JSON.stringify({ schema: 2, anything: true });
+  const { data, writes } = fakeStorage({ [KEY]: newer });
+  const s = load();
+  assert.equal(s.readOnly, true);
+  const p = ensureProfile(s);
+  addSession(s, p.id, strung(2));
+  save(s);
+  assert.equal(data.get(KEY), newer);
+  assert.equal(writes.length, 0);
+  assert.deepEqual(braceletView(s, p.id, B), { bracelets: [PATTERNS[0], PATTERNS[1]] }, 'this visit still works in memory');
+  clearAll();
+});
+
+test('corrupt bracelet data never crashes saving or HostInit', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  (s.bracelets as any)[p.id] = 'broken';
+  assert.ok(addSession(s, p.id, strung(1)));
+  assert.deepEqual(braceletView(s, p.id, B), { bracelets: [PATTERNS[0]] });
+  (s.bracelets as any)[p.id][B].bracelets.push(null, { beads: 7 }, { beads: ['<b>'] }, { beads: [] });
+  assert.deepEqual(braceletView(s, p.id, B), { bracelets: [PATTERNS[0]] }, 'junk entries are not shown');
+  addSession(s, p.id, strung(1, { from: 1 }));
+  assert.deepEqual(braceletView(s, p.id, B), { bracelets: [PATTERNS[0], PATTERNS[1]] });
+  for (const bad of ['x', 3, null, { bracelets: 'nope' }]) {
+    (s.bracelets as any)[p.id][B] = bad; // no `v`: corrupt, not newer, so a fresh shelf replaces it
+    assert.ok(addSession(s, p.id, strung(1, { from: 2 })));
+    assert.deepEqual(braceletView(s, p.id, B), { bracelets: [PATTERNS[2]] }, JSON.stringify(bad));
+  }
+});
+
+test('all reward kinds side by side: each game feeds only its own reward, a stray kind goes to that game', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  addSession(s, p.id, played(2));
+  addSession(s, p.id, stitched(2));
+  addSession(s, p.id, counted(3));
+  addSession(s, p.id, strung(2));
+  const mixed = rec({ game: B, skill: BSKILL, questions: 4 });
+  mixed.rewards = [
+    { id: mixed.id + '-0', kind: 'bracelet', beads: ['green'], at: 'x' },
+    { id: mixed.id + '-1', kind: 'animal', animal: 'goat', at: 'x' },
+  ] as any;
+  addSession(s, p.id, mixed);
+  const back = parseStore(JSON.stringify(s));
+  assert.deepEqual(braceletView(back, p.id, B), { bracelets: [PATTERNS[0], PATTERNS[1], ['green']] });
+  assert.deepEqual(paradeView(back, p.id, C), { animals: ['chick', 'lamb', 'calf'] });
+  assert.deepEqual(paradeView(back, p.id, B), { animals: ['goat'] });
+  assert.deepEqual(quiltView(back, p.id, Q), { patches: ['gingham-red', 'dots-blue'] });
+  for (const other of [G, W, Q, C]) assert.equal(back.bracelets[p.id][other], undefined, `${other} has no bracelets`);
+  deleteProfile(back, p.id);
+  assert.deepEqual([back.bracelets, back.parades, back.quilts, back.walls, back.gardens, back.sessions], [{}, {}, {}, {}, {}, []]);
+});
+
+test('old tab saved bracelet rewards inside a session: next load moves them to the shelf', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  s.sessions.push({ ...strung(3), profile: p.id } as any);
+  const back = parseStore(JSON.stringify(s));
+  assert.deepEqual(braceletView(back, p.id, B), { bracelets: PATTERNS });
+  assert.equal('rewards' in back.sessions[0], false);
+  assert.equal(parseStore(JSON.stringify(back)).bracelets[p.id][B].bracelets.length, 3, 'idempotent');
+});
+
+test('HostInit: bracelet games get bracelets, nobody else does; never a profile id', () => {
+  const s = emptyStore(); const p = ensureProfile(s);
+  addSession(s, p.id, played(2));
+  addSession(s, p.id, counted(2));
+  addSession(s, p.id, strung(3, { levelEnd: 3, missed: ['p-abab'] }));
+  const init = hostInitFor(s, p, B, 'bracelet');
+  assert.deepEqual(Object.keys(init).sort(), ['avatar', 'bracelets', 'color', 'practiceItems', 'settings', 'startLevel']);
+  assert.deepEqual(init.bracelets, { bracelets: PATTERNS });
+  assert.equal(init.startLevel, 2);
+  assert.deepEqual(init.practiceItems, ['p-abab']);
+  assert.equal(hostInitFor(emptyStore(), p, B, 'bracelet').bracelets!.bracelets.length, 0, 'a new child gets an empty shelf');
+  assert.equal(hostInitFor(s, p, B, 'parade').bracelets, undefined, 'the catalog reward decides, not the game id');
+  for (const other of [hostInitFor(s, p, G, 'garden'), hostInitFor(s, p, W, 'wall'), hostInitFor(s, p, Q, 'quilt'), hostInitFor(s, p, C, 'parade')])
+    assert.equal('bracelets' in other, false);
+  assert.doesNotMatch(JSON.stringify(init), /p_/);
+});
+
+test('pattern mistake tips: unit-order and outside-unit get warm words, only once they repeat', () => {
+  const tips: Record<string, RegExp> = { 'unit-order': /order/, 'outside-unit': /not in the pattern/ };
+  for (const [kind, re] of Object.entries(tips)) {
+    const s = emptyStore(); const p = ensureProfile(s);
+    addSession(s, p.id, strung(5, { mistakes: { [kind]: 2 } as any }));
+    assert.equal(mistakeTip(s, p.id, BSKILL), null, `${kind}: not yet`);
+    addSession(s, p.id, strung(5, { mistakes: { [kind]: 1 } as any }));
+    const tip = mistakeTip(s, p.id, BSKILL)!;
+    assert.match(tip, re, kind);
+    assert.ok(tip.length < 170, `${kind}: short`);
+    assert.doesNotMatch(tip, /\u2014|\u2013|wrong|bad|fail|careless|lazy|should have/i, `${kind}: friendly, no blame, no dashes`);
+  }
+  const s = emptyStore(); const p = ensureProfile(s);
+  addSession(s, p.id, strung(5, { mistakes: { 'unit-order': 5 } as any }));
+  assert.equal(mistakeTip(s, p.id, CSKILL), null, 'tips stay per skill');
+  addSession(s, p.id, strung(5, { mistakes: { 'future-kind': 9 } as any }));
+  assert.equal(mistakeTip(s, p.id, BSKILL), null, 'a kind this code does not know gets no tip');
+  const t = emptyStore(); const q = ensureProfile(t);
+  addSession(t, q.id, played(2, { mistakes: { 'unit-order': 9 } as any }));
+  assert.equal(mistakeTip(t, q.id, 'math.addition.within-20'), null, 'pattern kinds give no tip on a math skill');
 });
