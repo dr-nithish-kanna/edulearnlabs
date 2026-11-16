@@ -116,6 +116,15 @@ Each mechanic adds its own small fields on top of the shared item shape. Example
   Game-level `"reward": { "type": "wall" }`: one word card per solved word, stored by the website (the word wall).
   Letter mistakes are recorded as `letter-order`, `wrong-vowel`, `look-alike`, `wrong-letter` (each at most once per
   word). Full shape: `planning/slot-build-design.md`.
+- `tap-count` (kit v0.6.0, first game: Hedgehog Picnic): the child taps each object once to count it, a badge shows the
+  count, then a How many? choice. Rounds come from the `count` generator (`"generator": { "type": "count", "n": [min, max] }`,
+  item ids `n-7`). A level-wide `"tap"` block: `layout` `row` (n up to 5), `rows` (rows of five, n up to 10) or `pile`
+  (seeded scatter, n up to 10), `choices` 2 to 4 (default 3), `finish` `auto` (default) or `done` (a Done bell; ringing it
+  with objects left records the mistake `skipped`, once per round). Game-level `"friends": [{ "id", "kind" }]` (required) and
+  `"kinds"` (singular and plural words per kind). A tap-count game may also have fill-container levels (a `fill` block
+  instead of `tap`, played by a lazy fill chunk); kit v0.6.0 adds `fill.finish: "done"` (add, goal total only: reaching
+  the target does not end the order, the child taps Done). Game-level `"reward": { "type": "parade", "animals": [2 or more slugs] }`:
+  one animal per solved round in a fixed cycle, stored by the website (the parade). Full shape: `planning/tap-count-design.md`.
 We define each one when its first game is built, not now. **Why:** designing 7 mechanics up front means guessing.
 Designing each one against a real game means getting it right.
 
@@ -190,6 +199,11 @@ deleting a profile deletes both; stores saved before a section existed load with
   questions in one session. At most 200 per child per game: past that the OLDEST fold into the `folded` count (the game
   continues its pattern from the newest patch, so freezing the quilt would freeze the pattern). HostInit sends only
   `{ "patches": [slugs] }`, at most the newest 64, oldest first. A stored session keeps `misses` (pair-match, 0 or more).
+- `parades[profile][game]`: `{ "v": 1, "animals": [{ "id": "s_x81ka2-0", "animal": "bunny", "at": "2026-11-16T10:00:00Z", "session": "s_x81ka2" }], "folded": 0 }`
+  (parade games, kit v0.6.0, built on the website 2026-11-16). Same rules as quilts: oldest first in the order saved on
+  the device, every animal kept (repeats are normal), deduped by reward `id`, never more animals than questions in one
+  session, at most 200 per child per game with the OLDEST folded into `folded` (the game continues its cycle from the
+  newest animal). HostInit sends only `{ "animals": [slugs] }`, at most the newest 64, oldest first.
 
 ### Why this shape is ready to sync later
 - **Sessions are facts** and are only ever added, never edited. Merging two devices later is simple: put both lists
@@ -265,7 +279,7 @@ required, so website and games can upgrade in any order.
 
 | Type | Data | When |
 |---|---|---|
-| `HostInit` | `protocol`, `avatar`, `color`, `startLevel`, `practiceItems` (recently missed item IDs), `settings`, optional `garden` (garden view, garden games only), optional `wall` (`{ words: string[] }`, word ids already on the child's word wall for this game, oldest first; word wall games only, kit v0.4.0), optional `quilt` (`{ patches: string[] }`, patch ids on the child's quilt for this game, oldest first; quilt games only, kit v0.5.0) | right after `GameReady` |
+| `HostInit` | `protocol`, `avatar`, `color`, `startLevel`, `practiceItems` (recently missed item IDs), `settings`, optional `garden` (garden view, garden games only), optional `wall` (`{ words: string[] }`, word ids already on the child's word wall for this game, oldest first; word wall games only, kit v0.4.0), optional `quilt` (`{ patches: string[] }`, patch ids on the child's quilt for this game, oldest first; quilt games only, kit v0.5.0), optional `parade` (`{ animals: string[] }`, animal slugs in the child's parade for this game, newest 64, oldest first; parade games only, kit v0.6.0) | right after `GameReady` |
 | `HostSettings` | `settings` | audio, music or motion toggled on the site |
 | `HostPause` / `HostResume` | none | tab hidden or shown |
 
@@ -275,7 +289,7 @@ required, so website and games can upgrade in any order.
 |---|---|---|
 | `GameReady` | `protocol`, `gameId`, `version` | game code loaded |
 | `GameStarted` | `sessionId`, `startedAt` | child taps start |
-| `GameCompleted` | the session record from section 4, without `profile`; fill-container games add optional `hints`, and garden games (stored `reward`) add `rewards`. Since kit v0.3.0 a fill game with no stored reward (Pond Hop, `sessionReward` lights) sends no `rewards` key at all. Since kit v0.4.0 word wall games (slot-build) send `hints` and one `rewards` entry per solved word, `{ id, kind: "word", wordId, at }` (`id` is session id plus question index, repeats of a word allowed: the website keeps the first per `wordId`), and `mistakes` may use the letter kinds. Since kit v0.5.0 quilt games (pair-match) send `hints` (Peeks and Sparkles), `misses` (total misses, never shown to the child) and one `rewards` entry per finished board, `{ id, kind: "patch", patch, at }` (repeats of a patch id are normal; the website keeps every entry, deduped by `id`) | end screen shown |
+| `GameCompleted` | the session record from section 4, without `profile`; fill-container games add optional `hints`, and garden games (stored `reward`) add `rewards`. Since kit v0.3.0 a fill game with no stored reward (Pond Hop, `sessionReward` lights) sends no `rewards` key at all. Since kit v0.4.0 word wall games (slot-build) send `hints` and one `rewards` entry per solved word, `{ id, kind: "word", wordId, at }` (`id` is session id plus question index, repeats of a word allowed: the website keeps the first per `wordId`), and `mistakes` may use the letter kinds. Since kit v0.5.0 quilt games (pair-match) send `hints` (Peeks and Sparkles), `misses` (total misses, never shown to the child) and one `rewards` entry per finished board, `{ id, kind: "patch", patch, at }` (repeats of a patch id are normal; the website keeps every entry, deduped by `id`). Since kit v0.6.0 parade games (tap-count) send `hints` and one `rewards` entry per solved round, `{ id, kind: "animal", animal, at }` (repeats of an animal are normal; deduped by `id`), and `mistakes` may use `skipped` (tap-count with the Done bell) next to `off-by-one` and `off-by-two` | end screen shown |
 | `GameExit` | `reason`: `"home"` | child taps the in-game back button |
 | `GameError` | `code` | something broke; site shows a friendly "Let's try again" |
 
@@ -309,7 +323,7 @@ Its own repo (`edulearnlabs-kit`). Games install it pinned to a tag, for example
 | `audio` | Web Audio manager, unlock, sound sprites, voice queue, music ducking under voice, mute |
 | `ui` | tap-to-start screen, progress indicator, shared mascot slot, end screen with stars, back button |
 | `mechanics/quiz` | the first mechanic. Others are added when their first game needs them |
-| `mechanics/fill-container`, `mechanics/slot-build`, `mechanics/pair-match` | opt-in mechanics (v0.2.0 to v0.5.0); a game registers only the one it uses, so others ship none of their code (pair-match has no drag code at all) |
+| `mechanics/fill-container`, `mechanics/slot-build`, `mechanics/pair-match`, `tap-count` | opt-in mechanics (v0.2.0 to v0.6.0); a game registers only the one it uses, so others ship none of their code (pair-match has no drag code at all). A tap-count game with a fill level (`tapCountWith`) loads the fill player lazily, after Play |
 
 Budget: kit code 15 KB brotli or less. Game code on top: 15 KB or less. Art and audio are separate (after Play).
 
