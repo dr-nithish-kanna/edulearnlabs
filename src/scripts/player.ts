@@ -68,15 +68,18 @@ export function initPlayer(root: HTMLElement) {
         const p = profileId ? s.profiles[profileId] : null;
         if (!p) return close();
         // The catalog `reward` decides the extras: "garden" adds the garden view, "wall" adds the word wall
-        // (word ids, oldest first), "quilt" adds `quilt: { patches }` (patch slugs, oldest first). Built by a pure function in progress.ts so it is unit tested. Never the profile id.
+        // (word ids, oldest first), "quilt" adds `quilt: { patches }` (patch slugs, oldest first), "parade" adds
+        // `parade: { animals }` (animal slugs, newest 64, oldest first). Built by a pure function in progress.ts so it is
+        // unit tested. Never the profile id.
         send({ type: 'HostInit', protocol: PROTOCOL, ...hostInitFor(s, p, game, reward) });
         break;
       }
       case 'GameCompleted':
         // addSession keeps known fields only, stores `hints`, plants one seed per solved order (garden rewards) and
         // puts one card per new word on the wall (word rewards) and one patch per finished board on the quilt (patch
-        // rewards, repeats of a pattern are normal, deduped by reward id), and keeps `misses`, under the profile WE chose. The game never says whose
-        // rewards they are.
+        // rewards, repeats of a pattern are normal, deduped by reward id) and one animal per solved round in the parade
+        // (animal rewards, same rules as patches), and keeps `misses`, under the profile WE chose. The game never says
+        // whose rewards they are.
         if (profileId) update(s => addSession(s, profileId!, m.session));
         renderProgress();
         break;

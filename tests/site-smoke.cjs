@@ -27,6 +27,10 @@ const WORD_SYNCED = fs.existsSync(path.join(DIST, 'play', WORD, 'index.html'));
 // round trip runs against a labelled STAND-IN frame (see below) until `npm run sync-game -- ../memory-match-prek` is done.
 const MEMORY = 'memory-match-prek';
 const MEMORY_SYNCED = fs.existsSync(path.join(DIST, 'play', MEMORY, 'index.html'));
+// Hedgehog Picnic (count-objects-prek) follows the Quilt Picnic recipe: pages and the parade store need no build, the play
+// round trip runs against a labelled STAND-IN frame until `npm run sync-game -- ../count-objects-prek` is done.
+const COUNT = 'count-objects-prek';
+const COUNT_SYNCED = fs.existsSync(path.join(DIST, 'play', COUNT, 'index.html'));
 const skipped = [];
 const skip = msg => { console.log(`SKIPPED: game build not synced: ${msg}`); skipped.push(msg); };
 let unsyncedMisses = 0; // requests for the missing builds (poster, manifest) that 404 before the sync
@@ -78,10 +82,12 @@ async function playFullGame(page) {
     // Before the sync, the Letter Workshop poster and asset manifest 404. Counted and reported, never silently dropped.
     if (!WORD_SYNCED && (m.location().url || '').includes(`/play/${WORD}/`)) { unsyncedMisses++; return; }
     if (!MEMORY_SYNCED && (m.location().url || '').includes(`/play/${MEMORY}/`)) { unsyncedMisses++; return; }
+    if (!COUNT_SYNCED && (m.location().url || '').includes(`/play/${COUNT}/`)) { unsyncedMisses++; return; }
     errors.push(m.text());
   });
   if (!WORD_SYNCED) console.log(`SKIPPED: game build not synced: dist/play/${WORD}/ is missing, so the Letter Workshop play checks below are skipped. Run npm run sync-game -- ../${WORD}, then npm run build && npm run test:e2e.`);
   if (!MEMORY_SYNCED) console.log(`SKIPPED: game build not synced: dist/play/${MEMORY}/ is missing, so the real-game Quilt Picnic checks are replaced by STAND-IN frame checks below (labelled). Run npm run sync-game -- ../${MEMORY}, then npm run build && npm run test:e2e.`);
+  if (!COUNT_SYNCED) console.log(`SKIPPED: game build not synced: dist/play/${COUNT}/ is missing, so the real-game Hedgehog Picnic checks are replaced by STAND-IN frame checks below (labelled). Run npm run sync-game -- ../${COUNT}, then npm run build && npm run test:e2e.`);
   await page.addInitScript(() => {
     window.__cls = 0;
     new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; })
@@ -103,7 +109,7 @@ async function playFullGame(page) {
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
 
   // Every page: one H1, a title, a description, no layout shift.
-  for (const p of ['', 'math-games/', 'math-games/addition-for-grade-1/', 'math-games/subtraction-for-grade-1/',
+  for (const p of ['', 'math-games/', 'math-games/addition-for-grade-1/', 'math-games/subtraction-for-grade-1/', 'math-games/counting-for-preschool/',
     'language-games/', 'language-games/word-building-for-grade-1/', 'logic-games/', 'logic-games/memory-match-for-preschool/',
     'grown-ups/', 'privacy/']) {
     const t0 = Date.now();
@@ -235,8 +241,8 @@ async function playFullGame(page) {
   const words = sel => page.evaluate(q => (document.querySelector(q)?.innerText ?? '').split(/\s+/).filter(Boolean).length, sel);
   await page.goto(origin + BASE);
   const home = (await page.locator('main').innerText()).replace(/\s+/g, ' ');
-  check(home.includes('2 games ready, 6 on the way') && home.includes('1 game ready, 7 on the way'),
-    'home page counts: math 2 ready 6 on the way, reading 1 ready 7 on the way');
+  check(home.includes('3 games ready, 5 on the way') && home.includes('1 game ready, 7 on the way'),
+    'home page counts: math 3 ready 5 on the way (Count objects is off the coming-soon list), reading 1 ready 7 on the way');
   check(await page.locator(`main a.subject-card[href="${BASE}language-games/"]`).count() === 1, 'home page Reading games card links to /language-games/');
   check(home.includes('1 game ready, 3 on the way'), 'home page counts: logic 1 ready 3 on the way (Memory flip cards is off the coming-soon list)');
   check(await page.locator(`main a.subject-card[href="${BASE}logic-games/"]`).count() === 1, 'home page Logic and memory card links to /logic-games/');
@@ -427,6 +433,111 @@ async function playFullGame(page) {
   await gameFrame().evaluate(() => parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin));
   await page.locator('.overlay').waitFor({ state: 'hidden' });
 
+  // ---------- Hedgehog Picnic: math category, game page, home, sitemap, privacy (no game build needed) ----------
+  await page.goto(origin + BASE);
+  check(await page.locator(`main a.game-card[href="${BASE}math-games/counting-for-preschool/"]`).count() === 1, 'home page lists Hedgehog Picnic');
+  await page.goto(origin + BASE + 'math-games/');
+  check(await page.locator(`.grid a.game-card[href="${BASE}math-games/counting-for-preschool/"]`).count() === 1, 'math category page: lists the counting game');
+  check(await page.locator('.site-header a[aria-current="page"]').innerText() === 'Math games', 'math category page: Math games is the current nav item');
+  const mathSoon = await page.locator('.soon-list').innerText();
+  check(!/Count objects/.test(mathSoon) && /Shape matching/.test(mathSoon), 'math category page: Count objects is off the coming-soon list');
+  const mathWords = await words('main section.prose');
+  check(mathWords >= 500 && mathWords <= 1000, `math category page: ${mathWords} words of prose (target 500 to 1000)`);
+  check(await page.locator(`main section.prose a[href="${BASE}math-games/counting-for-preschool/"]`).count() >= 1, 'math category page: the Pre-K text links to the counting game');
+  await page.goto(origin + BASE + 'math-games/counting-for-preschool/');
+  check(await page.locator('h1').innerText() === 'Counting Games for Preschool', 'counting game page: H1 is the keyword title');
+  const countTitle = await page.title();
+  check(countTitle.startsWith('Counting Games for Preschool') && /Ages 3 to 5/.test(countTitle) && /Count to 10/.test(countTitle), `counting game page: title has keyword, age and benefit "${countTitle}"`);
+  check(await page.locator('.site-header a[aria-current="page"]').innerText() === 'Math games', 'counting game page: Math games is the current nav item');
+  check(await page.locator(`.crumbs a.back[href="${BASE}math-games/"]`).count() === 1, 'counting game page: back button goes to Math games');
+  const countWords = await words('main section.prose');
+  check(countWords >= 300 && countWords <= 600, `counting game page: ${countWords} words of text (target 300 to 600)`);
+  check(await page.locator(`[data-game-player][data-game="${COUNT}"][data-reward="parade"]`).count() === 1, 'counting game page: player is wired with reward "parade"');
+  check(await page.locator(`[data-game-player][data-src$="/play/${COUNT}/index.html"]`).count() === 1, 'counting game page: play path is /play/count-objects-prek/');
+  check(await page.locator('.player img').getAttribute('src') === `${BASE}play/${COUNT}/poster.webp` && await page.locator('.player img').getAttribute('width') === '1200',
+    'counting game page: poster image with fixed size (no layout shift)');
+  const countOrder = await page.evaluate(() => {
+    const text = document.querySelector('main section.prose'), player = document.querySelector('[data-game-player]');
+    return !!(player.compareDocumentPosition(text) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  check(countOrder && await page.locator('iframe').count() === 0, 'counting game page: text comes after the player and no game frame exists before Play');
+  check(await page.locator(`main a[href="${BASE}math-games/"]`).count() >= 1 &&
+    await page.locator(`main a[href="${BASE}logic-games/memory-match-for-preschool/"]`).count() >= 1, 'counting game page: links to the category and to Quilt Picnic');
+  const countText = await page.locator('main').innerText();
+  check(/parade/i.test(countText) && /kept on this device only/.test(countText), 'counting game page: explains the parade stays on this device');
+  check(!/[\u2013\u2014]/.test(countText), 'counting game page: no em dashes or en dashes');
+  check(!/price|subscribe|\$\d|https?:\/\//i.test(countText) && await page.locator('main a[href^="http"]').count() === 0, 'counting game page: no prices and no external links');
+  const sitemap3 = fs.readdirSync(DIST).filter(f => /^sitemap-\d+\.xml$/.test(f)).map(f => fs.readFileSync(path.join(DIST, f), 'utf8')).join('');
+  check(sitemap3.includes('/math-games/counting-for-preschool/</loc>') && !sitemap3.includes('/play/'), 'sitemap lists the counting game page, and no /play/ files');
+  // A link that starts a new source line loses the space before it in the built HTML ("pairs inMemory"). Guard every page.
+  const glued = [];
+  const walk = d => { for (const f of fs.readdirSync(d)) { const p = path.join(d, f);
+    if (fs.statSync(p).isDirectory()) { if (f !== 'play') walk(p); }
+    else if (f.endsWith('.html')) for (const m of fs.readFileSync(p, 'utf8').matchAll(/[A-Za-z,.:;!?)]<a href|<\/a>[A-Za-z(]/g)) glued.push(`${path.relative(DIST, p)}: ${m[0]}`); } };
+  walk(DIST);
+  check(glued.length === 0, `no words glued to a link in any built page${glued.length ? ': ' + glued.join(' | ') : ''}`);
+  await page.goto(origin + BASE + 'privacy/');
+  check(/Hedgehog Picnic parade/.test(await page.locator('main').innerText()), 'privacy page mentions the parade');
+
+  // ---------- Hedgehog Picnic: play round trip ----------
+  // Same STAND-IN trick as Quilt Picnic: until the sync, the frame is the site's own 404 page (same origin and sandbox)
+  // posting GameReady itself. It proves the WEBSITE side (HostInit.parade, animal rewards) but NOT the game.
+  const countLabel = COUNT_SYNCED ? 'real game frame' : 'STAND-IN frame (game build not synced)';
+  const openCount = async () => {
+    await page.goto(origin + BASE + 'math-games/counting-for-preschool/');
+    await page.locator('[data-play]').click({ force: true });
+    await page.locator('#player-picker .pick').nth(1).click();
+    if (!COUNT_SYNCED) {
+      await page.locator('.overlay iframe').waitFor();
+      const f = page.frames().filter(fr => fr.url().includes('/play/')).at(-1);
+      await f.waitForLoadState('load');
+      await f.evaluate(() => parent.postMessage({ type: 'GameReady' }, location.origin));
+    }
+    return hostInit();
+  };
+  const c1 = await openCount();
+  check(JSON.stringify(c1.parade) === '{"animals":[]}' && !('garden' in c1) && !('wall' in c1) && !('quilt' in c1),
+    `[${countLabel}] HostInit carries an empty parade and no garden, wall or quilt: ${JSON.stringify(c1.parade)}`);
+  check(!JSON.stringify(c1).includes('p_'), `[${countLabel}] HostInit for a parade game carries no profile id`);
+  check(c1.protocol === 1, `[${countLabel}] HostInit protocol stays 1`);
+  await gameFrame().evaluate(() => {
+    const at = new Date().toISOString();
+    const session = { id: 's_e2ecount', game: 'count-objects-prek', gameVersion: '1.0.0', skill: 'math.counting.count-objects',
+      startedAt: at, durationSec: 160, questions: 6, firstTry: 4, levelStart: 1, levelEnd: 3, maxDifficulty: 3, completed: true,
+      missed: ['n-7'], mistakes: { skipped: 1, 'off-by-one': 1 }, hints: 2, tapPath: [1],
+      rewards: [
+        { id: 's_e2ecount-0', kind: 'animal', animal: 'chick', at }, { id: 's_e2ecount-1', kind: 'animal', animal: 'lamb', at },
+        { id: 's_e2ecount-2', kind: 'animal', animal: 'calf', at }, { id: 's_e2ecount-3', kind: 'animal', animal: 'chick', at }, // a repeat animal: kept
+        { id: 's_e2ecount-4', kind: 'animal', animal: '<b>', at }, { id: 's_e2ecount-5', kind: 'pet', animal: 'goat', at },
+        { id: 's_e2ecount-0', kind: 'animal', animal: 'goat', at }, // the same reward id twice: kept once
+      ] };
+    parent.postMessage({ type: 'GameCompleted', session }, location.origin);
+    parent.postMessage({ type: 'GameCompleted', session }, location.origin); // a repeated message must not march twice
+    parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin);
+  });
+  await page.locator('.overlay').waitFor({ state: 'hidden' });
+  const cs = await page.evaluate(() => JSON.parse(localStorage.getItem('ell:v1')));
+  const csess = cs.sessions.find(x => x.id === 's_e2ecount');
+  const cparade = cs.parades?.[csess?.profile]?.['count-objects-prek'];
+  check(csess && csess.hints === 2 && csess.mistakes.skipped === 1 && !('rewards' in csess) && !('tapPath' in csess) && !csess.seeds,
+    `[${countLabel}] counting session saved: hints and the skipped mistake kept, rewards moved out, unknown field dropped`);
+  check(cparade && cparade.v === 1 && cparade.animals.map(x => x.animal).join() === 'chick,lamb,calf,chick',
+    `[${countLabel}] parade stored once per reward id, a repeated animal kept, junk and unknown kinds dropped: ${JSON.stringify(cparade && cparade.animals.map(x => x.animal))}`);
+  check(!cs.parades?.[firstProfile]?.['count-objects-prek'], `[${countLabel}] the other child's parade is untouched`);
+  check(!Object.values(cs.walls || {}).some(w => w['count-objects-prek']) && !Object.values(cs.gardens || {}).some(gd => gd['count-objects-prek']) &&
+    !Object.values(cs.quilts || {}).some(q => q['count-objects-prek']), `[${countLabel}] a parade game makes no garden, word wall or quilt`);
+  const c2 = await openCount();
+  check(JSON.stringify(c2.parade) === '{"animals":["chick","lamb","calf","chick"]}', `[${countLabel}] next HostInit shows the parade, oldest first: ${JSON.stringify(c2.parade)}`);
+  check(c2.startLevel === 2 && JSON.stringify(c2.practiceItems) === '["n-7"]', `[${countLabel}] next HostInit starts one level lower and brings back the missed count: ${c2.startLevel} ${JSON.stringify(c2.practiceItems)}`);
+  await gameFrame().evaluate(() => parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin));
+  await page.locator('.overlay').waitFor({ state: 'hidden' });
+  if (!COUNT_SYNCED) skip('Hedgehog Picnic real game frame: the build sends GameReady, HostInit.parade reaches it and its own GameCompleted stores animals (run after sync-game)');
+  // The quilt game must not get a parade.
+  const q3 = await openMemory();
+  check(!('parade' in q3), `[${memLabel}] Quilt Picnic HostInit carries no parade`);
+  await gameFrame().evaluate(() => parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin));
+  await page.locator('.overlay').waitFor({ state: 'hidden' });
+
   // ---------- Word wall store round trip through the built site (no game build needed) ----------
   // A store saved by this code's future self: a wall, a garden, a wall with a newer sub-schema and letter mistakes.
   // The Grown-ups page loads it, saves it (adding a player), and must keep every wall byte for byte.
@@ -444,7 +555,13 @@ async function playFullGame(page) {
         'spelling-grade-2': { v: 9, anything: ['newer code wrote this'] } } },
       quilts: { p_wall: {
         'memory-match-prek': { v: 1, patches: [{ id: 's_q1-0', patch: 'gingham-red', at, session: 's_q1' }, { id: 's_q1-1', patch: 'gingham-red', at, session: 's_q1' }], folded: 3 },
-        'memory-match-k': { v: 7, squares: ['newer code wrote this'] } } } };
+        'memory-match-k': { v: 7, squares: ['newer code wrote this'] } } },
+      parades: { p_wall: {
+        'count-objects-prek': { v: 1, animals: [{ id: 's_c1-0', animal: 'chick', at, session: 's_c1' }, { id: 's_c1-1', animal: 'chick', at, session: 's_c1' }], folded: 4 },
+        'count-to-20-k': { v: 5, herd: ['newer code wrote this'] } } } };
+    doc.sessions.push({ id: 's_c1', game: 'count-objects-prek', gameVersion: '1.0.0', skill: 'math.counting.count-objects', startedAt: at,
+      durationSec: 150, questions: 6, firstTry: 3, levelStart: 3, levelEnd: 3, maxDifficulty: 3, completed: true, missed: [],
+      mistakes: { skipped: 3 }, hints: 3, profile: 'p_wall' });
     localStorage.setItem('ell:v1', JSON.stringify(doc));
     return doc;
   });
@@ -455,6 +572,8 @@ async function playFullGame(page) {
   const after = await page.evaluate(() => JSON.parse(localStorage.getItem('ell:v1')));
   check(JSON.stringify(after.quilts) === JSON.stringify(seeded.quilts), 'quilt store round trip: load and save keep quilts (a repeated pattern, the folded count and a newer-v quilt) byte for byte');
   check(guWords.includes('Matching pairs'), 'Grown-ups shows the Matching pairs skill');
+  check(JSON.stringify(after.parades) === JSON.stringify(seeded.parades), 'parade store round trip: load and save keep parades (a repeated animal, the folded count and a newer-v parade) byte for byte');
+  check(guWords.includes('Counting objects') && guWords.includes('count them all'), 'Grown-ups shows the Counting objects skill and the skipped tip');
   check(after.schema === 1 && Object.keys(after.profiles).length === 2 && JSON.stringify(after.walls) === JSON.stringify(seeded.walls) &&
     JSON.stringify(after.gardens) === JSON.stringify(seeded.gardens), 'word wall store round trip: load and save keep walls (and a newer-v wall) and gardens unchanged');
   const delBtn = page.locator('[data-delete="p_wall"]');
@@ -465,8 +584,9 @@ async function playFullGame(page) {
   check(!gone.profiles.p_wall && !gone.walls.p_wall && !gone.gardens.p_wall && !gone.sessions.some(x => x.profile === 'p_wall'),
     'deleting a player (hold to confirm) deletes their word wall, garden and sessions');
   check(!gone.quilts.p_wall, 'deleting a player (hold to confirm) deletes their quilt too');
+  check(gone.parades && !gone.parades.p_wall, 'deleting a player (hold to confirm) deletes their parade too');
 
-  if (!WORD_SYNCED || !MEMORY_SYNCED) console.log(`SKIPPED: game build not synced: ${skipped.length} play check(s) skipped, ${unsyncedMisses} request(s) for the missing build answered 404 and were not counted as errors.`);
+  if (!WORD_SYNCED || !MEMORY_SYNCED || !COUNT_SYNCED) console.log(`SKIPPED: game build not synced: ${skipped.length} play check(s) skipped, ${unsyncedMisses} request(s) for the missing build answered 404 and were not counted as errors.`);
   check(errors.length === 0, `no console errors${errors.length ? ': ' + errors.join(' | ') : ''}`);
   console.log(failures ? `\n${failures} check(s) failed` : '\nPASS');
   await browser.close(); server.close();
