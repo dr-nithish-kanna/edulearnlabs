@@ -177,3 +177,10 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
   Deviations (Done bell position, friend-only bubbles, extra idle nudges, validator stock rule, placeholder playground art) are listed in the kit README.
   Still to do: update `planning/framework-spec.md` for tap-count, create the game repo (`count-objects-prek`, owner decides), game scenes and art from
   `brand/count-objects/`, website parade store and page, real-device touch and speech check. Lesson: a wait loop that greps for "Error" matches "GameError"; grep the real final line.
+- 2026-11-16: game 5 built. Game repo `dr-nithish-kanna/count-objects-prek` (created by the owner, empty private repo), branch `claude/amazing-albattani-g2r7l1`,
+  head `54a2fb55d55370b1741aa2421b263b5798521d0b`, pinned to kit v0.6.0 `ea8ed668983dc67bf7366ed54ba0146e9b4c77a7`. Game id `count-objects-prek`, title Hedgehog Picnic,
+  skill `math.counting.count-objects`, page to build `/math-games/counting-for-preschool/`. Not merged, not deployed, no tag.
+  Verified here: typecheck clean, build in budget (Before Play 61.4 KB, entry JS 21.4 KB, lazy fill chunk 7.6 KB), smoke test on the throttled profile 166 ok, 0 FAIL, screenshots opened.
+  Kit gaps found by the game agent (go to an Opus kit release, v0.6.1): the friend never swaps to its happy pose, one picture per object kind so the second pebble drawing is unused,
+  at 667x375 the level 4 "Give me N" bubble touches the Back button corner. Still to do: website side (progress store for the parade, game page, catalog, home card, privacy text),
+  `framework-spec.md` update for tap-count, sync (`npm run sync-game -- ../count-objects-prek`), real-device touch and speech check, owner makes kit tags v0.2.0 to v0.6.0.
