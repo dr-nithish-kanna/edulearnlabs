@@ -1,0 +1,98 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import GamePlayer from '../../components/GamePlayer.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import games from '../../data/games.json';
+import skills from '../../data/skills.json';
+import { url } from '../../config';
+
+const game = games.find(g => g.id === 'pattern-repeat-k')!;
+const skill = skills[game.skill as keyof typeof skills];
+const page = new URL(url('logic-games/pattern-repeat-for-kindergarten/'), Astro.site).href;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org', '@type': 'LearningResource', name: `${game.keywordTitle}: ${game.title}`,
+    url: page, description: game.summary, isAccessibleForFree: true, inLanguage: 'en',
+    learningResourceType: 'Educational game', educationalLevel: 'Kindergarten', typicalAgeRange: '5-6',
+    teaches: 'Seeing and continuing repeating patterns', timeRequired: 'PT3M', image: new URL(url(game.poster), Astro.site).href,
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: new URL(url(), Astro.site).href },
+      { '@type': 'ListItem', position: 2, name: 'Memory games', item: new URL(url('logic-games/'), Astro.site).href },
+      { '@type': 'ListItem', position: 3, name: game.keywordTitle, item: page },
+    ],
+  },
+];
+---
+<Base
+  title="Pattern Games for Kindergarten: Free Color and Shape Pattern Game for Ages 5 to 6 | EduLearnLabs"
+  description="A free pattern game for Kindergarten. Kids finish bead bracelets for a friendly spider by filling the gaps so the pattern keeps going. Builds early algebra thinking. Every bead has its own shape. No login."
+  path="logic-games/pattern-repeat-for-kindergarten/" nav="logic" image={game.poster} jsonLd={jsonLd}>
+
+  <Breadcrumbs back={{ name: 'Memory games', path: 'logic-games/' }}
+    items={[{ name: 'Home', path: '' }, { name: 'Memory games', path: 'logic-games/' }, { name: game.keywordTitle, path: 'logic-games/pattern-repeat-for-kindergarten/' }]} />
+
+  <h1>Pattern Games for Kindergarten</h1>
+  <p class="lead" style="font-size:20px;max-width:44em">Play <strong>{game.title}</strong>: help a friendly spider finish
+    bead bracelets by filling the gaps so the pattern keeps going. Five small bracelets, about 3 minutes, free.</p>
+
+  <GamePlayer game={game} topDifficulty={skill.topDifficulty}
+    posterAlt={`${game.title} game screen: a cozy craft room with a spider, a string of colorful beads with a gap, and a tray of beads in different colors and shapes`} />
+
+  <section class="prose">
+    <h2>What is Bead Parlor?</h2>
+    <p>Bead Parlor is a quiet craft room game. A friendly spider is stringing bracelets for the children who visit. Each
+      string has a gap or two, and a tray of beads waits below. Your child puts the right bead in each gap so the pattern
+      keeps going. When the string is full, the pattern plays as a little tune, one bead after another, the bracelet is
+      tied and it hops onto your child's own shelf.</p>
+
+    <h2>What kids learn</h2>
+    <p>Patterns are early algebra thinking. To continue red, blue, red, blue, a child has to notice that something repeats,
+      find the part that repeats and predict what comes next. That is the same habit of mind they will later use to
+      count by twos, spot a rule in a number list and see how a sentence is built. The first bracelets copy a short
+      pattern. Later ones need your child to continue it, then fill gaps in the middle, with longer repeats and more
+      kinds of beads.</p>
+
+    <h2>Who it is for</h2>
+    <p>Kindergarten children, usually ages 5 to 6, who like beads, colors and shapes. There is nothing to read. A short
+      voice asks "What comes next?" and never names the colors, so your child works it out by looking. It works on a
+      tablet, a computer or a phone held sideways.</p>
+
+    <h2>How to play</h2>
+    <ol>
+      <li>Press Play, then look at the string of beads.</li>
+      <li>Drag a bead from the tray into a gap. You can also tap a bead and then tap the gap, or use the keyboard.</li>
+      <li>A right bead clicks into place and plays its note. A bead that does not fit wobbles and hops back, with no buzzer and no red mark.</li>
+      <li>Stuck? Hazel the owl can help in small steps: first the start of the repeat pulses, then the next gap glows, then the beads you still need glow softly. She never places the bead for your child.</li>
+      <li>Fill every gap and the bracelet is finished. Your child always finishes it.</li>
+    </ol>
+
+    <h2>Every bead has a shape</h2>
+    <p>About 1 in 12 boys is color blind, so color alone would leave some children out. In Bead Parlor every color is
+      paired with its own shape: a circle, a square, a triangle, a star, a diamond or a heart. A child can read the
+      pattern by color, by shape or by both, and the game stays fair for everyone.</p>
+
+    <h2>Your bracelet shelf</h2>
+    <p>Every finished bracelet joins your child's shelf, even when it needed a few hints. The shelf is kept on this
+      device only. There is no score, no timer and no failure screen, and nothing is ever taken away.</p>
+
+    <h2>Why it helps</h2>
+    <p>Spotting a repeating unit is a skill children use long before formal math. The game keeps each bracelet within
+      reach: after a few bracelets finished without help, the patterns get longer, and after a few that needed a lot
+      of help, they step back. It is one small part of early math thinking, best next to patterns you find together
+      at home.</p>
+
+    <h2>Tips for parents</h2>
+    <ul>
+      <li>Say the pattern out loud together: "red, blue, red, blue, what comes next?"</li>
+      <li>Make patterns with real things: spoons and forks, socks, blocks, claps and stomps.</li>
+      <li>Trying a bead that does not fit is how children test a guess. Point to the string and ask which beads you can see.</li>
+    </ul>
+    <p class="note">More to play: see all <a href={url('logic-games/')}>free memory and logic games</a>, find matching pairs in <a href={url('logic-games/memory-match-for-preschool/')}>Memory
+      Games for Preschool and Kindergarten</a>, or practice counting with <a href={url('math-games/counting-for-preschool/')}>Counting Games for Preschool</a>.</p>
+  </section>
+
+  <AdSlot id="game-bottom" />
+</Base>
