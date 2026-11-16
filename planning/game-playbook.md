@@ -184,3 +184,17 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
   Kit gaps found by the game agent (go to an Opus kit release, v0.6.1): the friend never swaps to its happy pose, one picture per object kind so the second pebble drawing is unused,
   at 667x375 the level 4 "Give me N" bubble touches the Back button corner. Still to do: website side (progress store for the parade, game page, catalog, home card, privacy text),
   `framework-spec.md` update for tap-count, sync (`npm run sync-game -- ../count-objects-prek`), real-device touch and speech check, owner makes kit tags v0.2.0 to v0.6.0.
+
+## 13. Update 2026-11-16 (later): website support for Hedgehog Picnic (game 5)
+
+- Same recipe as Quilt Picnic (section 10). Game id `count-objects-prek`, kit v0.6.0 mechanic `tap-count` (plus fill on level 4),
+  reward type parade. Decisions: `planning/count-objects-decisions-log.md`.
+- Progress store: `parades[profile][game]` (own `v`, newer-schema guard, facts only, deduped by reward id, 200 cap that folds the oldest
+  into a count), `HostInit.parade = { animals }` (newest 64, oldest first), `kind: "animal"` rewards stored by `addSession`. Counting tips
+  for `skipped`, `off-by-one` and `off-by-two` on `math.counting.*` skills. Protocol stays 1.
+- Pages: `/math-games/counting-for-preschool/` (keyword title "Counting Games for Preschool", ages 3 to 5), link from the `/math-games/`
+  Pre-K section, catalog entry (source commit PENDING and poster `play/count-objects-prek/poster.webp` until the sync), skill
+  "Counting objects" (`topDifficulty` 4), home card from the data, privacy text names the parade. Sitemap is generated.
+- Smoke test: page checks plus a play round trip against the labelled STAND-IN frame; one `SKIPPED` line for the real game frame.
+- Next: sync the game after the kit update (`npm run sync-game -- ../count-objects-prek`), then `npm run build && npm run test:e2e` and look for
+  `[real game frame]` lines for Hedgehog Picnic and no Hedgehog `SKIPPED` line. Open: "My parade" parent page, real-device touch and speech check.
