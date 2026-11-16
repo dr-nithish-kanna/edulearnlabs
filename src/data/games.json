@@ -116,7 +116,7 @@
     ],
     "ages": "5 to 6",
     "skill": "logic-memory.patterns.repeat",
-    "mechanic": "slot-build",
+    "mechanic": "pattern-fill",
     "reward": "bracelet",
     "summary": "Help a friendly spider finish bead bracelets. Fill the gaps so the pattern keeps going, from simple red and blue to longer repeats. Every bead has its own shape too, and each finished bracelet joins your shelf.",
     "minutes": "2 to 4",
