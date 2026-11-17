@@ -162,6 +162,11 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
 - Open: owner reviews design defaults (title, `upAfterCorrect` 1, level 5 colour variants), real-device touch check, "My quilt" parent
   page, pair-match card art has the matched pair staying on the board (the preview showed matched cards collected top left).
 
+## 12a. Update 2026-11-15: parked ideas (Quilt Picnic)
+
+- Owner wants MVP focus. The matching-pairs family for advanced grades (kit v0.6.0 "two different faces" idea) and a longer Quilt Picnic session are saved in `planning/post-mvp-ideas.md`. Do not start them until the owner says development has reached those grades.
+- Quilt Picnic polish (mini quilt alignment, flap opening) is on the working branch; the owner has not yet asked for a PR for it.
+
 ## 12. Update 2026-11-15: game 5 planning started, Count objects (Hedgehog Picnic)
 
 - Owner chose MVP number 1 (Count objects 1 to 10, Pre-K). Picks: hedgehog cast, parade of animals reward, new `tap-count` kit mechanic.
