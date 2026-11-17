@@ -38,3 +38,5 @@
 
 Build order: Addition for Grade 1 (number 5) first, as the engine test and the template proving game. Done:
 live at `/math-games/addition-for-grade-1/`.
+
+Parked ideas that are not MVP (matching-pairs family for advanced grades, longer Quilt Picnic sessions): `planning/post-mvp-ideas.md`.

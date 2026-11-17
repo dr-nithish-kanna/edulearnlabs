@@ -162,6 +162,11 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
 - Open: owner reviews design defaults (title, `upAfterCorrect` 1, level 5 colour variants), real-device touch check, "My quilt" parent
   page, pair-match card art has the matched pair staying on the board (the preview showed matched cards collected top left).
 
+## 12a. Update 2026-11-15: parked ideas (Quilt Picnic)
+
+- Owner wants MVP focus. The matching-pairs family for advanced grades (kit v0.6.0 "two different faces" idea) and a longer Quilt Picnic session are saved in `planning/post-mvp-ideas.md`. Do not start them until the owner says development has reached those grades.
+- Quilt Picnic polish (mini quilt alignment, flap opening) is on the working branch; the owner has not yet asked for a PR for it.
+
 ## 12. Update 2026-11-15: game 5 planning started, Count objects (Hedgehog Picnic)
 
 - Owner chose MVP number 1 (Count objects 1 to 10, Pre-K). Picks: hedgehog cast, parade of animals reward, new `tap-count` kit mechanic.
@@ -204,6 +209,7 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
   (smoke test 178 ok on the throttled profile). Website `npm run build && npm run test:e2e`: PASS, 158 ok, 18 `[real game frame]` lines. Not merged to `main`, not deployed, no tag.
   Open: owner reviews and approves the PR into `main` (deploy), kit tags v0.2.0 to v0.6.1, poster crops the left edge on desktop (cosmetic), "My parade" parent page,
   real-device touch and speech check, other fill checks still use fixed sleeps.
+- 2026-11-17: owner found three problems on the live Hedgehog Picnic: the "Tap to play" focus ring looked misaligned (the 6px press edge ran into the ring), the Done bell overlapped the parade shelf, and nothing told the child to ring the bell. Fixed in kit v0.6.2 (ring wraps the press edge, CSS only) and v0.6.3 (bell in the bottom right corner, first-time cue "Ring the bell when you are done." with a pulse, idle nudge pulses the bell, `strings.ringBell`, `TapSkin.bellCue`). Kit `a06ba1290919f444ffd023b06e4510d1843f8629`, 284 unit tests, tap suite 253 and 256 ok, fill 327, word 66, pair 68. Game `count-objects-prek` at `5f9eb45` (245 ok on my run, measured bell gaps: 20 px to the shelf on a phone, bell 65 px). Website e2e PASS 158 ok. Lessons: look at every screenshot a smoke test saves, not a sample (the shelf overlap was visible in two I never opened); a new first-time cue needs a visual twin; the page-copy word-count check caught my own added sentence.
 
 ## 14. Update 2026-11-16: game 6 built unattended, Bead Parlor (Color pattern repeat, MVP 18)
 
@@ -221,6 +227,6 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
   bead reads the OLD string: wait for `reward` first, then `build` (my first smoke run failed on this, the game was fine). (3) Two sessions planned two
   games on the same day: check `git branch -r` and the Notion session log first. (4) A catalog `mechanic` written before the kit named it must be
   corrected afterwards (it said `slot-build`).
-- Open: owner approves a PR into `main` (not opened), kit tags v0.2.0 to v0.7.0, real tablet touch and speech check, parent "My bracelets" page,
+- Open: owner reviews and merges PR 13 into `main` (deploy), kit tags v0.2.0 to v0.7.0, real tablet touch and speech check, parent "My bracelets" page,
   the spider might scare some children (cast lives in `scripts/gen-skin.py`), level 4 look-alike shape trap not built, `package.json` of the game
   uses `file:../edulearnlabs-kit` until the tag exists.
