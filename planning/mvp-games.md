@@ -31,8 +31,8 @@
     done; the game build and poster arrive with `npm run sync-game -- ../memory-match-prek`.
 18. Color pattern repeat (Kindergarten). Built as "Bead Parlor" (game id `pattern-repeat-k`, bead patterns with a bracelet shelf as
     the reward, kit mechanic generalized from slot-build). Page at `/logic-games/pattern-repeat-for-kindergarten/`
-    (`logic-memory.patterns.repeat`, "Color and shape patterns"). Website side is done (2026-11-16, see
-    `planning/pattern-repeat-decisions-log.md`); the game build and poster arrive with `npm run sync-game -- ../pattern-repeat-k`.
+    (`logic-memory.patterns.repeat`, "Color and shape patterns"). **Live** since 2026-11-17 (PR 13 merged, deploy succeeded; see
+    `planning/pattern-repeat-decisions-log.md` and playbook section 14). Game repo `dr-nithish-kanna/pattern-repeat-k`, synced at `4165a65`, kit v0.7.0.
 19. Odd one out (Grade 1)
 20. Pattern completion (Grade 2)
 
