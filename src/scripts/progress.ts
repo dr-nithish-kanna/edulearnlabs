@@ -11,7 +11,9 @@ export type DistractorKind = 'off-by-one' | 'off-by-two' | 'wrong-operation';
 export type LetterMistake = 'letter-order' | 'wrong-vowel' | 'look-alike' | 'wrong-letter';
 /** Counting games (tap-count, kit v0.6.0, finish "done"): the Done bell was rung with objects still uncounted. Once a round at most. */
 export type CountMistake = 'skipped';
-export type MistakeKind = DistractorKind | LetterMistake | CountMistake;
+/** Pattern games (slot-build with beads, kit v0.7.0): `unit-order` is a bead of the pattern in the wrong spot, `outside-unit` a bead that is not in the pattern. */
+export type PatternMistake = 'unit-order' | 'outside-unit';
+export type MistakeKind = DistractorKind | LetterMistake | CountMistake | PatternMistake;
 
 export interface SessionRecord {
   id: string;
@@ -35,9 +37,10 @@ export interface SessionRecord {
   /**
    * Garden games: one seed per solved order (moved into `gardens`). Word wall games: one word card per solved word
    * (moved into `walls`). Quilt games: one patch per finished board (moved into `quilts`). Parade games: one animal per
-   * solved round (moved into `parades`). Never stored in the session itself.
+   * solved round (moved into `parades`). Bracelet games: one bracelet per finished string (moved into `bracelets`).
+   * Never stored in the session itself.
    */
-  rewards?: (Reward | WordReward | PatchReward | AnimalReward)[];
+  rewards?: (Reward | WordReward | PatchReward | AnimalReward | BraceletReward)[];
 }
 /**
  * A stored session never keeps `rewards` (they live in `gardens` and `walls`). It keeps `seeds`, the count of solved orders,
@@ -115,6 +118,21 @@ export interface Parade { v: 1; animals: ParadeAnimal[]; folded?: number }
 /** What the game receives in HostInit (kit `ParadeView`): animal slugs only, oldest first, newest 64 at most. No profile id, no times. */
 export interface ParadeView { animals: string[] }
 
+// ---------- Bracelet types (planning/pattern-repeat-design.md, section 7) ----------
+
+/**
+ * What a bead-pattern game reports per finished string (`BraceletReward`). Id is the session id plus the question index.
+ * `beads` are bead ids left to right (1 to 7). The same bead sequence repeats all the time (a pattern repeats), so rewards
+ * dedupe by `id`, never by `beads`.
+ */
+export interface BraceletReward { id: string; kind: 'bracelet'; beads: string[]; at: string }
+/** One bracelet on the shelf: a fact. `id` is the reward id (the dedupe key), `session` the session that earned it. */
+export interface ShelfBracelet { id: string; beads: string[]; at: string; session: string }
+/** v is the shelf's own schema number. `folded` counts the oldest bracelets dropped past the cap, so the total stays exact. */
+export interface Bracelets { v: 1; bracelets: ShelfBracelet[]; folded?: number }
+/** What the game receives in HostInit (kit `BraceletView`): bead id arrays only, oldest first, newest 64 at most. No profile id, no times. */
+export interface BraceletView { bracelets: string[][] }
+
 export interface Store {
   schema: 1;
   updatedAt: string;
@@ -132,6 +150,8 @@ export interface Store {
   quilts: Record<string, Record<string, Quilt>>;
   /** parades[profile][game]. Same rule as quilts: a parade with an unknown (newer) `v` is kept as is, never written to. */
   parades: Record<string, Record<string, Parade>>;
+  /** bracelets[profile][game]. Same rule as parades: a shelf with an unknown (newer) `v` is kept as is, never written to. */
+  bracelets: Record<string, Record<string, Bracelets>>;
   /**
    * Set when the saved document has a newer schema than this code understands (an old tab still open after a
    * deploy). The tab still works for this visit, but `save` never writes to storage, so newer data is never lost.
@@ -152,7 +172,7 @@ export const COLORS = ['orange', 'teal', 'pink', 'sky', 'sun', 'leaf'] as const;
 export const emptyStore = (): Store => ({
   schema: 1, updatedAt: new Date().toISOString(), activeProfile: null,
   settings: { audio: true, music: true, reducedMotion: false }, profiles: {}, sessions: [], totals: {}, gardens: {},
-  walls: {}, quilts: {}, parades: {},
+  walls: {}, quilts: {}, parades: {}, bracelets: {},
 });
 
 export function randomId(prefix: string): string {
@@ -187,6 +207,8 @@ export function parseStore(raw: string | null): Store {
       quilts: isObj(d.quilts) ? d.quilts : {},
       // And for parades: stores saved before tap-count existed get an empty default, no top-level schema bump.
       parades: isObj(d.parades) ? d.parades : {},
+      // And for bracelets: stores saved before bead games existed get an empty default, no top-level schema bump.
+      bracelets: isObj(d.bracelets) ? d.bracelets : {},
       activeProfile: d.activeProfile && d.profiles[d.activeProfile] ? d.activeProfile : null,
     };
     delete store.readOnly; // only this function decides that, never the stored document
@@ -229,6 +251,7 @@ export function deleteProfile(store: Store, id: string) {
   delete store.walls[id];
   delete store.quilts[id];
   delete store.parades[id];
+  delete store.bracelets[id];
   store.sessions = store.sessions.filter(s => s.profile !== id);
   if (store.activeProfile === id) store.activeProfile = Object.keys(store.profiles)[0] ?? null;
 }
@@ -265,6 +288,8 @@ export function addSession(store: Store, profile: string, record: unknown): bool
   const patches = validPatchRewards(record.rewards).slice(0, Math.max(0, record.questions));
   // One animal per solved round, and a tap-count question is a round, so never more animals than questions.
   const animals = validAnimalRewards(record.rewards).slice(0, Math.max(0, record.questions));
+  // One bracelet per finished string, and a pattern question is a string, so never more bracelets than questions.
+  const bracelets = validBraceletRewards(record.rewards).slice(0, Math.max(0, record.questions));
   store.sessions.push(stored);
   const mine = store.sessions.filter(s => s.profile === profile && s.game === record.game);
   for (const old of mine.slice(0, Math.max(0, mine.length - SESSIONS_KEPT))) {
@@ -276,6 +301,7 @@ export function addSession(store: Store, profile: string, record: unknown): bool
   if (words.length) pinWords(store, profile, record.game, record.id, words);
   if (patches.length) stitch(store, profile, record.game, record.id, patches);
   if (animals.length) march(store, profile, record.game, record.id, animals);
+  if (bracelets.length) threadBeads(store, profile, record.game, record.id, bracelets);
   return true;
 }
 
@@ -394,12 +420,14 @@ function harvestStrayRewards(store: Store) {
     const words = validWordRewards(s.rewards).slice(0, Math.max(0, s.questions));
     const patches = validPatchRewards(s.rewards).slice(0, Math.max(0, s.questions));
     const animals = validAnimalRewards(s.rewards).slice(0, Math.max(0, s.questions));
+    const bracelets = validBraceletRewards(s.rewards).slice(0, Math.max(0, s.questions));
     delete s.rewards;
     if (!store.profiles[s.profile]) continue;
     if (rewards.length) { s.seeds = rewards.length; plant(store, s.profile, s.game, s.id, rewards); }
     if (words.length) pinWords(store, s.profile, s.game, s.id, words);
     if (patches.length) stitch(store, s.profile, s.game, s.id, patches);
     if (animals.length) march(store, s.profile, s.game, s.id, animals);
+    if (bracelets.length) threadBeads(store, s.profile, s.game, s.id, bracelets);
   }
 }
 
@@ -599,11 +627,79 @@ export function paradeView(store: Store, profile: string, game: string): ParadeV
   return { animals: p.animals.filter(isParadeAnimal).map(x => x.animal).slice(-PARADE_VIEW_ANIMALS) };
 }
 
+// ---------- Bracelets (facts: which beads, when; the game draws the shelf) ----------
+
+export const BRACELETS_V = 1;
+/**
+ * Bracelets kept per child per game. One bracelet per finished string and about 5 strings a session, so 200 is about 40
+ * sessions. About 130 bytes a bracelet, so 200 is about 26 KB. Past the cap the OLDEST fold into `folded` (a count).
+ */
+export const BRACELETS_MAX = 200;
+/** Newest bracelets sent to the game (same as the quilt and the parade). */
+export const BRACELETS_VIEW = 64;
+/** A bracelet has 1 to 7 beads (a pattern string with gaps filled in). */
+export const BRACELET_MAX_BEADS = 7;
+
+/** Bead ids like "red" or "blue". Short lowercase slugs: they go back to the game and may be shown on a parent page. */
+const BEAD_RE = /^[a-z][a-z0-9-]{0,15}$/;
+const isBeadList = (b: unknown): b is string[] =>
+  Array.isArray(b) && b.length >= 1 && b.length <= BRACELET_MAX_BEADS && b.every(x => typeof x === 'string' && BEAD_RE.test(x));
+const validBraceletRewards = (list: unknown): BraceletReward[] => {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set<string>();
+  return list.filter((r): r is BraceletReward => isObj(r) && r.kind === 'bracelet' && typeof r.id === 'string' && r.id.length > 0 &&
+    r.id.length <= 64 && isBeadList(r.beads) && typeof r.at === 'string' && r.at.length <= 40 && !seen.has(r.id) && !!seen.add(r.id));
+};
+
+const isBraceletsV1 = (b: unknown): b is Bracelets => isObj(b) && b.v === BRACELETS_V && Array.isArray(b.bracelets);
+const isShelfBracelet = (x: unknown): x is ShelfBracelet => isObj(x) && isBeadList(x.beads);
+
+/** The shelf to write to, or null when a newer bracelet schema is stored (then we leave it alone). */
+function shelfFor(store: Store, profile: string, game: string): Bracelets | null {
+  if (!isObj(store.bracelets[profile])) store.bracelets[profile] = {}; // missing or corrupt; versions live one level down
+  const byGame = store.bracelets[profile];
+  // Missing or corrupt (not an object, or no `v` at all): start a fresh shelf. Anything with a `v` this code does not
+  // know is real data from newer code, so it is left alone.
+  const cur: unknown = byGame[game];
+  if (!isObj(cur) || !('v' in cur)) byGame[game] = { v: BRACELETS_V, bracelets: [] };
+  const b = byGame[game];
+  return isBraceletsV1(b) ? b : null;
+}
+
+/**
+ * Adds bracelets in the order they were earned. A reward id already on the shelf is skipped (merge = union by id), but
+ * a repeated BEAD SEQUENCE is normal and always kept. Order is the order of saving on this device, never the reward clock.
+ */
+function threadBeads(store: Store, profile: string, game: string, session: string, rewards: BraceletReward[]) {
+  const b = shelfFor(store, profile, game);
+  if (!b) return;
+  const have = new Set(b.bracelets.filter(isShelfBracelet).map(x => x.id));
+  for (const r of rewards) {
+    if (have.has(r.id)) continue;
+    b.bracelets.push({ id: r.id, beads: [...r.beads], at: r.at, session });
+    have.add(r.id);
+  }
+  const extra = b.bracelets.length - BRACELETS_MAX;
+  if (extra > 0) {
+    b.bracelets.splice(0, extra);
+    b.folded = (Number.isFinite(b.folded) ? b.folded! : 0) + extra;
+  }
+}
+
+/** The shelf as the game sees it (HostInit.bracelets): newest 64 at most, oldest first. Undefined when the stored shelf has a newer schema. */
+export function braceletView(store: Store, profile: string, game: string): BraceletView | undefined {
+  const byGame = store.bracelets[profile];
+  const b = isObj(byGame) ? byGame[game] : undefined;
+  if (b === undefined) return { bracelets: [] };
+  if (!isBraceletsV1(b)) return undefined;
+  return { bracelets: b.bracelets.filter(isShelfBracelet).map(x => [...x.beads]).slice(-BRACELETS_VIEW) };
+}
+
 // ---------- HostInit (the website side of the contract, kept pure so it can be unit tested) ----------
 
 /**
  * Everything HostInit carries apart from `type` and `protocol`. The catalog `reward` decides the extras:
- * "garden" adds the garden view, "wall" adds the word wall, "quilt" adds the quilt, "parade" adds the parade, anything
+ * "garden" adds the garden view, "wall" adds the word wall, "quilt" adds the quilt, "parade" adds the parade, "bracelet" adds the bracelets, anything
  * else (Pond Hop's "lights") adds nothing.
  * Never a profile id: the game only learns the avatar and color.
  */
@@ -612,6 +708,7 @@ export function hostInitFor(store: Store, p: Profile, game: string, reward: stri
   const wall = reward === 'wall' ? wallView(store, p.id, game) : undefined;
   const quilt = reward === 'quilt' ? quiltView(store, p.id, game) : undefined;
   const parade = reward === 'parade' ? paradeView(store, p.id, game) : undefined;
+  const bracelets = reward === 'bracelet' ? braceletView(store, p.id, game) : undefined;
   return {
     avatar: avatarOf(p).id, color: p.color,
     startLevel: startLevel(store, p.id, game), practiceItems: practiceItems(store, p.id, game), settings: store.settings,
@@ -619,8 +716,9 @@ export function hostInitFor(store: Store, p: Profile, game: string, reward: stri
     ...(wall ? { wall } : {}),
     ...(quilt ? { quilt } : {}),
     ...(parade ? { parade } : {}),
+    ...(bracelets ? { bracelets } : {}),
   } as { avatar: string; color: string; startLevel: number; practiceItems: string[]; settings: Settings;
-    garden?: GardenView; wall?: WallView; quilt?: QuiltView; parade?: ParadeView };
+    garden?: GardenView; wall?: WallView; quilt?: QuiltView; parade?: ParadeView; bracelets?: BraceletView };
 }
 
 // ---------- Derived values (opinions) ----------
@@ -701,6 +799,14 @@ const COUNT_TIPS: Record<string, string> = {
   'off-by-two': 'Sometimes lands two away. Count together slowly, moving each counted object a little to one side.',
 };
 
+/**
+ * Pattern games (beads, kit v0.7.0). Written for a parent of a 5 to 6 year old. Warm, short, no blame.
+ */
+const PATTERN_TIPS: Record<PatternMistake, string> = {
+  'unit-order': 'Your child knew the colors but is still working out the order. Say the pattern out loud together: red, blue, red, blue.',
+  'outside-unit': 'Your child tried a bead that is not in the pattern. Point to the string and ask which beads you can see there.',
+};
+
 /** Plain words for parents: which mistake shows up most for this skill, if any shows up often. */
 export function mistakeTip(store: Store, profile: string, skill: string): string | null {
   const counts: Record<string, number> = {};
@@ -709,6 +815,7 @@ export function mistakeTip(store: Store, profile: string, skill: string): string
   const [kind, n] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0] ?? [];
   if (!kind || n < 3) return null;
   if (kind === 'wrong-operation' && skill.startsWith('math.subtraction.')) return WRONG_OPERATION_TIPS.subtraction;
+  if (skill.startsWith('logic-memory.patterns.') && Object.prototype.hasOwnProperty.call(PATTERN_TIPS, kind)) return PATTERN_TIPS[kind as PatternMistake];
   if (skill.startsWith('math.counting.') && Object.prototype.hasOwnProperty.call(COUNT_TIPS, kind)) return COUNT_TIPS[kind];
   const tips: Record<string, string> = {
     'off-by-one': 'Often lands one away from the answer. Counting on fingers or dots, slowly, helps.',

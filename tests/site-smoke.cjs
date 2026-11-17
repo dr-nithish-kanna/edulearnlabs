@@ -31,6 +31,10 @@ const MEMORY_SYNCED = fs.existsSync(path.join(DIST, 'play', MEMORY, 'index.html'
 // round trip runs against a labelled STAND-IN frame until `npm run sync-game -- ../count-objects-prek` is done.
 const COUNT = 'count-objects-prek';
 const COUNT_SYNCED = fs.existsSync(path.join(DIST, 'play', COUNT, 'index.html'));
+// Bead Parlor (pattern-repeat-k) follows the same recipe: pages and the bracelet store need no build, the play round trip runs
+// against a labelled STAND-IN frame until `npm run sync-game -- ../pattern-repeat-k` is done.
+const BEADS = 'pattern-repeat-k';
+const BEADS_SYNCED = fs.existsSync(path.join(DIST, 'play', BEADS, 'index.html'));
 const skipped = [];
 const skip = msg => { console.log(`SKIPPED: game build not synced: ${msg}`); skipped.push(msg); };
 let unsyncedMisses = 0; // requests for the missing builds (poster, manifest) that 404 before the sync
@@ -83,11 +87,13 @@ async function playFullGame(page) {
     if (!WORD_SYNCED && (m.location().url || '').includes(`/play/${WORD}/`)) { unsyncedMisses++; return; }
     if (!MEMORY_SYNCED && (m.location().url || '').includes(`/play/${MEMORY}/`)) { unsyncedMisses++; return; }
     if (!COUNT_SYNCED && (m.location().url || '').includes(`/play/${COUNT}/`)) { unsyncedMisses++; return; }
+    if (!BEADS_SYNCED && (m.location().url || '').includes(`/play/${BEADS}/`)) { unsyncedMisses++; return; }
     errors.push(m.text());
   });
   if (!WORD_SYNCED) console.log(`SKIPPED: game build not synced: dist/play/${WORD}/ is missing, so the Letter Workshop play checks below are skipped. Run npm run sync-game -- ../${WORD}, then npm run build && npm run test:e2e.`);
   if (!MEMORY_SYNCED) console.log(`SKIPPED: game build not synced: dist/play/${MEMORY}/ is missing, so the real-game Quilt Picnic checks are replaced by STAND-IN frame checks below (labelled). Run npm run sync-game -- ../${MEMORY}, then npm run build && npm run test:e2e.`);
   if (!COUNT_SYNCED) console.log(`SKIPPED: game build not synced: dist/play/${COUNT}/ is missing, so the real-game Hedgehog Picnic checks are replaced by STAND-IN frame checks below (labelled). Run npm run sync-game -- ../${COUNT}, then npm run build && npm run test:e2e.`);
+  if (!BEADS_SYNCED) console.log(`SKIPPED: game build not synced: dist/play/${BEADS}/ is missing, so the real-game Bead Parlor checks are replaced by STAND-IN frame checks below (labelled). Run npm run sync-game -- ../${BEADS}, then npm run build && npm run test:e2e.`);
   await page.addInitScript(() => {
     window.__cls = 0;
     new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; })
@@ -110,7 +116,7 @@ async function playFullGame(page) {
 
   // Every page: one H1, a title, a description, no layout shift.
   for (const p of ['', 'math-games/', 'math-games/addition-for-grade-1/', 'math-games/subtraction-for-grade-1/', 'math-games/counting-for-preschool/',
-    'language-games/', 'language-games/word-building-for-grade-1/', 'logic-games/', 'logic-games/memory-match-for-preschool/',
+    'language-games/', 'language-games/word-building-for-grade-1/', 'logic-games/', 'logic-games/memory-match-for-preschool/', 'logic-games/pattern-repeat-for-kindergarten/',
     'grown-ups/', 'privacy/']) {
     const t0 = Date.now();
     await page.goto(origin + BASE + p, { waitUntil: 'load' });
@@ -244,7 +250,7 @@ async function playFullGame(page) {
   check(home.includes('3 games ready, 5 on the way') && home.includes('1 game ready, 7 on the way'),
     'home page counts: math 3 ready 5 on the way (Count objects is off the coming-soon list), reading 1 ready 7 on the way');
   check(await page.locator(`main a.subject-card[href="${BASE}language-games/"]`).count() === 1, 'home page Reading games card links to /language-games/');
-  check(home.includes('1 game ready, 3 on the way'), 'home page counts: logic 1 ready 3 on the way (Memory flip cards is off the coming-soon list)');
+  check(home.includes('2 games ready, 2 on the way'), 'home page counts: logic 2 ready 2 on the way (Memory flip cards and Color pattern repeat are off the coming-soon list)');
   check(await page.locator(`main a.subject-card[href="${BASE}logic-games/"]`).count() === 1, 'home page Logic and memory card links to /logic-games/');
   check(await page.locator(`main a.game-card[href="${BASE}logic-games/memory-match-for-preschool/"]`).count() === 1, 'home page lists Quilt Picnic');
   check(await page.locator(`.site-header nav a[href="${BASE}logic-games/"]`).innerText() === 'Memory games' &&
@@ -538,6 +544,114 @@ async function playFullGame(page) {
   await gameFrame().evaluate(() => parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin));
   await page.locator('.overlay').waitFor({ state: 'hidden' });
 
+  // ---------- Bead Parlor: logic category, game page, home, sitemap, privacy (no game build needed) ----------
+  await page.goto(origin + BASE);
+  check(await page.locator(`main a.game-card[href="${BASE}logic-games/pattern-repeat-for-kindergarten/"]`).count() === 1, 'home page lists Bead Parlor');
+  await page.goto(origin + BASE + 'logic-games/');
+  check(await page.locator(`.grid a.game-card[href="${BASE}logic-games/pattern-repeat-for-kindergarten/"]`).count() === 1 &&
+    await page.locator('.grid a.game-card').count() === 2, 'logic category page: lists Bead Parlor next to Quilt Picnic (2 games)');
+  const logicSoon2 = await page.locator('.soon-list').innerText();
+  check(!/Color pattern repeat/.test(logicSoon2) && /Odd one out/.test(logicSoon2), 'logic category page: Color pattern repeat is off the coming-soon list');
+  check(await page.locator(`main section.prose a[href="${BASE}logic-games/pattern-repeat-for-kindergarten/"]`).count() >= 1, 'logic category page: the text links to the pattern game');
+  await page.goto(origin + BASE + 'logic-games/pattern-repeat-for-kindergarten/');
+  check(await page.locator('h1').count() === 1 && await page.locator('h1').innerText() === 'Pattern Games for Kindergarten', 'bead game page: one H1, the keyword title');
+  const beadTitle = await page.title();
+  check(beadTitle.startsWith('Pattern Games for Kindergarten') && /Ages 5 to 6/.test(beadTitle) && /Pattern Game/.test(beadTitle) && beadTitle.includes('EduLearnLabs'), `bead game page: title has keyword, age and brand "${beadTitle}"`);
+  check((await page.locator('meta[name=description]').getAttribute('content') || '').length > 80, 'bead game page: has a meta description');
+  check(await page.locator('.site-header a[aria-current="page"]').innerText() === 'Memory games', 'bead game page: Memory games is the current nav item');
+  check(await page.locator(`.crumbs a.back[href="${BASE}logic-games/"]`).count() === 1, 'bead game page: back button goes to Memory games');
+  const beadWords = await words('main section.prose');
+  check(beadWords >= 300 && beadWords <= 600, `bead game page: ${beadWords} words of text (target 300 to 600)`);
+  check(await page.locator(`[data-game-player][data-game="${BEADS}"][data-reward="bracelet"]`).count() === 1, 'bead game page: player is wired with reward "bracelet"');
+  check(await page.locator(`[data-game-player][data-src$="/play/${BEADS}/index.html"]`).count() === 1, 'bead game page: play path is /play/pattern-repeat-k/');
+  check(await page.locator('.player img').getAttribute('src') === `${BASE}play/${BEADS}/poster.webp` && await page.locator('.player img').getAttribute('width') === '1200',
+    'bead game page: poster image with fixed size (no layout shift)');
+  const beadOrder = await page.evaluate(() => {
+    const text = document.querySelector('main section.prose'), player = document.querySelector('[data-game-player]');
+    return !!(player.compareDocumentPosition(text) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  check(beadOrder && await page.locator('iframe').count() === 0, 'bead game page: text comes after the player and no game frame exists before Play');
+  check(await page.locator(`main a[href="${BASE}logic-games/"]`).count() >= 1 &&
+    await page.locator(`main a[href="${BASE}logic-games/memory-match-for-preschool/"]`).count() >= 1 &&
+    await page.locator(`main a[href="${BASE}math-games/counting-for-preschool/"]`).count() >= 1, 'bead game page: links to the category, Quilt Picnic and the counting game');
+  const beadText = await page.locator('main').innerText();
+  check(/bracelet/i.test(beadText) && /kept on this device only/.test(beadText), 'bead game page: explains the bracelet shelf stays on this device');
+  check(/shape/i.test(beadText) && /color blind/i.test(beadText) && /algebra/i.test(beadText), 'bead game page: says patterns are early algebra and that every bead has a shape for color-blind children');
+  check(!/[\u2013\u2014]/.test(beadText), 'bead game page: no em dashes or en dashes');
+  check(!/price|subscri|\$\d|https?:\/\/|\bads?\b|advert/i.test(beadText) && await page.locator('main a[href^="http"]').count() === 0, 'bead game page: no prices, no ads and no external links');
+  const sitemap4 = fs.readdirSync(DIST).filter(f => /^sitemap-\d+\.xml$/.test(f)).map(f => fs.readFileSync(path.join(DIST, f), 'utf8')).join('');
+  check(sitemap4.includes('/logic-games/pattern-repeat-for-kindergarten/</loc>') && !sitemap4.includes('/play/'), 'sitemap lists the bead game page, and no /play/ files');
+  await page.goto(origin + BASE + 'privacy/');
+  check(/Bead Parlor shelf/.test(await page.locator('main').innerText()) && /bracelets/.test(await page.locator('main').innerText()), 'privacy page mentions the Bead Parlor bracelets');
+
+  // ---------- Bead Parlor: play round trip ----------
+  // Same STAND-IN trick as the other games: until the sync, the frame is the site's own 404 page posting GameReady itself.
+  // It proves the WEBSITE side (HostInit.bracelets, bracelet rewards) but NOT the game.
+  const beadLabel = BEADS_SYNCED ? 'real game frame' : 'STAND-IN frame (game build not synced)';
+  const openBeads = async () => {
+    await page.goto(origin + BASE + 'logic-games/pattern-repeat-for-kindergarten/');
+    await page.locator('[data-play]').click({ force: true });
+    await page.locator('#player-picker .pick').nth(1).click();
+    if (!BEADS_SYNCED) {
+      await page.locator('.overlay iframe').waitFor();
+      const f = page.frames().filter(fr => fr.url().includes('/play/')).at(-1);
+      await f.waitForLoadState('load');
+      await f.evaluate(() => parent.postMessage({ type: 'GameReady' }, location.origin));
+    }
+    return hostInit();
+  };
+  const b1 = await openBeads();
+  check(JSON.stringify(b1.bracelets) === '{"bracelets":[]}' && !('garden' in b1) && !('wall' in b1) && !('quilt' in b1) && !('parade' in b1),
+    `[${beadLabel}] HostInit carries an empty shelf and no garden, wall, quilt or parade: ${JSON.stringify(b1.bracelets)}`);
+  check(!JSON.stringify(b1).includes('p_'), `[${beadLabel}] HostInit for a bracelet game carries no profile id`);
+  check(b1.protocol === 1, `[${beadLabel}] HostInit protocol stays 1`);
+  await gameFrame().evaluate(() => {
+    const at = new Date().toISOString();
+    const session = { id: 's_e2ebeads', game: 'pattern-repeat-k', gameVersion: '1.0.0', skill: 'logic-memory.patterns.repeat',
+      startedAt: at, durationSec: 170, questions: 5, firstTry: 3, levelStart: 1, levelEnd: 3, maxDifficulty: 3, completed: true,
+      missed: ['p-abab'], mistakes: { 'unit-order': 1, 'outside-unit': 2 }, hints: 2, dragPath: [1],
+      rewards: [
+        { id: 's_e2ebeads-0', kind: 'bracelet', beads: ['red', 'blue', 'red', 'blue'], at },
+        { id: 's_e2ebeads-1', kind: 'bracelet', beads: ['red', 'red', 'blue', 'red', 'red', 'blue', 'red'], at },
+        { id: 's_e2ebeads-2', kind: 'bracelet', beads: ['red', 'blue', 'red', 'blue'], at }, // the same bead sequence again: kept
+        { id: 's_e2ebeads-3', kind: 'bracelet', beads: ['<b>'], at }, { id: 's_e2ebeads-4', kind: 'bracelet', beads: [], at },
+        { id: 's_e2ebeads-5', kind: 'bracelet', beads: ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'], at }, // 8 beads: too long
+        { id: 's_e2ebeads-6', kind: 'charm', beads: ['red'], at },
+        { id: 's_e2ebeads-0', kind: 'bracelet', beads: ['green'], at }, // the same reward id twice: kept once
+      ] };
+    parent.postMessage({ type: 'GameCompleted', session }, location.origin);
+    parent.postMessage({ type: 'GameCompleted', session }, location.origin); // a repeated message must not add twice
+    parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin);
+  });
+  await page.locator('.overlay').waitFor({ state: 'hidden' });
+  const bs = await page.evaluate(() => JSON.parse(localStorage.getItem('ell:v1')));
+  const bsess = bs.sessions.find(x => x.id === 's_e2ebeads');
+  const bshelf = bs.bracelets?.[bsess?.profile]?.['pattern-repeat-k'];
+  check(bsess && bsess.hints === 2 && bsess.mistakes['unit-order'] === 1 && bsess.mistakes['outside-unit'] === 2 && !('rewards' in bsess) && !('dragPath' in bsess) && !bsess.seeds,
+    `[${beadLabel}] bead session saved: hints and both mistake kinds kept, rewards moved out, unknown field dropped`);
+  check(bshelf && bshelf.v === 1 && bshelf.bracelets.map(x => x.beads.join('-')).join() === 'red-blue-red-blue,red-red-blue-red-red-blue-red,red-blue-red-blue',
+    `[${beadLabel}] shelf stored once per reward id, a repeated bead sequence kept, junk and unknown kinds dropped: ${JSON.stringify(bshelf && bshelf.bracelets.map(x => x.beads.join('-')))}`);
+  check(!bs.bracelets?.[firstProfile]?.['pattern-repeat-k'], `[${beadLabel}] the other child's shelf is untouched`);
+  check(!Object.values(bs.walls || {}).some(w => w['pattern-repeat-k']) && !Object.values(bs.gardens || {}).some(gd => gd['pattern-repeat-k']) &&
+    !Object.values(bs.quilts || {}).some(q => q['pattern-repeat-k']) && !Object.values(bs.parades || {}).some(q => q['pattern-repeat-k']),
+    `[${beadLabel}] a bracelet game makes no garden, word wall, quilt or parade`);
+  const b2 = await openBeads();
+  check(JSON.stringify(b2.bracelets) === '{"bracelets":[["red","blue","red","blue"],["red","red","blue","red","red","blue","red"],["red","blue","red","blue"]]}',
+    `[${beadLabel}] next HostInit shows the shelf as bead id arrays, oldest first: ${JSON.stringify(b2.bracelets)}`);
+  check(b2.startLevel === 2 && JSON.stringify(b2.practiceItems) === '["p-abab"]', `[${beadLabel}] next HostInit starts one level lower and brings back the missed pattern: ${b2.startLevel} ${JSON.stringify(b2.practiceItems)}`);
+  await gameFrame().evaluate(() => parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin));
+  await page.locator('.overlay').waitFor({ state: 'hidden' });
+  if (!BEADS_SYNCED) skip('Bead Parlor real game frame: the build sends GameReady, HostInit.bracelets reaches it and its own GameCompleted stores bracelets (run after sync-game)');
+  // The parade and quilt games must not get bracelets.
+  const c3 = await openCount();
+  check(!('bracelets' in c3), `[${countLabel}] Hedgehog Picnic HostInit carries no bracelets`);
+  await gameFrame().evaluate(() => parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin));
+  await page.locator('.overlay').waitFor({ state: 'hidden' });
+  const q4 = await openMemory();
+  check(!('bracelets' in q4), `[${memLabel}] Quilt Picnic HostInit carries no bracelets`);
+  await gameFrame().evaluate(() => parent.postMessage({ type: 'GameExit', reason: 'home' }, location.origin));
+  await page.locator('.overlay').waitFor({ state: 'hidden' });
+
   // ---------- Word wall store round trip through the built site (no game build needed) ----------
   // A store saved by this code's future self: a wall, a garden, a wall with a newer sub-schema and letter mistakes.
   // The Grown-ups page loads it, saves it (adding a player), and must keep every wall byte for byte.
@@ -558,7 +672,14 @@ async function playFullGame(page) {
         'memory-match-k': { v: 7, squares: ['newer code wrote this'] } } },
       parades: { p_wall: {
         'count-objects-prek': { v: 1, animals: [{ id: 's_c1-0', animal: 'chick', at, session: 's_c1' }, { id: 's_c1-1', animal: 'chick', at, session: 's_c1' }], folded: 4 },
-        'count-to-20-k': { v: 5, herd: ['newer code wrote this'] } } } };
+        'count-to-20-k': { v: 5, herd: ['newer code wrote this'] } } },
+      bracelets: { p_wall: {
+        'pattern-repeat-k': { v: 1, bracelets: [{ id: 's_b1-0', beads: ['red', 'blue', 'red', 'blue'], at, session: 's_b1' },
+          { id: 's_b1-1', beads: ['red', 'blue', 'red', 'blue'], at, session: 's_b1' }], folded: 2 },
+        'pattern-repeat-g1': { v: 4, strings: ['newer code wrote this'] } } } };
+    doc.sessions.push({ id: 's_b1', game: 'pattern-repeat-k', gameVersion: '1.0.0', skill: 'logic-memory.patterns.repeat', startedAt: at,
+      durationSec: 150, questions: 5, firstTry: 2, levelStart: 2, levelEnd: 2, maxDifficulty: 2, completed: true, missed: [],
+      mistakes: { 'unit-order': 3 }, hints: 3, profile: 'p_wall' });
     doc.sessions.push({ id: 's_c1', game: 'count-objects-prek', gameVersion: '1.0.0', skill: 'math.counting.count-objects', startedAt: at,
       durationSec: 150, questions: 6, firstTry: 3, levelStart: 3, levelEnd: 3, maxDifficulty: 3, completed: true, missed: [],
       mistakes: { skipped: 3 }, hints: 3, profile: 'p_wall' });
@@ -574,6 +695,8 @@ async function playFullGame(page) {
   check(guWords.includes('Matching pairs'), 'Grown-ups shows the Matching pairs skill');
   check(JSON.stringify(after.parades) === JSON.stringify(seeded.parades), 'parade store round trip: load and save keep parades (a repeated animal, the folded count and a newer-v parade) byte for byte');
   check(guWords.includes('Counting objects') && guWords.includes('count them all'), 'Grown-ups shows the Counting objects skill and the skipped tip');
+  check(JSON.stringify(after.bracelets) === JSON.stringify(seeded.bracelets), 'bracelet store round trip: load and save keep bracelets (a repeated bead sequence, the folded count and a newer-v shelf) byte for byte');
+  check(guWords.includes('Color and shape patterns') && guWords.includes('working out the order'), 'Grown-ups shows the Color and shape patterns skill and the unit-order tip');
   check(after.schema === 1 && Object.keys(after.profiles).length === 2 && JSON.stringify(after.walls) === JSON.stringify(seeded.walls) &&
     JSON.stringify(after.gardens) === JSON.stringify(seeded.gardens), 'word wall store round trip: load and save keep walls (and a newer-v wall) and gardens unchanged');
   const delBtn = page.locator('[data-delete="p_wall"]');
@@ -585,8 +708,9 @@ async function playFullGame(page) {
     'deleting a player (hold to confirm) deletes their word wall, garden and sessions');
   check(!gone.quilts.p_wall, 'deleting a player (hold to confirm) deletes their quilt too');
   check(gone.parades && !gone.parades.p_wall, 'deleting a player (hold to confirm) deletes their parade too');
+  check(gone.bracelets && !gone.bracelets.p_wall, 'deleting a player (hold to confirm) deletes their bracelets too');
 
-  if (!WORD_SYNCED || !MEMORY_SYNCED || !COUNT_SYNCED) console.log(`SKIPPED: game build not synced: ${skipped.length} play check(s) skipped, ${unsyncedMisses} request(s) for the missing build answered 404 and were not counted as errors.`);
+  if (!WORD_SYNCED || !MEMORY_SYNCED || !COUNT_SYNCED || !BEADS_SYNCED) console.log(`SKIPPED: game build not synced: ${skipped.length} play check(s) skipped, ${unsyncedMisses} request(s) for the missing build answered 404 and were not counted as errors.`);
   check(errors.length === 0, `no console errors${errors.length ? ': ' + errors.join(' | ') : ''}`);
   console.log(failures ? `\n${failures} check(s) failed` : '\nPASS');
   await browser.close(); server.close();
