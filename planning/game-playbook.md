@@ -227,6 +227,12 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
   bead reads the OLD string: wait for `reward` first, then `build` (my first smoke run failed on this, the game was fine). (3) Two sessions planned two
   games on the same day: check `git branch -r` and the Notion session log first. (4) A catalog `mechanic` written before the kit named it must be
   corrected afterwards (it said `slot-build`).
-- Open: owner reviews and merges PR 13 into `main` (deploy), kit tags v0.2.0 to v0.7.0, real tablet touch and speech check, parent "My bracelets" page,
+- 2026-11-17: **LIVE.** Owner asked for PR 13 ([dr-nithish-kanna/edulearnlabs#13](https://github.com/dr-nithish-kanna/edulearnlabs/pull/13)) to be merged; merged into `main` as `70a7234`.
+  Deploy run 14 of "Deploy website to GitHub Pages" succeeded (build and deploy-pages jobs). Checked on the live site: game page 200, H1 "Pattern Games for Kindergarten",
+  `play/pattern-repeat-k/` and every file in its manifest 200, `BUILD_INFO` game commit `4165a65`, page in the sitemap and linked from `/logic-games/`.
+  Not checked live: actually playing it there (website tests ran the real game frame before the merge). Before the merge, `main` had moved (Hedgehog Picnic and Quilt Picnic polish),
+  so the branch merged `main` in first; the only conflict was this playbook (kept both updates). Lessons: (5) a sandbox that blocks the live domain gives curl `000` (blocked connection),
+  not a 404: allow the host in the cloud environment, then check; (6) count page words with an HTML parser, not a regex on one-line HTML.
+- Open: kit tags v0.2.0 to v0.7.0 (then re-pin the games), real tablet touch and speech check, parent "My bracelets" page,
   the spider might scare some children (cast lives in `scripts/gen-skin.py`), level 4 look-alike shape trap not built, `package.json` of the game
   uses `file:../edulearnlabs-kit` until the tag exists.
