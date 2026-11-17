@@ -553,7 +553,9 @@ commit or push unless the owner asks (or the implementation prompt says so).
 
 **LOCKED 2026-11-17: the owner took every recommendation ("Your recommendation").** That means 8(a) distinctness
 bands, 10(a) 10 rounds and 180 s, 11(a) move down after 2 narrow-rung rounds, 3(a) muted play costs one hint,
-12(a) kit patch v0.6.2 before v0.7.0, 14 "zee". Decisions 19 (reward words) and 18 (carriers) are checked in the art preview.
+12(a) kit patch v0.6.2 before v0.7.0, 14 "zee". Decisions 19 (reward words) and 18 (carriers) were checked in the art preview
+(`brand/letter-tap/`) and APPROVED the same day with the recommendations: the 26 words as drawn (Q is "quilt"), train on the
+top track in play and an 8-car strip on the end screen, cars show the letter and picture only, no word.
 
 Default = my recommendation, except where it differs from an explicit owner pick; then the default is the owner's pick
 and the recommendation is noted.
