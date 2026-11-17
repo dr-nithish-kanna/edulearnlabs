@@ -1,7 +1,10 @@
 # MVP: 20 games, Pre-K to Grade 2
 
 ## Math (8)
-1. Count objects 1 to 10 (Pre-K)
+1. Count objects 1 to 10 (Pre-K). Game 5, built as "Hedgehog Picnic" on 2026-11-16 (tap-count mechanic, kit v0.6.0, plus
+   fill-container "give me N" on level 4, parade of baby animals reward). Page at `/math-games/counting-for-preschool/`
+   (`math.counting.count-objects`). Website side is done; the game build and poster arrive with
+   `npm run sync-game -- ../count-objects-prek`.
 2. Shape matching (Pre-K)
 3. Count to 20 (Kindergarten)
 4. Add with objects (Kindergarten)

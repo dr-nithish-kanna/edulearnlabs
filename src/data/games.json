@@ -59,7 +59,7 @@
     "poster": "play/word-building-grade-1/poster.webp",
     "source": {
       "repo": "dr-nithish-kanna/word-building-grade-1",
-      "commit": "36d8b2e"
+      "commit": "7b99af9"
     }
   },
   {
@@ -82,6 +82,27 @@
     "source": {
       "repo": "dr-nithish-kanna/memory-match-prek",
       "commit": "6e78bc7"
+    }
+  },
+  {
+    "id": "count-objects-prek",
+    "title": "Hedgehog Picnic",
+    "keywordTitle": "Counting Games for Preschool",
+    "category": "math-games",
+    "slug": "counting-for-preschool",
+    "grade": [
+      "prek"
+    ],
+    "ages": "3 to 5",
+    "skill": "math.counting.count-objects",
+    "mechanic": "tap-count",
+    "reward": "parade",
+    "summary": "Tap each apple, pebble or acorn once to count it for a hungry picnic friend, then say how many. Count from 2 up to 10, with gentle count-along hints and a parade of baby animals.",
+    "minutes": "2 to 3",
+    "poster": "play/count-objects-prek/poster.webp",
+    "source": {
+      "repo": "dr-nithish-kanna/count-objects-prek",
+      "commit": "a7c04f6"
     }
   }
 ]
