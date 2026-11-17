@@ -210,3 +210,23 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
   Open: owner reviews and approves the PR into `main` (deploy), kit tags v0.2.0 to v0.6.1, poster crops the left edge on desktop (cosmetic), "My parade" parent page,
   real-device touch and speech check, other fill checks still use fixed sleeps.
 - 2026-11-17: owner found three problems on the live Hedgehog Picnic: the "Tap to play" focus ring looked misaligned (the 6px press edge ran into the ring), the Done bell overlapped the parade shelf, and nothing told the child to ring the bell. Fixed in kit v0.6.2 (ring wraps the press edge, CSS only) and v0.6.3 (bell in the bottom right corner, first-time cue "Ring the bell when you are done." with a pulse, idle nudge pulses the bell, `strings.ringBell`, `TapSkin.bellCue`). Kit `a06ba1290919f444ffd023b06e4510d1843f8629`, 284 unit tests, tap suite 253 and 256 ok, fill 327, word 66, pair 68. Game `count-objects-prek` at `5f9eb45` (245 ok on my run, measured bell gaps: 20 px to the shelf on a phone, bell 65 px). Website e2e PASS 158 ok. Lessons: look at every screenshot a smoke test saves, not a sample (the shelf overlap was visible in two I never opened); a new first-time cue needs a visual twin; the page-copy word-count check caught my own added sentence.
+
+## 14. Update 2026-11-16: game 6 built unattended, Bead Parlor (Color pattern repeat, MVP 18)
+
+- Planning was attended (ideas, design doc, art preview, all approved by "defaults" and picks), the build ran unattended while the owner slept.
+  Design: `planning/pattern-repeat-design.md`. Kit design pass by an Opus agent: `planning/token-slot-design.md` (picked option b, a thin
+  `pattern-fill` runner over the unchanged slot-build reducer, so Letter Workshop is untouched). Website decisions: `planning/pattern-repeat-decisions-log.md`.
+- Kit v0.7.0 at `8998e682ba0017923031d0f3cbf60932fc595f0e` on kit branch `claude/upbeat-davinci-c55nml` (untagged, owner makes tags). Verified here:
+  330 of 330 unit tests, typecheck clean. Game repo `dr-nithish-kanna/pattern-repeat-k` (owner created it, branch `claude/upbeat-davinci-c55nml`),
+  synced at game commit `4165a65`. Game smoke test on the throttled profile passes (full 5-bracelet session, every level, 667x375 phone, no console
+  errors, no storage). Before Play 56.5 KB, entry JS 18.3 KB. Website: 89 of 89 progress tests, `npm run build && npm run test:e2e` PASS, 196 ok,
+  5 `[real game frame]` lines for Bead Parlor, no SKIPPED, 0 FAIL.
+- Pages: `/logic-games/pattern-repeat-for-kindergarten/`, skill `logic-memory.patterns.repeat`, reward `bracelet` (store `bracelets[profile][game]`).
+- Lessons: (1) **Ask for the game repo at the START of a game**, not when the code is ready (owner asked for this). The session could not create a repo or
+  attach one until the owner made it empty; `add_repo` with push access then worked. (2) A test that waits for the `build` phase right after the last
+  bead reads the OLD string: wait for `reward` first, then `build` (my first smoke run failed on this, the game was fine). (3) Two sessions planned two
+  games on the same day: check `git branch -r` and the Notion session log first. (4) A catalog `mechanic` written before the kit named it must be
+  corrected afterwards (it said `slot-build`).
+- Open: owner reviews and merges PR 13 into `main` (deploy), kit tags v0.2.0 to v0.7.0, real tablet touch and speech check, parent "My bracelets" page,
+  the spider might scare some children (cast lives in `scripts/gen-skin.py`), level 4 look-alike shape trap not built, `package.json` of the game
+  uses `file:../edulearnlabs-kit` until the tag exists.

@@ -44,5 +44,14 @@
       "prek"
     ],
     "topDifficulty": 4
+  },
+  "logic-memory.patterns.repeat": {
+    "name": "Color and shape patterns",
+    "parentLabel": "Seeing a repeating pattern and continuing it",
+    "subject": "logic",
+    "grade": [
+      "k"
+    ],
+    "topDifficulty": 5
   }
 }

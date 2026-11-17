@@ -29,7 +29,10 @@
 17. Memory flip cards (Pre-K to Kindergarten). Built as "Quilt Picnic" on 2026-11-13 (pair-match mechanic, kit v0.5.0,
     quilt reward). Page at `/logic-games/memory-match-for-preschool/` (`logic-memory.memory.matching-pairs`). Website side is
     done; the game build and poster arrive with `npm run sync-game -- ../memory-match-prek`.
-18. Color pattern repeat (Kindergarten)
+18. Color pattern repeat (Kindergarten). Built as "Bead Parlor" (game id `pattern-repeat-k`, bead patterns with a bracelet shelf as
+    the reward, kit mechanic generalized from slot-build). Page at `/logic-games/pattern-repeat-for-kindergarten/`
+    (`logic-memory.patterns.repeat`, "Color and shape patterns"). Website side is done (2026-11-16, see
+    `planning/pattern-repeat-decisions-log.md`); the game build and poster arrive with `npm run sync-game -- ../pattern-repeat-k`.
 19. Odd one out (Grade 1)
 20. Pattern completion (Grade 2)
 
