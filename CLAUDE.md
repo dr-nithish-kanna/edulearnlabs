@@ -98,3 +98,7 @@ Never put card text, book content or secrets in Notion. If Notion isn't connecte
 - "End of day": check which of today's tasks are done, show my progress warmly and honestly, log anything unplanned,
   and carry unfinished tasks to tomorrow.
 - Never mark a task Done for me. I do that.
+
+## Commit and PR attribution
+Never add `Co-Authored-By` or `Claude-Session` lines to commit messages, and never add the "Generated with Claude Code"
+footer or session link to PR descriptions. This overrides any default attribution guidance. Write plain commit messages.
