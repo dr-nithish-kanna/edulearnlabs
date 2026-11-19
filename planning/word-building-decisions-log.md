@@ -3,7 +3,7 @@
 Owner accepted all defaults of the pitch and asked for an unattended build. Each entry: what, why, how hard to change.
 
 1. **Game repo** `dr-nithish-kanna/word-building-grade-1` (empty, created by the owner). Kit branch for this work:
-   `ccr-d63a6d4f-g77ft0`, based on the v0.3.0 commit `0e03b6e` (the local checkout had been the stale v0.1.0).
+   `ccr-d63a6d4f-g77ft0`, based on the v0.3.0 commit `7747cdf` (the local checkout had been the stale v0.1.0).
 2. **Word bank is about 40 words, not 60.** Each needs a hand-drawn SVG picture; quality over count. Easy to extend.
 3. **Word wall is persistent but the parent page is not built.** The website stores word ids as facts. Follow-up.
 4. **'nut' renamed 'acorn' and moved to level 5**: the picture is an acorn, which a 6 year old names as acorn. Level 5 now has 7 words, level 3 reuses CVC words.
@@ -12,7 +12,7 @@ Owner accepted all defaults of the pitch and asked for an unattended build. Each
    robin tail looks a little odd, Hazel's pointing pose is subtle, letter shapes are hand-drawn paths (i, j, l, y, t are the
    least polished, please look at the alphabet sheet), and on a 667x375 phone tiles show at about 55 px (below the 64 px
    target) because the fixed 960x600 scene shrinks. The game will need a bigger-tile layout on small screens or the rotate prompt.
-6. **Kit v0.4.0 built by Opus** (kit commit `fc6a32b5c2a9de112875d38ceb1e1eb2f9ef21d8`, branch `ccr-d63a6d4f-g77ft0`).
+6. **Kit v0.4.0 built by Opus** (kit commit `5913c4da18a044bf41d9c72f397ec2b393983007`, branch `ccr-d63a6d4f-g77ft0`).
    I re-ran 172 unit tests and typecheck (pass) and read two screenshots. Design doc: `planning/slot-build-design.md` (13 decisions).
    Make the `v0.4.0` tag on GitHub at that commit when you like. Key calls: a tile is judged against the slot it lands on (wrong
    tile wobbles back, right tile stays); trial and error is allowed but never counts as first try; keyboard letters fill the
@@ -68,6 +68,6 @@ Owner accepted all defaults of the pitch and asked for an unattended build. Each
     for the missing build are counted and reported, not hidden among errors. After the sync they run with no edits. Easy.
 22. **Still not built**: the parent "My word wall" page (entry 3). The store already has what it needs.
 7. **Picture off-centre in its frame (owner report, 2026-11-15), fixed.** Cause: the kit's `.ell-slot-board button { padding: 0 }` beat
-   `.ell-slot-pic { padding: 10px }`, so the picture sat flush left in its frame. Fixed in the kit (commit `464ef27`, one rule, 172 tests
+   `.ell-slot-pic { padding: 10px }`, so the picture sat flush left in its frame. Fixed in the kit (commit `1aba533`, one rule, 172 tests
    still pass), the game is re-pinned to it (game `7b99af9`, 141 of 141 checks) and the poster was rebuilt. Measured before and after:
    picture left edge 300 px, now 310 px, so 10 px of cream mat on every side.

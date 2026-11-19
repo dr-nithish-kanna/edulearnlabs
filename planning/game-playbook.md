@@ -122,7 +122,7 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
 ## 8. Update 2026-11-13: Letter Workshop (game 3, first language game)
 
 - Built unattended, same process as Pond Hop. Game repo `dr-nithish-kanna/word-building-grade-1` (synced at `36d8b2e`),
-  kit v0.4.0 at `fc6a32b5c2a9de112875d38ceb1e1eb2f9ef21d8` (new mechanic `slot-build`, design in
+  kit v0.4.0 at `5913c4da18a044bf41d9c72f397ec2b393983007` (new mechanic `slot-build`, design in
   `planning/slot-build-design.md`). Both are untagged; the owner makes tags `v0.2.0`, `v0.3.0` and `v0.4.0` on GitHub.
 - Website: persistent word wall in the progress store (`walls`, own `v`, facts only), `HostInit.wall`, `/language-games/` category
   (nav says "Reading games"), game page, letter mistake tips. Decisions: `planning/word-building-decisions-log.md`.
@@ -155,7 +155,7 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
 ## 11. Update 2026-11-13 (night): Quilt Picnic built and synced (game 4)
 
 - Game repo `dr-nithish-kanna/memory-match-prek`, branch `ccr-4d0bb17c-4dbh4d`, synced at `cb9cbc9`, pinned to kit v0.5.0 at
-  `24257a2e4c97354baafc24751f5668ce40808aac` (untagged; owner creates `v0.2.0` to `v0.5.0`). Not merged to `main` and not deployed.
+  `03ced466bb005cd8ba5d777248e263fe7b2e86f4` (untagged; owner creates `v0.2.0` to `v0.5.0`). Not merged to `main` and not deployed.
 - Built unattended: Opus agent for the kit mechanic and design (`planning/pair-match-design.md`), Sonnet agents for the art preview and
   website support, game built by hand from the Letter Workshop pattern. Game smoke test 50 of 50, website e2e 120 ok with the real game
   frame, progress tests 59 of 59, `planBoard` never relaxed for any picture on any level.
@@ -174,16 +174,16 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
 - Reminder: check `git branch -r` in every repo first. The kit checkout on the session branch is stale (v0.1.0).
 - 2026-11-15 (later): Opus design pass done (`planning/tap-count-design.md`, found 4 flaws in the first plan). Owner took all recommendations
   (section 13 "LOCKED"). Next: static art preview in `brand/count-objects/`, owner approves, then kit v0.6.0 `tap-count` (build from the real
-  kit branch `ccr-4d0bb17c-4dbh4d` at 24257a2, not the stale checkout).
+  kit branch `ccr-4d0bb17c-4dbh4d` at 03ced46, not the stale checkout).
 - 2026-11-15 (later): art preview built in `brand/count-objects/` (index.html, build.py, shots/). Awaiting owner approval of look, cast and parade species. The four nits (bunny ear clip, grid-like scatter, yellow chick next to the yellow duck, owl perch touching the blanket) were fixed the same day and re-checked in screenshots.
 - 2026-11-15 (later): art preview approved. Kit v0.6.0 `tap-count` built by an Opus agent and verified: kit branch `claude/amazing-albattani-g2r7l1`,
-  commit `ea8ed668983dc67bf7366ed54ba0146e9b4c77a7` (untagged, pin by full SHA; owner makes tags v0.2.0 to v0.6.0). Verified here: 266 of 266 unit tests,
+  commit `a2d5ff8fd2cec502af688056550a8f8f92aea693` (untagged, pin by full SHA; owner makes tags v0.2.0 to v0.6.0). Verified here: 266 of 266 unit tests,
   typecheck clean, tap browser suite 124 ok. Tap page built alone: entry JS 17.9 KB, Before Play 57.8 KB, lazy fill-order chunk 7.6 KB, all in budget.
   Deviations (Done bell position, friend-only bubbles, extra idle nudges, validator stock rule, placeholder playground art) are listed in the kit README.
   Still to do: update `planning/framework-spec.md` for tap-count, create the game repo (`count-objects-prek`, owner decides), game scenes and art from
   `brand/count-objects/`, website parade store and page, real-device touch and speech check. Lesson: a wait loop that greps for "Error" matches "GameError"; grep the real final line.
 - 2026-11-16: game 5 built. Game repo `dr-nithish-kanna/count-objects-prek` (created by the owner, empty private repo), branch `claude/amazing-albattani-g2r7l1`,
-  head `54a2fb55d55370b1741aa2421b263b5798521d0b`, pinned to kit v0.6.0 `ea8ed668983dc67bf7366ed54ba0146e9b4c77a7`. Game id `count-objects-prek`, title Hedgehog Picnic,
+  head `04e4892afb42ed22d968adf9738acb05a6429f9a`, pinned to kit v0.6.0 `a2d5ff8fd2cec502af688056550a8f8f92aea693`. Game id `count-objects-prek`, title Hedgehog Picnic,
   skill `math.counting.count-objects`, page to build `/math-games/counting-for-preschool/`. Not merged, not deployed, no tag.
   Verified here: typecheck clean, build in budget (Before Play 61.4 KB, entry JS 21.4 KB, lazy fill chunk 7.6 KB), smoke test on the throttled profile 166 ok, 0 FAIL, screenshots opened.
   Kit gaps found by the game agent (go to an Opus kit release, v0.6.1): the friend never swaps to its happy pose, one picture per object kind so the second pebble drawing is unused,
@@ -203,20 +203,20 @@ a thin sand edge under the shelf on some wide screens), a real portrait layout (
 - Smoke test: page checks plus a play round trip against the labelled STAND-IN frame; one `SKIPPED` line for the real game frame.
 - Next: sync the game after the kit update (`npm run sync-game -- ../count-objects-prek`), then `npm run build && npm run test:e2e` and look for
   `[real game frame]` lines for Hedgehog Picnic and no Hedgehog `SKIPPED` line. Open: "My parade" parent page, real-device touch and speech check.
-- 2026-11-16 (later): kit v0.6.1 final at `256bea19a544ef019b27e3290e011aeb28725e47` (happy pose, several pictures per kind, level 4 bubble clear of Back). The pond e2e
+- 2026-11-16 (later): kit v0.6.1 final at `4641118373cc1cea073e8ffd781e27085e552938` (happy pose, several pictures per kind, level 4 bubble clear of Back). The pond e2e
   "regression" turned out to be flaky tests (random "send 1" orders and an extra digit key that picked a choice), fixed in the kit tests; the kit code did not change. Lesson: 3 runs
   proved nothing, 8 per version showed v0.6.0 failing as often (4 of 8) as v0.6.1 (3 of 8). Game `count-objects-prek` upgraded and synced at game commit `a7c04f6`
   (smoke test 178 ok on the throttled profile). Website `npm run build && npm run test:e2e`: PASS, 158 ok, 18 `[real game frame]` lines. Not merged to `main`, not deployed, no tag.
   Open: owner reviews and approves the PR into `main` (deploy), kit tags v0.2.0 to v0.6.1, poster crops the left edge on desktop (cosmetic), "My parade" parent page,
   real-device touch and speech check, other fill checks still use fixed sleeps.
-- 2026-11-17: owner found three problems on the live Hedgehog Picnic: the "Tap to play" focus ring looked misaligned (the 6px press edge ran into the ring), the Done bell overlapped the parade shelf, and nothing told the child to ring the bell. Fixed in kit v0.6.2 (ring wraps the press edge, CSS only) and v0.6.3 (bell in the bottom right corner, first-time cue "Ring the bell when you are done." with a pulse, idle nudge pulses the bell, `strings.ringBell`, `TapSkin.bellCue`). Kit `a06ba1290919f444ffd023b06e4510d1843f8629`, 284 unit tests, tap suite 253 and 256 ok, fill 327, word 66, pair 68. Game `count-objects-prek` at `5f9eb45` (245 ok on my run, measured bell gaps: 20 px to the shelf on a phone, bell 65 px). Website e2e PASS 158 ok. Lessons: look at every screenshot a smoke test saves, not a sample (the shelf overlap was visible in two I never opened); a new first-time cue needs a visual twin; the page-copy word-count check caught my own added sentence.
+- 2026-11-17: owner found three problems on the live Hedgehog Picnic: the "Tap to play" focus ring looked misaligned (the 6px press edge ran into the ring), the Done bell overlapped the parade shelf, and nothing told the child to ring the bell. Fixed in kit v0.6.2 (ring wraps the press edge, CSS only) and v0.6.3 (bell in the bottom right corner, first-time cue "Ring the bell when you are done." with a pulse, idle nudge pulses the bell, `strings.ringBell`, `TapSkin.bellCue`). Kit `3e0352d3f7f8e12a4de70edc3b86ad099880b55b`, 284 unit tests, tap suite 253 and 256 ok, fill 327, word 66, pair 68. Game `count-objects-prek` at `5f9eb45` (245 ok on my run, measured bell gaps: 20 px to the shelf on a phone, bell 65 px). Website e2e PASS 158 ok. Lessons: look at every screenshot a smoke test saves, not a sample (the shelf overlap was visible in two I never opened); a new first-time cue needs a visual twin; the page-copy word-count check caught my own added sentence.
 
 ## 14. Update 2026-11-16: game 6 built unattended, Bead Parlor (Color pattern repeat, MVP 18)
 
 - Planning was attended (ideas, design doc, art preview, all approved by "defaults" and picks), the build ran unattended while the owner slept.
   Design: `planning/pattern-repeat-design.md`. Kit design pass by an Opus agent: `planning/token-slot-design.md` (picked option b, a thin
   `pattern-fill` runner over the unchanged slot-build reducer, so Letter Workshop is untouched). Website decisions: `planning/pattern-repeat-decisions-log.md`.
-- Kit v0.7.0 at `8998e682ba0017923031d0f3cbf60932fc595f0e` on kit branch `claude/upbeat-davinci-c55nml` (untagged, owner makes tags). Verified here:
+- Kit v0.7.0 at `4f0499c1c885eed83112f6f720c9ed11ddea6f7a` on kit branch `claude/upbeat-davinci-c55nml` (untagged, owner makes tags). Verified here:
   330 of 330 unit tests, typecheck clean. Game repo `dr-nithish-kanna/pattern-repeat-k` (owner created it, branch `claude/upbeat-davinci-c55nml`),
   synced at game commit `4165a65`. Game smoke test on the throttled profile passes (full 5-bracelet session, every level, 667x375 phone, no console
   errors, no storage). Before Play 56.5 KB, entry JS 18.3 KB. Website: 89 of 89 progress tests, `npm run build && npm run test:e2e` PASS, 196 ok,

@@ -33,7 +33,7 @@ you can overturn any of them in the morning. Each entry says how hard it is to c
    - Kit grows to about 21 KB brotli for this page (over the 15 KB target, like the garden).
    - Needs a website fix: the parent tip for "wrong-operation" must not say "subtracts instead of adding" for a
      subtraction game.
-7. **Kit v0.3.0 built by Opus** (kit commit `0e03b6e308d8079ffca6ad82c3efaa34b69be410`, branch `ccr-d39a02df-81y4w7`).
+7. **Kit v0.3.0 built by Opus** (kit commit `7747cdf4423261be5fb0f5ef3a637d426f045a90`, branch `ccr-d39a02df-81y4w7`).
    138 unit tests, 190 pond browser checks. I re-ran the unit tests and checked screenshots myself. Nothing was cut.
    Make the `v0.3.0` tag on GitHub at that commit when you like. Until then both Pond Hop and any upgrade pin the SHA.
 8. **Addition Garden stays on kit v0.2.0 in production.** I did not re-pin the live game. I did prove the upgrade is

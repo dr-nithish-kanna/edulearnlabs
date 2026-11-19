@@ -31,7 +31,7 @@ tips on the grown-ups page keep working. It is one tap, not a worksheet.
 
 ## 1. How fill-container fits the kit
 
-### 1.1 What exists today (kit commit c883268, v0.1.0)
+### 1.1 What exists today (kit commit 921fb65, v0.1.0)
 
 | File | What it does now | Reused as is? |
 |---|---|---|
@@ -457,7 +457,7 @@ and data shapes should survive 2 or 3 mechanics before we promise stability.
 > `GameCompleted.session.hints` and `.rewards`. Protocol stays 1. To use the new mechanic, pass it to
 > `startGame(def, { mechanics: { 'fill-container': fillContainer } })`.
 
-### 8.3 Migration for addition-grade-1 (pinned to c883268, v0.1.0)
+### 8.3 Migration for addition-grade-1 (pinned to 921fb65, v0.1.0)
 1. Bump the kit pin to `#v0.2.0` with **no other change**. Build, run the smoke test. It must pass unchanged.
    This proves the release is additive.
 2. Switch `game.json` to `fill-container` (section 2.2), add the skin and theme, bump the game to `2.0.0`

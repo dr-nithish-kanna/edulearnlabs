@@ -78,7 +78,7 @@ A "My quilt" parent page is a later follow-up, same as "My garden" and "My word 
 
 ## 8. Kit work (Opus-sized, do not start on Sonnet)
 New mechanic `pair-match` in kit v0.5.0 (branch continues from `ccr-d63a6d4f-g77ft0`, kit v0.4.0 at
-`fc6a32b5c2a9de112875d38ceb1e1eb2f9ef21d8`). Needs, before code, a short design pass:
+`5913c4da18a044bf41d9c72f397ec2b393983007`). Needs, before code, a short design pass:
 - Pure reducer (`lift`, `resolveMiss`, `hintLevel`) with unit tests: board generation with planned distractors,
   hint ladder, miss counting (never shown), adapt rule.
 - Board layout that survives the rotate prompt and 667x375 screens (lesson from Addition Garden).

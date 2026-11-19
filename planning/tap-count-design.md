@@ -7,7 +7,7 @@ before a Sonnet or Opus agent implements it from section 12.
 Files read for this design: main repo `CLAUDE.md`, `planning/game-playbook.md`, `planning/count-objects-design.md`,
 `planning/pair-match-design.md`, `planning/slot-build-design.md`, `planning/framework-spec.md`, `planning/decisions.md`,
 `planning/style-guide.md`, `templates/game-repo/GAME_RULES.md`, `src/scripts/progress.ts` (quilt store); kit v0.5.0 at
-commit `24257a2` (read in a throwaway worktree, the session checkout is stale at v0.1.0): `src/types.ts`, `src/session.ts`,
+commit `03ced46` (read in a throwaway worktree, the session checkout is stale at v0.1.0): `src/types.ts`, `src/session.ts`,
 `src/content.ts`, `src/game.ts`, `src/index.ts`, `src/host.ts`, `src/pitch.ts`, `src/audio.ts`, `src/random.ts`,
 `src/strings.ts`, `src/fill.ts`, `src/pair.ts`, `src/mechanics/quiz.ts`, `src/mechanics/common.ts`,
 `src/mechanics/fill-common.ts`, `src/mechanics/fill-container.ts`, `src/mechanics/pair-match.ts`, `src/styles/fill.css`,
@@ -523,7 +523,7 @@ Plan:
   Until then the game pins the **full commit SHA** in `package.json`.
 - Kit CLAUDE.md says do not commit or push unless the owner asks. The implementation agent must ask (or be told in its
   prompt) before pushing the kit branch.
-- Work on top of commit `24257a2` (branch `origin/ccr-4d0bb17c-4dbh4d`), not the stale session checkout.
+- Work on top of commit `03ced46` (branch `origin/ccr-4d0bb17c-4dbh4d`), not the stale session checkout.
 
 ## 12. Build steps (in order, test after each)
 
